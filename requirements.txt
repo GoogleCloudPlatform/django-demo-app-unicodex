@@ -1,0 +1,8 @@
+Django
+django-environ
+gunicorn
+pyyaml
+bs4
+requests
+psycopg2-binary
+django-storages[google]

@@ -1,0 +1,42 @@
+.emoji  {
+    font-size: 48pt;
+    text-align: center;
+}
+.emoji a {
+    text-decoration: none
+}
+
+h1 a, h2 a {
+    text-decoration: none
+}
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+code {
+    font-family: 'Monaco', monospace;
+}
+
+.water { 
+    margin-top: 10px;
+    font-size: 48pt; 
+    font-family: 'Oswald';
+    margin-top: 20px; 
+    text-align: center;
+    background: -webkit-linear-gradient(#b10fce, #452768);
+    text-decoration: none;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+ 
+.row { 
+    text-align: center;
+} 
+
+.img { 
+    text-align: center;
+    vertical-align: center;
+} 
+.img img { 
+    height: 64px; 
+}   

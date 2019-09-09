@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: unicodex
+    volumes:
+      - dev_data:/var/lib/postgresql/data
+  web:
+    build: .
+    environment:
+        DEBUG: "true"
+        DATABASE_URL: postgres://postgres:mysecretpassword@db:5432/unicodex
+        GS_BUCKET_NAME: 
+        CURRENT_HOST: 0.0.0.0
+        SECRET_KEY: FP0hA3L14P1OeJg-youshouldChangeThis-Pr2gCEuNhH9dfjHJSY8cRlfen5jApzMan6E
+    command: python manage.py runserver 0.0.0.0:8080 
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+    dev_data:
