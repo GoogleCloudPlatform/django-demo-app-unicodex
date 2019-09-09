@@ -1,0 +1,43 @@
+# Sample data to pre-populate unicodex with
+# Run with: ./manage.py loaddata sampledata
+
+- model: unicodex.vendor
+  pk: 1
+  fields:
+    name: Twitter
+- model: unicodex.vendor
+  pk: 3
+  fields:
+    name: Android
+- model: unicodex.vendor
+  pk: 4
+  fields:
+    name: Google
+- model: unicodex.vendorversion
+  pk: 1
+  fields:
+    name: Twemoji 1.0
+    vendor: 1
+- model: unicodex.vendorversion
+  pk: 3
+  fields:
+    name: '9.0'
+    vendor: 3
+- model: unicodex.vendorversion
+  pk: 4
+  fields:
+    name: '7.0'
+    vendor: 3
+- model: unicodex.vendorversion
+  pk: 6
+  fields:
+    name: Android 9.0
+    vendor: 4
+
+- model: unicodex.codepoint
+  pk: 1
+  fields:
+    name: Waving
+    description: 'hi!'
+    codepoint: 1F44B
+    emojipedia_name: waving-hand-sign

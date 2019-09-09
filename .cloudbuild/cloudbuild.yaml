@@ -1,0 +1,33 @@
+steps:
+    - id: 'build unicodex image'
+      name: 'gcr.io/cloud-builders/docker'
+      args: ['build', '-t', 'gcr.io/$PROJECT_ID/unicodex', '.']
+
+    - id: 'push unicodex image'
+      name: 'gcr.io/cloud-builders/docker'
+      args: ['push', 'gcr.io/$PROJECT_ID/unicodex']
+
+    - id: 'read secrets with berglas'
+      name: gcr.io/berglas/berglas
+      entrypoint: "/bin/sh"
+      args: [".cloudbuild/berglas_setup.sh"]
+      env:
+        - 'PROJECT_ID=$PROJECT_ID'
+      volumes:
+      - name: secrets
+        path: /secrets
+
+    - id: 'perform django migration, collect static'
+      name: "gcr.io/google-appengine/exec-wrapper"
+      args: ["-i", "gcr.io/$PROJECT_ID/unicodex",
+         "-e", "ENV_PATH=/secrets/.env",
+         "-s", "$PROJECT_ID:us-central1:${_DATABASE_INSTANCE}",
+         "--", "sh", ".cloudbuild/django_migrate.sh"]
+      volumes:
+      - name: secrets
+        path: /secrets
+
+    - id: 'deploy unicodex'
+      name: 'gcr.io/cloud-builders/gcloud'
+      args: ['beta', 'run', 'deploy', 'unicodex', '--image', 'gcr.io/$PROJECT_ID/unicodex', '--region', 'us-central1', '--platform', 'managed']
+

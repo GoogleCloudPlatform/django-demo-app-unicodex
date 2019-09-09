@@ -1,0 +1,46 @@
+<!--
+  Copyright 2019 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+{% extends 'base.html' %}
+{% block title %} &#x{{codepoint.codepoint}}; {{codepoint.name}} &#x{{codepoint.codepoint}}; {% endblock %}
+{% block content %}
+
+<div class="row">
+ <div class="twelve columns">
+  <h3 style="text-align: center">{{codepoint.name}} <code>U+{{codepoint.codepoint}}</code></h2>
+  <h4 style="text-align: center"><i>{{codepoint.description}}</i></h4>
+ </div>
+</div>
+
+<div class="row" style="padding: 10px">
+{% if designs|length == 0 %}
+No {{codepoint.name}} designs found
+{% else %}
+{% for x in designs %}
+    <div class="two columns">
+      <div class="img"><img class="emoji" src="{{ x.image.url }}" /></div>
+      <br>
+      {{x.vendorversion.vendor.name}}
+      {{x.vendorversion.name}}
+    </div>
+
+  {% if forloop.counter|divisibleby:6  %}
+  </div>
+  <div class="row" style="padding: 10px">
+  {% endif %}
+{% endfor %}
+{% endif %}
+  </div>
+{% endblock %}

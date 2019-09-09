@@ -1,0 +1,5 @@
+# ignore local uploaded dev media
+media/
+
+# ignore python cache
+__pycache__/

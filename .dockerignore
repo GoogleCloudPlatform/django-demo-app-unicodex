@@ -1,0 +1,7 @@
+unicodex/__pycache__
+venv/
+.git
+
+**/.dockerignore
+**/*Dockerfile
+**/.*.sw[po]
