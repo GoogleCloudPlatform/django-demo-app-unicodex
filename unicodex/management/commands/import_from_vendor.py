@@ -35,12 +35,13 @@ def out(s):
     print(s, file=sys.stdout)
     sys.stdout.flush()
 
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('codepoint')
+        parser.add_argument("codepoint")
 
     def handle(self, *args, **options):
-        cp= Codepoint.objects.get(name=options['codepoint'])
+        cp = Codepoint.objects.get(name=options["codepoint"])
         vendorversions = VendorVersion.objects.all()
 
         if cp.emojipedia_name:
@@ -62,7 +63,6 @@ class Command(BaseCommand):
             img_temp.flush()
             return img_temp
 
-    
         for x in v:
             if x.a:
                 href = x.a["href"]
@@ -70,20 +70,24 @@ class Command(BaseCommand):
 
                 _, vendor, version, _, _ = href.split("/")
                 version = version.replace("-", " ")
-                
-                try: 
+
+                try:
                     vv = VendorVersion.objects.get(
-                                vendor__name__iexact=vendor,
-                                name__iexact=version)
-                    
+                        vendor__name__iexact=vendor, name__iexact=version
+                    )
+
                     try:
                         d = Design.objects.get(codepoint=cp, vendorversion=vv)
-                        out(f"Existing design for {cp.name}, {vv.vendor.name} {vv.name}")
+                        out(
+                            f"Existing design for {cp.name}, {vv.vendor.name} {vv.name}"
+                        )
                     except Design.DoesNotExist:
                         # attempt from https://www.revsys.com/tidbits/loading-django-files-from-code/
                         img = download_image(url)
                         d = Design.objects.create(codepoint=cp, vendorversion=vv)
-                        d.image.save(os.path.basename(urlparse(url).path), File(img), save=True)
+                        d.image.save(
+                            os.path.basename(urlparse(url).path), File(img), save=True
+                        )
                         out(f"Added design for {cp.name}, {vv.vendor.name} {vv.name}")
 
                 except VendorVersion.DoesNotExist:
