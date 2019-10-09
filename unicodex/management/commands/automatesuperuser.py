@@ -18,6 +18,7 @@ import django
 from django.contrib.auth.management.commands import createsuperuser
 from django.core.management import CommandError
 
+
 """
 python manage.py createsuperuser --username admin --password admin
 python manage.py createsuperuser --username admin --password admin --email foo@foo.foo

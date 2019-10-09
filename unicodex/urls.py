@@ -14,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.contrib import admin
-from django.urls import path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-
+from django.contrib import admin
+from django.urls import path, re_path
 from django.views.static import serve
 
 from unicodex.views import *

@@ -14,20 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.core.management.base import BaseCommand, CommandError
-from unicodex.models import Codepoint, VendorVersion, Design
-from django.core.files.base import File
-from django.core.management import call_command
-from django.utils.text import slugify
-import requests
+import io
 import os
-
+import sys
+from tempfile import NamedTemporaryFile
 from urllib.parse import urlparse
 from urllib.request import urlopen
-from tempfile import NamedTemporaryFile
+
+import requests
+from django.core.files.base import File
+from django.core.management import call_command
+from django.core.management.base import BaseCommand, CommandError
+from django.utils.text import slugify
+
 from bs4 import BeautifulSoup
-import sys
-import io
+from unicodex.models import Codepoint, Design, VendorVersion
+
 
 def out(s):
     print(s, file=sys.stdout)
@@ -87,5 +89,3 @@ class Command(BaseCommand):
                 except VendorVersion.DoesNotExist:
                     out(f"No vendor version exists for {vendor} {version}")
                     pass
-                
-
