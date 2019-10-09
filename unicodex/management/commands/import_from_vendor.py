@@ -31,6 +31,7 @@ from bs4 import BeautifulSoup
 from unicodex.models import Codepoint, Design, VendorVersion
 
 
+# Force a flused output to get real-time output in StackDriver
 def out(s):
     print(s, file=sys.stdout)
     sys.stdout.flush()
@@ -40,6 +41,9 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("codepoint")
 
+    # Called from admin.py#generate_designs
+    # Crawls emojipedia.org on the selected codepoint and pulls any information
+    # from known vendor/vendorversions
     def handle(self, *args, **options):
         cp = Codepoint.objects.get(name=options["codepoint"])
         vendorversions = VendorVersion.objects.all()
@@ -50,7 +54,7 @@ class Command(BaseCommand):
             emojipedia_name = slugify(cp.name)
 
         uri = f"https://emojipedia.org/{emojipedia_name}"
-        out(f"Retrieving {uri}")
+        out(f"Retrieving data for {cp.name} from {uri}")
 
         resp = requests.get(uri)
         page = BeautifulSoup(resp.content, "html.parser")
@@ -63,6 +67,9 @@ class Command(BaseCommand):
             img_temp.flush()
             return img_temp
 
+        out(f"Parsing {uri}")
+
+        stats = {"ignored": 0, "added": 0, "skipped": 0}
         for x in v:
             if x.a:
                 href = x.a["href"]
@@ -79,8 +86,9 @@ class Command(BaseCommand):
                     try:
                         d = Design.objects.get(codepoint=cp, vendorversion=vv)
                         out(
-                            f"Existing design for {cp.name}, {vv.vendor.name} {vv.name}"
+                            f"- Skipped existing vendorvesion: {vv.vendor.name} {vv.name}"
                         )
+                        stats["skipped"] += 1
                     except Design.DoesNotExist:
                         # attempt from https://www.revsys.com/tidbits/loading-django-files-from-code/
                         img = download_image(url)
@@ -88,8 +96,12 @@ class Command(BaseCommand):
                         d.image.save(
                             os.path.basename(urlparse(url).path), File(img), save=True
                         )
-                        out(f"Added design for {cp.name}, {vv.vendor.name} {vv.name}")
+                        out(f"- Added design for {cp.name}, {vv.vendor.name} {vv.name}")
+                        stats["added"] += 1
 
                 except VendorVersion.DoesNotExist:
-                    out(f"No vendor version exists for {vendor} {version}")
+                    out(f"- Ignoring unconfigured vendorversion: {vendor} {version}")
+                    stats["ignored"] += 1
                     pass
+        stat = ", ".join([f"{x}: {stats[x]}" for x in stats.keys()])
+        out(f"Final statistics: {stat}")
