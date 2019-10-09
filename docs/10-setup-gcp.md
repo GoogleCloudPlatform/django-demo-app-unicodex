@@ -16,6 +16,7 @@ Notes:
 
 You will also need to setup this project against a Billing Account. 
 
+---
 
 We're also going to be using the command line utility for Google Cloud, `gcloud`, wherever possible. 
 
@@ -27,7 +28,7 @@ To test your `gcloud` works and is up to date:
 gcloud --version
 ```
 
-If you see a "`Updates area available`" prompt, follow those installation instructions. 
+If you see a "Updates area available" prompt, follow those installation instructions. 
 
 Next, we need to set our default project. 
 
