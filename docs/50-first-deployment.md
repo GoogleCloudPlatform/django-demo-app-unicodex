@@ -69,6 +69,14 @@ gcloud beta run services update unicodex \
 In this case, `CURRENT_HOST` is setup in our [setup.py](../setup.py) to be added to the `ALLOWED_HOSTS`, if defined. 
 
 
+**Important**: `ALLOWED_HOSTS` takes a hostname without a scheme (i.e. without the leading 'https'). Our `settings.py` handles this by removing it, if it appears. 
+
+#### Initialising Database
+
+
+
+---
+
 And now. 
 
 Finally. 
