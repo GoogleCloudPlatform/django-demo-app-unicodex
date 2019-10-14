@@ -101,6 +101,22 @@ These three commands will:
  * allow the Cloud Run service access the secret
  * allow the Cloud **Build** service access the secret. 
 
+So you'll end up running: 
+
+```
+berglas create ${BERGLAS_BUCKET}/database_url $DATABASE_URL       --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/media_bucket ${PROJECT_ID}-media --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/superuser    admin               --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/superpass    <SECRET_VALUE>      --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/secret_key   <SECRET_VALUE>      --key ${KMS_KEY}
+
+for SECRET in $(berglas list ${BERGLAS_BUCKET}); do
+	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
+	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_CB_EMAIL}
+done
+
+```
+
 You can confirm you're ready for the next step by listing the secrets in the bucklet: 
 
 ```
@@ -111,8 +127,8 @@ The output for this should be:
 
 ```
 database_url
-secret_key
 media_bucket
+secret_key
 superuser
 superpass
 ```
