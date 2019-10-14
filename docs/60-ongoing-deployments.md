@@ -5,6 +5,12 @@
 
 ---
 
+### *Cloud Build Triggers is in beta*
+
+Please note that the following descriptions may change as functionality is updated in this beta. 
+
+---
+
 We're going to get our service setup with continuous deployment by adding a build trigger through Cloud Build. 
 
 To start, you'll need to have your copy of this repo code setup in it's own repo. We'll be using GitHub (as that's what the project itself uses), but you can do this with BitBucket or Cloud Source Repositories. 
@@ -41,8 +47,11 @@ From here, we're going to enter the following details:
   * `_SERVICE`: unicodex
 
  
- 
+---
 
+With this setup, any time we push code to the `master` branch, our service will be deployed. 
+
+This works well when you have Pull Requests in Github being merged to the `master` branch: any merged PR will automatically create a new deployment. 
 
 ---
 
@@ -51,6 +60,8 @@ We only implemeted one trigger here.
 You could customise this for your own project in a number of ways. 
 
 Perhaps make use of the [Included files](https://cloud.google.com/cloud-build/docs/running-builds/automate-builds#build_trigger) feature, and trigger a build that makes database migrations only if there have been changes to files in `unicodex/migrations/*`. You could then remove that step from the unconditional `master` branch build.
+
+Using the substituion variables, you could setup multiple triggers: ones that on master deploy to a staging environment, and on a tagged release deploy to production. Changing the substitution variables allows you to use the same code and aim the deploy at different places. 
 
 You could also take advantage of [build concurrency](https://cloud.google.com/cloud-build/docs/configuring-builds/configure-build-step-order), if you have steps that don't need to be run one at a timee.
 
