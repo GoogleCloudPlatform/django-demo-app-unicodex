@@ -18,10 +18,16 @@ This setup looks a bit long, but application security security is no joke, and t
 
 To setup berglas, follow its [setup documentation](https://github.com/GoogleCloudPlatform/berglas#setup). 
 
+You'll end up running a command like: 
+
+```
+berglas bootstrap --project $PROJECT_ID --bucket $BERGLAS_BUCKET
+```
+
 Specific things to note: 
 
 * We already have our `PROJECT_ID`.
-* The `BUCKET_ID` is **NOT** `${PROJECT_ID}-media` from earlier. We suggest using something like `${PROJECT_ID}-secrets`
+* The `BERGLAS_BUCKET` is **NOT** `${PROJECT_ID}-media` from earlier. We suggest using something like `${PROJECT_ID}-secrets`
 * We already enabled all the services we needed earlier, but it doesn't hurt to re-enable these.
 
 For ease later, store the bucket name for later in a variable: 
@@ -83,6 +89,7 @@ Now, we can create our secrets.
 For **each** `SECRET` and `VALUE`:
 
 ```
+# sample code
 berglas create ${BERGLAS_BUCKET}/$SECRET $VALUE --key ${KMS_KEY}
 berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
 berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_CB_EMAIL}
@@ -94,6 +101,22 @@ These three commands will:
  * allow the Cloud Run service access the secret
  * allow the Cloud **Build** service access the secret. 
 
+So you'll end up running: 
+
+```
+berglas create ${BERGLAS_BUCKET}/database_url $DATABASE_URL       --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/media_bucket ${PROJECT_ID}-media --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/superuser    admin               --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/superpass    <SECRET_VALUE>      --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/secret_key   <SECRET_VALUE>      --key ${KMS_KEY}
+
+for SECRET in $(berglas list ${BERGLAS_BUCKET}); do
+	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
+	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_CB_EMAIL}
+done
+
+```
+
 You can confirm you're ready for the next step by listing the secrets in the bucklet: 
 
 ```
@@ -104,10 +127,10 @@ The output for this should be:
 
 ```
 database_url
-secret_key
 media_bucket
-superuser
+secret_key
 superpass
+superuser
 ```
  
 If you *need* to get the **value** of these secrets, you can run: 
@@ -116,7 +139,7 @@ If you *need* to get the **value** of these secrets, you can run:
 berglas access ${BERGLAS_BUCKET}/$SECRET
 ```
 
-But note that the secret values will not have a new-line character at the end, so they'll look a little funny in your terminal. They're machine-readable, though!
+Note that the secret values will not have a new-line character at the end, so they'll look a little funny in your terminal. They're machine-readable, though!
 
 ---
 

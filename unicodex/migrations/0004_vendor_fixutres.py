@@ -18,9 +18,8 @@
 
 
 import django.apps
-
-from django.db import migrations
 from django.core.management import call_command
+from django.db import migrations
 
 # https://docs.djangoproject.com/en/2.2/topics/migrations/#data-migrations
 

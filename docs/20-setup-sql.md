@@ -8,9 +8,13 @@ This part of the tutorial is a bit longer, so we'll have section headers :)
 
 ### Database Instance
 
-To create the instance, follow the [Create a Cloud SQL instance](https://cloud.google.com/sql/docs/postgres/quickstart#create-instance) section of the "Quickstart for Cloud SQL for PostgreSQL" tutorial. 
+The database instance creation process has many configuration options, but a lot of good defaults, so we're going to follow the [Create a Cloud SQL instance](https://cloud.google.com/sql/docs/postgres/quickstart#create-instance) section of the "Quickstart for Cloud SQL for PostgreSQL" tutorial (rather than running a CLI command.)
 
-Make sure you make note of the "Default User Password". We'll refer to this as `MASTER_PASSWORD`. 
+Important notes: 
+
+* The default configurations may work for you, but be sure to check if there's anything you want to change.
+* Make sure you make note of the "Default User Password". We'll refer to this as `MASTER_PASSWORD`.
+* The instance creation may take **several minutes.** 
 
 We can confirm we've correctly setup this database for our project by checking for it in `gcloud`: 
 
@@ -20,9 +24,15 @@ gcloud sql instances list
 
 Make note of the "NAME", which we will call `INSTANCE_NAME`, to avoid confusion later. We will also use the "LOCATION" later as our `REGION`.
 
+```
+export INSTANCE_NAME=YourinstanceName
+export REGION=us-central1 # probably. 
+```
+Note, the region we need may be listed as, for example, "us-central1-a", but we don't require the zone ("a"). 
+
 ### Our Database 
 
-Our database instance can hold many databases. For our purposes, we're going to setup a `unicodex` database: 
+Our database **instance** can hold many **databases**. For our purposes, we're going to setup a `unicodex` database: 
 
 ```
 gcloud sql databases create unicodex --instance=$INSTANCE_NAME
@@ -64,7 +74,7 @@ We can then create our django user:
 CREATE USER django WITH PASSWORD 'secret_password';
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO django;
 ```
-In this case, we are using the `USERNAME` "django" and the `PASSWORD` "secret_password". **Use a much more secure password**.
+In this case, we are using the `USERNAME` "django" and the `PASSWORD` "secret_password". Of course, you will **use a much more secure password**.
 
 We can now exit the postgres terminal, and leave the Cloud Shell. 
 
@@ -72,16 +82,20 @@ We can now exit the postgres terminal, and leave the Cloud Shell.
 
 We now have all the elements we need to create our `DATABASE_URL`. This is a format defined in a lot of systems, including [`django-environ`](https://django-environ.readthedocs.io/en/latest/). 
 
-Back in our **local terminal** (hello old friend!), we will need the `USERNAME` and `PASSWORD` for the `DATABASE` on the `INSTANCE_NAME` we created, in whatever `REGION` to form the `DATABASE_URL`:
+Back in our **local terminal** (hello old friend!), we will need the `USERNAME` and `PASSWORD` for the `DATABASE_NAME` on the `INSTANCE_NAME` we created, in whatever `REGION` to form the `DATABASE_URL`:
 
 ```shell
-export DATABASE_URL=postgres://USERNAME:PASSWORD@//cloudsql/PROJECT:REGION:INSTANCE_NAME/DATABASE_NAME
+export USERNAME=django
+export PASSWORD=secret_password
+export DATABASE_NAME=unicodex
+
+export DATABASE_URL=postgres://$USERNAME:${PASSWORD}@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
 ```
 
 For convenience, later we will also need a smaller version of this string, which just our absolute Cloud SQL Instance identifer: 
 
 ```shell
-export DATABASE_INSTANCE=PROJECT:REGION:INSTANCE_NAME
+export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
 ```
 
 We now have the environment variables we need! 🍪

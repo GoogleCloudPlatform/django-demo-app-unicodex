@@ -16,6 +16,7 @@ Notes:
 
 You will also need to setup this project against a Billing Account. 
 
+---
 
 We're also going to be using the command line utility for Google Cloud, `gcloud`, wherever possible. 
 
@@ -27,7 +28,7 @@ To test your `gcloud` works and is up to date:
 gcloud --version
 ```
 
-If you see a "`Updates area available`" prompt, follow those installation instructions. 
+If you see a "Updates area available" prompt, follow those installation instructions. 
 
 Next, we need to set our default project. 
 
@@ -49,6 +50,12 @@ You can check this setting by running:
 gcloud config list
 ```
 
+When we get to the Cloud Run sections, we'll be using the managed Cloud Run platform. To prevent us from having to define that each time (`--platform managed`), we can set the default now: 
+
+```
+gcloud config set run/platform managed
+```
+
 Finally, we will be using a number of Google Cloud services in this tutorial. We can save time by enabling them ahead of time: 
 
 ```
@@ -56,12 +63,15 @@ gcloud services enable \
     run.googleapis.com \
     compute.googleapis.com \
     sql-component.googleapis.com \
+    sqladmin.googleapis.com \
     storage-component.googleapis.com \
     cloudbuild.googleapis.com \
     cloudkms.googleapis.com \
     storage-api.googleapis.com \
     cloudresourcemanager.googleapis.com
 ```
+
+This may take a few minutes to complete. 
 
 ---
 

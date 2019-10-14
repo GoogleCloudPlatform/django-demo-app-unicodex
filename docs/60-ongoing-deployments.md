@@ -1,63 +1,74 @@
 
 # Ongoing Deployments
 
-TODO(glasnt): Incomplete and untested.
-
-We did so much setup. 
-
-We configured so many things. 
-
-But we haven't actually added any data yet. 
-
-And we need to do a few more things to get that to happen.
+*In this step, we're going to automate the deployment we manually executed in the last step*
 
 ---
 
-This section makes the following assumptions that may be controversial: 
+### *Cloud Build Triggers is in beta*
 
-* We want to migrate data and assets every time we deploy.
-* We want to make use of shell scripts to reduce the complexity of our Cloud Build configuration.
-* We are okay with this. 
+Please note that the following descriptions may change as functionality is updated in this beta. 
 
 ---
 
-Because we're working in Cloud Run we don't have access to a console that we can run our `./manage.py migrate` commands against. 
+We're going to get our service setup with continuous deployment by adding a build trigger through Cloud Build. 
 
-We could spend a bunch of time to set this up locally just to do this once, but instead, let's automate the process. 
+To start, you'll need to have your copy of this repo code setup in it's own repo. We'll be using GitHub (as that's what the project itself uses), but you can do this with BitBucket or Cloud Source Repositories. 
 
-The configurations have been already placed in `cloudbuild.yaml` for you. To run this: 
-
-```
-gcloud builds submit --config .cloudbuild/cloudbuild.yaml
-```
-
-This file does we manually did the [last step](50-first-deployment.md): 
-
-* build the unicodex image
-* deploy the image to Cloud Run
-
-But additionally: 
-
-* uses Berglas to pull the secrets we stored earlier to create a local `.env` file
-* using that `.env`, runs the django management commands: 
-  * `./manage.py migrate`, which applies our database migrations
-  * `./manage.py collectstatic`, which uploads our local static files to the media bucket
-* it also, if there's no existing superuser, create a superuser. 
-
-You can check the contents of [.cloudbuild.yaml](../.cloudbuild/cloudbuild.yaml) to see exactly what's going on. 
-
-Hacks: 
-
-* We use `gcr.io/google-appengine/exec-wrapper` as an easier way to setup an Cloud SQL proxy. 
-* We make own `.env` file using the ability for berglas to store a secret in a file (via `?destination`). This is because Cloud Build envvars don't persist through steps
-* We throw all our asks in one giant honking `cloudbuild.yaml`, because it makes this easier. 
-
+We're going to setup our `master` branch to deploy to our `unicodex` service on merge. 
 
 ---
 
-In the next step, we'll setup this automation to run every time we merge our code to master. 
+To setup our triggers, we're going to have to go to the [Cloud Build triggers](https://console.cloud.google.com/cloud-build/triggers/) page in the console, and click [Connect repository](https://console.cloud.google.com/cloud-build/triggers/connect). 
+
+From here, you'll need to sign into GitHub, then install Google Cloud Build as an application, against your repository (or all repositories, if you wish.)
+
+**Note**: If you have already installed Cloud Build and did not allow access to all repositories, you'll have to add more from the "Edit repositories on GitHub ⬀" link. 
+
+Then, select the repo you have this code in, noting the disclaimer on access rights. 
+
+Finally, click 'Skip' to skip implementing the suggested default trigger. We'll be making our own. 
 
 ---
 
-Next step: [Setup Cloud Build trigger](70-setup-trigger.md)
+Now that we've connected our accounts, we can setup the trigger. 
 
+Click the 'Add trigger' from the "..." menu on your repo. 
+
+From here, we're going to enter the following details: 
+
+* **Description**: push on master
+* **Branch (regex)**: master
+* **Build condiguration**: Cloud Build configuration file
+* **Cloud Build configuration file location**: `.cloudbuild/build-migrate-deploy.yaml`
+* **Substitution variables**:
+  * `_IMAGE`: unicodex
+  * `_DATABASE_INSTANCE`: (your instance name)
+  * `_SERVICE`: unicodex
+
+ 
+---
+
+With this setup, any time we push code to the `master` branch, our service will be deployed. 
+
+This works well when you have Pull Requests in Github being merged to the `master` branch: any merged PR will automatically create a new deployment. 
+
+---
+
+We only implemeted one trigger here. 
+
+You could customise this for your own project in a number of ways. 
+
+Perhaps make use of the [Included files](https://cloud.google.com/cloud-build/docs/running-builds/automate-builds#build_trigger) feature, and trigger a build that makes database migrations only if there have been changes to files in `unicodex/migrations/*`. You could then remove that step from the unconditional `master` branch build.
+
+Using the substituion variables, you could setup multiple triggers: ones that on master deploy to a staging environment, and on a tagged release deploy to production. Changing the substitution variables allows you to use the same code and aim the deploy at different places. 
+
+You could also take advantage of [build concurrency](https://cloud.google.com/cloud-build/docs/configuring-builds/configure-build-step-order), if you have steps that don't need to be run one at a timee.
+
+You can always also skip builds entirely if the commit messages includes the string [[`skip ci`](https://cloud.google.com/cloud-build/docs/running-builds/automate-builds#skipping_a_build_trigger)]
+
+---
+
+Next step: None! You're done! 🧁
+
+---
