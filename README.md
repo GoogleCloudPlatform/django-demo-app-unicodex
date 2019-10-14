@@ -14,15 +14,6 @@ It uses:
 
 *This repo serves as a proof of concept of showing how you can piece all the above technolgies together into a working project.*
 
-TODO(glasnt): add working URL here. 
-
-
-MISCTODO
-
-TODO(glasnt): confirm why $PROJECT_ID isn't working in cloudbuild.yaml?
-TODO(glasnt): add more TODO(glasnt)'s where required. 
-TODO(glasnt): cleanup other TODO(glasnt)'s
-
 ## Steps
 
 1. [Try the application locally](docs/00-test-local.md) *optional*
@@ -51,11 +42,18 @@ Unicodex runs as a Cloud Run service. Using the Python package `django-storages`
 
 In this way, Unicodex runs 1:1:1 -- one Cloud Run Service, one Cloud SQL Database, one Google Cloud Project.
 
+This implementation is live at https://unicodex.gl.asnt.app/
+
 ### Other service designs
 
 While the documentation details how to setup a 1:1:1 configuration, with automation steps this could be configured to have a more complex design. For example: one project with one database instance hosting multiple databases, each of those linking to a separate service. This could work for a QA environment, where each developer gets their own "unicodex in a box". Complimented with a *seperate* project that serves as the production version, and a series of Cloud Build triggers that, for instance, deploy to prod when a release is tagged.
 
 This configuration is left as an exercise for the reader. 
+
+### TODO
+
+* implement custom database *name* (as well as instance)
+* allow multiple `CURRENT_HOST` values (useful when handling custom domains)
 
 
 ## Contributions
