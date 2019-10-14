@@ -57,12 +57,15 @@ gcloud services enable \
     run.googleapis.com \
     compute.googleapis.com \
     sql-component.googleapis.com \
+    sqladmin.googleapis.com \
     storage-component.googleapis.com \
     cloudbuild.googleapis.com \
     cloudkms.googleapis.com \
     storage-api.googleapis.com \
     cloudresourcemanager.googleapis.com
 ```
+
+This may take a few minutes to complete. 
 
 ---
 

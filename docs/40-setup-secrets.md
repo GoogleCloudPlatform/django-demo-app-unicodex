@@ -18,10 +18,16 @@ This setup looks a bit long, but application security security is no joke, and t
 
 To setup berglas, follow its [setup documentation](https://github.com/GoogleCloudPlatform/berglas#setup). 
 
+You'll end up running a command like: 
+
+```
+berglas bootstrap --project $PROJECT_ID --bucket $BERGLAS_BUCKET
+```
+
 Specific things to note: 
 
 * We already have our `PROJECT_ID`.
-* The `BUCKET_ID` is **NOT** `${PROJECT_ID}-media` from earlier. We suggest using something like `${PROJECT_ID}-secrets`
+* The `BERGLAS_BUCKET` is **NOT** `${PROJECT_ID}-media` from earlier. We suggest using something like `${PROJECT_ID}-secrets`
 * We already enabled all the services we needed earlier, but it doesn't hurt to re-enable these.
 
 For ease later, store the bucket name for later in a variable: 
@@ -83,6 +89,7 @@ Now, we can create our secrets.
 For **each** `SECRET` and `VALUE`:
 
 ```
+# sample code
 berglas create ${BERGLAS_BUCKET}/$SECRET $VALUE --key ${KMS_KEY}
 berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
 berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_CB_EMAIL}

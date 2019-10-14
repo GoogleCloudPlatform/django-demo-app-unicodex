@@ -6,11 +6,11 @@
 
 We're up to deploying our project for the first time!
 
-This is a little bit complicated first time, but it'll be much easier for every other deployment. 
+This is a little bit complicated the first time, but it'll be much easier for every other deployment. 
 
 You'll remember way back at the [first step](00-test-local.md), we built two images: a `web` image and a `db` image. 
 
-For this deployment, `db` is replaced with the proper postgres database we've [already setup](20-setup-sql.md). 
+`db` will be replaced with the proper postgres database we've [already setup](20-setup-sql.md). 
 
 So we just need to build the other image!
 
