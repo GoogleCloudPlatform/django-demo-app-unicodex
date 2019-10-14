@@ -50,6 +50,12 @@ You can check this setting by running:
 gcloud config list
 ```
 
+When we get to the Cloud Run sections, we'll be using the managed Cloud Run platform. To prevent us from having to define that each time (`--platform managed`), we can set the default now: 
+
+```
+gcloud config set run/platform managed
+```
+
 Finally, we will be using a number of Google Cloud services in this tutorial. We can save time by enabling them ahead of time: 
 
 ```

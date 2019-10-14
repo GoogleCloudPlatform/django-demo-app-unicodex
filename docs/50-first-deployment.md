@@ -26,7 +26,6 @@ Then, we can (finally!) create our Cloud Run service using this image. We'll als
 
 ```
 gcloud beta run deploy unicodex \
-    --platform managed \
     --allow-unauthenticated \
     --region us-central1 \
     --image gcr.io/$PROJECT_ID/unicodex \
@@ -54,9 +53,8 @@ We could copy the URL from this output, or we can use [`--format` and `--filter`
 
 ```shell
 export SERVICE_URL=$(gcloud beta run services list \
-	--platform managed \
 	--format="value(status.url)" \
-	--filter="metadata.name=unicodex")
+	--filter="metadata.name=unicodex") 
 	
 echo $SERVICE_URL
 ```
@@ -65,7 +63,6 @@ Then, we can redeploy our service, updating *just* this new environment variable
 
 ```
 gcloud beta run services update unicodex \
-	--platform managed \
 	--update-env-vars CURRENT_HOST=$SERVICE_URL
 ```
 
