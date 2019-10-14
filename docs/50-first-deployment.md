@@ -81,12 +81,12 @@ You did it! 🏆
 
 ---
 
-🤔 But what if it didn't work? Check the [Debugging Steps](zz_debugging.md) for "Database issues"
+🤔 But what if it didn't work? Check the [Debugging Steps](zz_debugging.md).
 
 
 ---
 
-After all this work, each future deployment is really easy. 
+After all this work, each future deployment is exceedindly less complex. 
 
 ---
 

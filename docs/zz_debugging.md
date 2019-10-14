@@ -50,3 +50,9 @@ If this did not return an error, then it all worked!
 *So what did we just do?*
 
 We installed a pre-compiled PostgreSQL database adapter, [psycopg2-binary](https://pypi.org/project/psycopg2-binary/). We then started up the `cloud_sql_proxy` in a new tab. Finally, we ran a tiny bit of Python that used the used the PostgreSQL adapter and created a connection using our DATABASE_URL variable. 
+
+---
+
+Did you encounter a different problem? [Log an issue](https://github.com/GoogleCloudPlatform/django-demo-app-unicodex/issues)
+
+---
