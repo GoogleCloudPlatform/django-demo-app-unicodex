@@ -17,11 +17,14 @@
 #!/bin/sh
 set -e
 
+echo "🦄 loaddata"
+python manage.py loaddata sampledata
+
 echo "🎸 migrate"
 python manage.py migrate
 
 echo "🎸 collect static"
-python manage.py collectstatic --noinput --verbosity 2
+python manage.py collectstatic --noinput
 
 echo "🎸 createsuperuser"
 

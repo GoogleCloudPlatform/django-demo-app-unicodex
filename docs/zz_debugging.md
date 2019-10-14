@@ -30,26 +30,48 @@ curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.am
 chmod +x cloud_sql_proxy
 ```
 
-Then, we're going to test our `DATABASE_URL`:
+Then, we're going to test our `DATABASE_URL`. Well, some of it. 
 
 In a new terminal:
 
 ```
-./cloud_sql_proxy
+./cloud_sql_proxy -instances=$PROJECT_ID:$REGION:$DATABASE_INSTANCE=tcp:5433
+```
+
+You should see "Ready for new connections".
+
+What we've done is map our `DATABASE_INSTANCE` to localhost, port 5433. 
+
+So, we need to remove the `//cloudsql/.../DATABASE` from our `DATABASE_URL`, and replace it with `localhost:5433`. 
+
+So what was once: 
+
+```
+export TEST_DATABASE_URL=postgres://django:SECRET@//cloudsql/$PROJECT_ID:$REGION:$DATABASE_INSTANCE/$DATABASE_NAME
+```
+
+now becomes
+
+```
+export TEST_DATABASE_URL=postgres://django:SECRET@localhost:5433/$DATABASE_NAME
 ```
 
 Then, in your original terminal: 
 
 ```
 pip install psycopg2-binary
-python -c "import os, psycopg2; conn = psycopg2.connect(os.environ['DATABASE_URL']);"
+python -c "import os, psycopg2; conn = psycopg2.connect(os.environ['TEST_DATABASE_URL']);"
 ```
 
 If this did not return an error, then it all worked!
 
 *So what did we just do?*
 
-We installed a pre-compiled PostgreSQL database adapter, [psycopg2-binary](https://pypi.org/project/psycopg2-binary/). We then started up the `cloud_sql_proxy` in a new tab. Finally, we ran a tiny bit of Python that used the used the PostgreSQL adapter and created a connection using our DATABASE_URL variable. 
+We installed a pre-compiled PostgreSQL database adapter, [psycopg2-binary](https://pypi.org/project/psycopg2-binary/). 
+
+We then started up the `cloud_sql_proxy` in a new tab, mapping that locally. 
+
+Finally, we ran a tiny bit of Python that used the used the PostgreSQL adapter and created a connection using our new `TEST_DATABASE_URL` variable. 
 
 ---
 

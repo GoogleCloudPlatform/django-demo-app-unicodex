@@ -16,7 +16,7 @@
 
 export DATABASE_URL=berglas://${PROJECT_ID}-secrets/database_url?destination=/secrets/database_url
 export SECRET_KEY=berglas://${PROJECT_ID}-secrets/secret_key?destination=/secrets/secret_key
-export BUCKET_NAME=berglas://${PROJECT_ID}-secrets/bucket_name?destination=/secrets/bucket_name
+export MEDIA_BUCKET=berglas://${PROJECT_ID}-secrets/media_bucket?destination=/secrets/media_bucket
 
 export SUPERUSER=berglas://${PROJECT_ID}-secrets/superuser?destination=/secrets/superuser
 export SUPERPASS=berglas://${PROJECT_ID}-secrets/superpass?destination=/secrets/superpass
@@ -28,7 +28,7 @@ ENVFILE=/secrets/.env
 touch $ENVFILE
 echo "DATABASE_URL=$(cat /secrets/database_url)" >> $ENVFILE 
 echo "SECRET_KEY=$(cat /secrets/secret_key)" >> $ENVFILE 
-echo "GS_BUCKET_NAME=$(cat /secrets/bucket_name)" >> $ENVFILE 
+echo "GS_BUCKET_NAME=$(cat /secrets/media_bucket)" >> $ENVFILE 
 
 DBFILE=/secrets/database
 echo "$(cat /secrets/database_url | cut -d'/' -f6)" >> $DBFILE

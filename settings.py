@@ -17,6 +17,7 @@
 import os
 import environ
 
+
 env = environ.Env(DEBUG=(bool, False), GS_BUCKET_NAME=(str, None))
 
 env.read_env(os.environ.get("ENV_PATH", ".env"))

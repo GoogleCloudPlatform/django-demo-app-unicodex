@@ -129,8 +129,8 @@ The output for this should be:
 database_url
 media_bucket
 secret_key
-superuser
 superpass
+superuser
 ```
  
 If you *need* to get the **value** of these secrets, you can run: 
@@ -139,7 +139,7 @@ If you *need* to get the **value** of these secrets, you can run:
 berglas access ${BERGLAS_BUCKET}/$SECRET
 ```
 
-But note that the secret values will not have a new-line character at the end, so they'll look a little funny in your terminal. They're machine-readable, though!
+Note that the secret values will not have a new-line character at the end, so they'll look a little funny in your terminal. They're machine-readable, though!
 
 ---
 
