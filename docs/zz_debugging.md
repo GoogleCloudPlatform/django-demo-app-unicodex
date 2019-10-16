@@ -1,5 +1,7 @@
 # 🐛🐛🐛 Debugging Steps 🐛🐛🐛 
 
+*If at any point your deployment of unicodex breaks, hopefully one of the following debugging tricks can help.* ✨
+
 ## Enable `DEBUG` mode in Django
 
 For security reasons, `DEBUG` should not be enabled in production. So, we didn't set it as enabled. 

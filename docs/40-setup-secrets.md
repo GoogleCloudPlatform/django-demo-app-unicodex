@@ -8,7 +8,7 @@ To encode our secrets, we'll be using [berglas](https://github.com/GoogleCloudPl
 
 > But why? 
 
-It's a *stonkingly good idea* to ensure that only our application can access our database. To do that, we spent a whole lot of time setting up passwords. It's a really good idea if only our application has access to these password. 
+It's a *stonkingly good idea* to ensure that only our application can access our database. To do that, we spent a whole lot of time setting up passwords. It's also a really good idea if only our application has access to these passwords. 
 
 Plus, we'll be using `django-environ` later, which is directly influenced by [The Twelve Factor App](https://12factor.net/). You can read up how [Cloud Run complies with the Twelve Factor application](https://cloud.google.com/blog/products/serverless/a-dozen-reasons-why-cloud-run-complies-with-the-twelve-factor-app-methodology).
 
@@ -27,8 +27,8 @@ berglas bootstrap --project $PROJECT_ID --bucket $BERGLAS_BUCKET
 Specific things to note: 
 
 * We already have our `PROJECT_ID`.
-* The `BERGLAS_BUCKET` is **NOT** `${PROJECT_ID}-media` from earlier. We suggest using something like `${PROJECT_ID}-secrets`
-* We already enabled all the services we needed earlier, but it doesn't hurt to re-enable these.
+* The `BERGLAS_BUCKET` is **NOT** `${PROJECT_ID}-media` from earlier. We suggest using something like `${PROJECT_ID}-secrets`. This bucket should not yet exist: berglas will create it for us. 
+* Berglas will suggest enabling a bunch of services, but we did that already. Re-enabling won't affect our setup. 
 
 For ease later, store the bucket name for later in a variable: 
 
@@ -59,21 +59,22 @@ The secrets we need to create:
  * `secret_key`, a mininum 50 character random string, for django's `SECRET_KEY`
  * `media_bucket`, the media bucket we created earlier (`${PROJECT_ID}-media`)
 
-And for the django admin, we'll need our superuser: 
+And for the django admin (`/admin`), we'll need our superuser: 
 
  * `superuser`, a superuser name (`admin`? your name?)
  * `superpass`, a secret password, using our generator from earlier. 
 
  
-These last two are for our `/admin` login.
+Also, for each of these secrets, we need to define *who* can access them. Berglas allows us to define exactly which parts of Google Cloud is allowed to use our secrets. Nifty!
 
-Also, for each of these secrets, we need to define *who* can access them. Berglas allows us to define exactly which parts of Google Cloud is allowed to use our secrets. 
-
-In our case, we want Cloud Run and Cloud Build (for [automating deployments](60-ongoing-deployment.md) later). We also want Cloud Run to be able to view our secrets. In order to do that, we need to get their service account names. 
+In our case, we want only Cloud Run and Cloud Build (for [automating deployments](60-ongoing-deployment.md) later) to be able to view our secrets. In order to do that, we need to get their service account names. 
 
 We can programaically collect the information we need for this, and setup some of the policy binding we need, by running the following:
 
 ```
+# SA == "Service Account". 
+# CB == "Cloud Build". 
+
 export KMS_KEY=projects/${PROJECT_ID}/locations/global/keyRings/berglas/cryptoKeys/berglas-key
 export PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
 export SA_EMAIL=${PROJECT_NUMBER}-compute@developer.gserviceaccount.com

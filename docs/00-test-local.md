@@ -1,9 +1,9 @@
 
 # Try the application locally
 
-*Before you get to deploying this application on Google Cloud, you can test the application locally with Docker, and using Docker Compose.*
+*Before you get to deploying this application on Google Cloud, you can test the application locally with Docker and Docker Compose.*
 
-*We'll create two local images, which we will then connect together, and test the application.*
+*We'll create two local images, which we will then connect together, and test the application's functionality.*
 
 
 You will need to install: 
@@ -38,7 +38,7 @@ docker-compose build
 There will now be two images: a `web` container, and a `db` container. 
 
 
-## Initalize the database
+## Initialise the database
 
 At the moment the database is empty. We can use standard django commands to run our database migrations, add some starting data, and create our admin user; but these instructions need to be run the context of Docker: 
 
@@ -52,8 +52,8 @@ docker-compose run --rm web python manage.py automatesuperuser --username admin 
 
 <small>Notes: 
 
-* We use `automatesuperuser`, which is a modified version of `createsupseruser`, due to `createsuperuser` not being very script-happy. This is used later in our setup scripts
-* If you got an error about `UserWarning: Error reading .env`, don't worry about this for now.
+* We use `automatesuperuser`, which is a modified version of `createsupseruser`, due to `createsuperuser` not being very script-happy. This is used later in our setup scripts.
+* If you received an error about `UserWarning: Error reading .env`, don't worry about this for now.
 </small>
 
 
@@ -70,13 +70,11 @@ You can now see unicodex running in your browser at [http://0.0.0.0:8080/](http:
 
 ## Testing your installation
 
-If you've loaded the sample data correctly, you'll have a display that shows the Waving emoji
+If you've loaded the sample data correctly, you'll have a display that shows the Waving emoji.
 
 [Clicking on the emoji][hand] shows the designs for that emoji. 
 
-Of which, currently, there are none. 
-
-That's okay, we'll add some. 
+Of which, currently, there are none. That's okay, we'll add some. 
 
 Go to the [django admin](http://0.0.0.0:8080/admin) and login with the username and password you set up in `automatesuperuser`. 
 
