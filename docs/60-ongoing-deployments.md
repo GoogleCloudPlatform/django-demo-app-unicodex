@@ -51,7 +51,7 @@ From here, we're going to enter the following details:
 
 With this setup, any time we push code to the `master` branch, our service will be deployed. 
 
-This works well when you have Pull Requests in Github being merged to the `master` branch: any merged PR will automatically create a new deployment. 
+This works well when you have Pull Requests in Github being merged to the `master` branch: any merged PR will automatically initalise a new deployment. 
 
 ---
 
@@ -59,11 +59,11 @@ We only implemeted one trigger here.
 
 You could customise this for your own project in a number of ways. 
 
-Perhaps make use of the [Included files](https://cloud.google.com/cloud-build/docs/running-builds/automate-builds#build_trigger) feature, and trigger a build that makes database migrations only if there have been changes to files in `unicodex/migrations/*`. You could then remove that step from the unconditional `master` branch build.
+Perhaps make use of the [included files](https://cloud.google.com/cloud-build/docs/running-builds/automate-builds#build_trigger) feature, and trigger a build that makes database migrations only if there have been changes to files in `unicodex/migrations/*`. You could then remove that step from the unconditional `master` branch build.
 
-Using the substituion variables, you could setup multiple triggers: ones that on master deploy to a staging environment, and on a tagged release deploy to production. Changing the substitution variables allows you to use the same code and aim the deploy at different places. 
+Using [substituion variables](https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values#using_user-defined_substitutions), you could setup multiple triggers: ones that on master deploy to a staging environment, and on a tagged release deploy to production. Changing the substitution variables allows you to use the same code and aim the deploy at different places. 
 
-You could also take advantage of [build concurrency](https://cloud.google.com/cloud-build/docs/configuring-builds/configure-build-step-order), if you have steps that don't need to be run one at a timee.
+You could also take advantage of [build concurrency](https://cloud.google.com/cloud-build/docs/configuring-builds/configure-build-step-order), if you have steps that don't need to be run one at a time.
 
 You can always also skip builds entirely if the commit messages includes the string [[`skip ci`](https://cloud.google.com/cloud-build/docs/running-builds/automate-builds#skipping_a_build_trigger)]
 

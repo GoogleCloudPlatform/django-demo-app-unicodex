@@ -2,9 +2,8 @@
 
 *In this section we will be creating a database instance, database, and user, and come away with our `DATABASE_URL`*
 
-To store our application data, we'll need to setup a postgres [Cloud SQL](https://console.cloud.google.com/sql/instances) instance, and a specific database with a database user.
+To store our application data, we'll need to setup a [Cloud SQL](https://console.cloud.google.com/sql/instances) instance, and a specific database with a database user.
 
-This part of the tutorial is a bit longer, so we'll have section headers :)
 
 ### Database Instance
 
@@ -28,7 +27,7 @@ Make note of the "NAME", which we will call `INSTANCE_NAME`, to avoid confusion 
 export INSTANCE_NAME=YourinstanceName
 export REGION=us-central1 # probably. 
 ```
-Note, the region we need may be listed as, for example, "us-central1-a", but we don't require the zone ("a"). 
+Note, the region we need may be listed as, for example, "us-central1-a", but we don't require the zone ("-a"). 
 
 ### Our Database 
 
@@ -48,7 +47,7 @@ Since by default [users created using Cloud SQL have the privileges associated w
 
 To help with the ease of setting up our databases, we'll be moving away form our local terminal and using the [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) for part of this tutorial. Cloud Shell is an environment to help us work with managing resources hosted on Google Cloud. 
 
-We *could* run the entire tutorial locally, that would require setting up  the [Cloud SQL Proxy](https://cloud.google.com/sql/docs/postgres/sql-proxy), and other configurations. Since we don't need to be here for long, we'll use the Cloud Shell. 
+We *could* run the entire tutorial locally, that would require setting up  the [Cloud SQL Proxy](https://cloud.google.com/sql/docs/postgres/sql-proxy), and other configurations. Since we don't need to be here for long, we'll use the Cloud Shell. It also serves as a way to introduce you to the Cloud Shell!
 
 To help, we've prefixed all the Cloud Shell commands in this section with "☁️" to remind you this is for Cloud Shell.
 
@@ -74,7 +73,7 @@ We can then create our django user:
 CREATE USER django WITH PASSWORD 'secret_password';
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO django;
 ```
-In this case, we are using the `USERNAME` "django" and the `PASSWORD` "secret_password". Of course, you will **use a much more secure password**.
+In this case, we are using the `USERNAME` "django" and the `PASSWORD` "secret_password". Of course, you will **use a much more secure password**, won't you? 😊
 
 We can now exit the postgres terminal, and leave the Cloud Shell. 
 

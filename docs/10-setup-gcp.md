@@ -11,7 +11,8 @@ Once you have signed up, create a new Project.
 
 Notes: 
 
-* project names are *globally unique* -- no one else can have the same project name as you. 
+* Project names are *globally unique* -- no one else can have the same project name as you. 
+* Project names cannot be changed after they have been created.
 * We're going to be referring to this name as `PROJECT_ID`. A lot. 
 
 You will also need to setup this project against a Billing Account. 
