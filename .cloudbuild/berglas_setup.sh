@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-export DATABASE_URL=berglas://${PROJECT_ID}-secrets/database_url?destination=/secrets/database_url
-export SECRET_KEY=berglas://${PROJECT_ID}-secrets/secret_key?destination=/secrets/secret_key
-export MEDIA_BUCKET=berglas://${PROJECT_ID}-secrets/media_bucket?destination=/secrets/media_bucket
+export DATABASE_URL=berglas://${BERGLAS_BUCKET}/database_url?destination=/secrets/database_url
+export SECRET_KEY=berglas://${BERGLAS_BUCKET}/secret_key?destination=/secrets/secret_key
+export MEDIA_BUCKET=berglas://${BERGLAS_BUCKET}/media_bucket?destination=/secrets/media_bucket
 
-export SUPERUSER=berglas://${PROJECT_ID}-secrets/superuser?destination=/secrets/superuser
-export SUPERPASS=berglas://${PROJECT_ID}-secrets/superpass?destination=/secrets/superpass
+export SUPERUSER=berglas://${BERGLAS_BUCKET}/superuser?destination=/secrets/superuser
+export SUPERPASS=berglas://${BERGLAS_BUCKET}/superpass?destination=/secrets/superpass
 
 berglas exec --local -- /bin/sh
 
@@ -32,7 +32,6 @@ echo "GS_BUCKET_NAME=$(cat /secrets/media_bucket)" >> $ENVFILE
 
 DBFILE=/secrets/database
 echo "$(cat /secrets/database_url | cut -d'/' -f6)" >> $DBFILE
-
 
 echo "DEBUGGING: cat $ENVFILE"
 for i in $(cat $ENVFILE); do echo $i | cut -d"=" -f1; done

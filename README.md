@@ -2,15 +2,16 @@
 
 Let's build a demo application, using a whole bunch o' Google Cloud components. Let's make it just like [emojipedia](https://emojipedia.org/), but let's call it... 
 
-✨ unicodex ✨
+✨ [unicodex](https://unicodex.gl.asnt.app/) ✨
 
 Unicodex uses: 
 
- * [Django 2.2](https://docs.djangoproject.com/en/2.2/) as the web framework,
- * [Google Cloud Run](https://cloud.google.com/run/) as the hosting platform,
- * [Google Cloud SQL](https://cloud.google.com/sql/) as the managed database, via [django-environ](https://django-environ.readthedocs.io/en/latest/),
- * [Google Cloud Storage](https://cloud.google.com/storage/) as the media storage platform, via [django-storages](https://django-storages.readthedocs.io/en/latest/), and
- * [Google Cloud Build](https://cloud.google.com/cloud-build/) for migration and deployment.
+ * [Django 2.2](https://docs.djangoproject.com/en/2.2/) as the web framework
+ * [Google Cloud Run](https://cloud.google.com/run/) as the hosting platform
+ * [Google Cloud SQL](https://cloud.google.com/sql/) as the managed database, via [django-environ](https://django-environ.readthedocs.io/en/latest/)
+ * [Google Cloud Storage](https://cloud.google.com/storage/) as the media storage platform, via [django-storages](https://django-storages.readthedocs.io/en/latest/)
+ * [Google Cloud Build](https://cloud.google.com/cloud-build/) for build and deployment automation
+ * [Google KMS](https://cloud.google.com/kms/) for secret storage, via [berglas](https://github.com/GoogleCloudPlatform/berglas)
 
 *This repo serves as a proof of concept of showing how you can piece all the above technolgies together into a working project.*
 
@@ -42,13 +43,11 @@ Unicodex runs as a Cloud Run service. Using the Python package `django-storages`
 
 In this way, Unicodex runs 1:1:1 -- one Cloud Run Service, one Cloud SQL Database, one Google Storage bucket. It also assumes that there is *only* one service/database/bucket. 
 
-This implementation is live at https://unicodex.gl.asnt.app/
+This implementation is live at [https://unicodex.gl.asnt.app/](https://unicodex.gl.asnt.app/)
 
 ### Other service designs
 
-While the documentation details how to setup a 1:1:1 configuration, with automation steps this could be configured to have a more complex design. For example: one project with one database instance hosting multiple databases, each of those linking to a separate service. This could work for a QA environment, where each developer gets their own "unicodex in a box". In combination with a *seperate* project that serves as the production version, Cloud Build triggers could be setup to: deploy to staging on master merge, and deploy to production on a tagged release.
-
-This configuration is left as an exercise for the reader. 
+With a few find/replace of some critical values, this setup can be converted to have multiple versions of the service each having their own database in a shared instance. More information for this can be found in the [.util](.util/README.md) directory. 
 
 ### TODO
 

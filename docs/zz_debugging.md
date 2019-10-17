@@ -25,19 +25,14 @@ gcloud beta run services update unicodex --update-env-vars DEBUG=False
 
 Is your `DATABASE_URL` correct? Test it with `cloud_sql_proxy`!
 
-Install the [`cloud_sql_proxy` client](https://cloud.google.com/sql/docs/postgres/sql-proxy#install) for your platform. For example, on macOS: 
-
-```
-curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64
-chmod +x cloud_sql_proxy
-```
+Install the [`cloud_sql_proxy` client](https://cloud.google.com/sql/docs/postgres/sql-proxy#install) for your platform.  More instructions are in the [database](20-setup-sql.md) section. 
 
 Then, we're going to test our `DATABASE_URL`. Well, some of it. 
 
 In a new terminal:
 
 ```
-./cloud_sql_proxy -instances=$PROJECT_ID:$REGION:$DATABASE_INSTANCE=tcp:5433
+./cloud_sql_proxy -instances=$PROJECT_ID:$REGION:$INSTANCE_NAME=tcp:5433
 ```
 
 You should see "Ready for new connections".
@@ -49,7 +44,7 @@ So, we need to remove the `//cloudsql/.../DATABASE` from our `DATABASE_URL`, and
 So what was once: 
 
 ```
-export TEST_DATABASE_URL=postgres://django:SECRET@//cloudsql/$PROJECT_ID:$REGION:$DATABASE_INSTANCE/$DATABASE_NAME
+export DATABASE_URL=postgres://django:SECRET@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
 ```
 
 now becomes

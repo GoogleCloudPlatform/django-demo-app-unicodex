@@ -29,6 +29,7 @@ steps:
       args: [".cloudbuild/berglas_setup.sh"]
       env:
         - 'PROJECT_ID=$PROJECT_ID'
+        - 'BERGLAS_BUCKET=${_BERGLAS_BUCKET}'
       volumes:
       - name: secrets
         path: /secrets
@@ -37,7 +38,7 @@ steps:
       name: "gcr.io/google-appengine/exec-wrapper"
       args: ["-i", "gcr.io/$PROJECT_ID/${_IMAGE}",
          "-e", "ENV_PATH=/secrets/.env",
-         "-s", "$PROJECT_ID:us-central1:${_DATABASE_INSTANCE}",
+         "-s", "${_DATABASE_INSTANCE}",
          "--", "sh", ".cloudbuild/django_migrate.sh"]
       volumes:
       - name: secrets
@@ -50,5 +51,6 @@ steps:
 
 # substitutions:
 #   _IMAGE: (the image name)
-#   _DATABASE_INSTANCE: (the database instance)
+#   _DATABASE_INSTANCE: (the database instance name (project:region:instance))
 #   _SERVICE: (the cloud run service)
+#   _BERGLAS_BUCKET: (the bucket in which stores secrets)

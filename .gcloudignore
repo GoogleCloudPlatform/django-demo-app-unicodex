@@ -17,5 +17,6 @@ media/
 
 docs/
 docker-compose.yml
+.util
 
 .DS_Store

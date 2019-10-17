@@ -43,7 +43,7 @@ From here, we're going to enter the following details:
 * **Cloud Build configuration file location**: `.cloudbuild/build-migrate-deploy.yaml`
 * **Substitution variables**:
   * `_IMAGE`: unicodex
-  * `_DATABASE_INSTANCE`: (your instance name)
+  * `_DATABASE_INSTANCE`: yourproject:yourregion:yourinstance
   * `_SERVICE`: unicodex
 
  

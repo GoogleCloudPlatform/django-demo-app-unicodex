@@ -24,7 +24,7 @@ gcloud builds submit --tag gcr.io/$PROJECT_ID/unicodex .
 
 Then, we can (finally!) create our Cloud Run service using this image. We'll also tell it all about the database we setup earlier, and all those secrets: 
 
-```
+```shell
 gcloud beta run deploy unicodex \
     --allow-unauthenticated \
     --region us-central1 \
@@ -44,7 +44,7 @@ Sadly, we have a few more steps. Even though we have deployed our service, **Dja
 
 We can either copy the URL from the output we got from the last step, or we can get it from `gcloud`
 
-```
+```shell,exclude
 gcloud beta run services list
 ```
 
@@ -60,7 +60,7 @@ echo $SERVICE_URL
 
 Then, we can redeploy our service, updating *just* this new environment variable: 
 
-```
+```shell
 gcloud beta run services update unicodex \
 	--update-env-vars CURRENT_HOST=$SERVICE_URL
 ```
@@ -86,7 +86,7 @@ To start with, we need to give Cloud Build permission to access our database, an
 
 This code is similar to the `add-iam-policy-binding` code we used to [setup berglas](40-setup-secrets.md): 
 
-```
+```shell
 export PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
 export SA_CB_EMAIL=${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com
 
@@ -104,7 +104,7 @@ You can check the current roles by:
 
 From here, we can then run our `gcloud builds submit` command again, but with new parameters: 
 
-```
+```shell
 gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
     --substitutions="_IMAGE=unicodex,_DATABASE_INSTANCE=${DATABASE_INSTANCE},_SERVICE=unicodex"
 ```
@@ -152,6 +152,11 @@ You can also log in with the `superuser`/`superpass`, and run the admin action a
 ---
 
 🤔 But what if all this didn't work? Check the [Debugging Steps](zz_debugging.md).
+
+
+---
+
+If this is as far as you want to take this project, think about [cleaning up](90-cleanup.md) your resources.
 
 ---
 

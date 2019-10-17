@@ -17,11 +17,11 @@
 #!/bin/sh
 set -e
 
-echo "🦄 loaddata"
-python manage.py loaddata sampledata
-
 echo "🎸 migrate"
 python manage.py migrate
+
+echo "🦄 loaddata"
+python manage.py loaddata sampledata
 
 echo "🎸 collect static"
 python manage.py collectstatic --noinput

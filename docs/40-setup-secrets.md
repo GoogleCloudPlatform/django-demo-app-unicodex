@@ -20,7 +20,9 @@ To setup berglas, follow its [setup documentation](https://github.com/GoogleClou
 
 You'll end up running a command like: 
 
-```
+```shell
+export BERGLAS_BUCKET=${PROJECT_ID}-secrets
+
 berglas bootstrap --project $PROJECT_ID --bucket $BERGLAS_BUCKET
 ```
 
@@ -30,24 +32,18 @@ Specific things to note:
 * The `BERGLAS_BUCKET` is **NOT** `${PROJECT_ID}-media` from earlier. We suggest using something like `${PROJECT_ID}-secrets`. This bucket should not yet exist: berglas will create it for us. 
 * Berglas will suggest enabling a bunch of services, but we did that already. Re-enabling won't affect our setup. 
 
-For ease later, store the bucket name for later in a variable: 
-
-```
-export BERGLAS_BUCKET=${PROJECT_ID}-secrets
-```
-
 You should now be able to check that berglas works, and doesn't see any active secrets: 
 
-```
+```shell,exclude
 berglas --version
 berglas list ${PROJECT_ID}-secrets
 ```
 
 From here, we need to create a number of secrets. 
 
-Two of these need to be random strings. We recommend running this command for each secret: 
+Two of these need to be random strings. You can generate a string like so: 
 
-```
+```shell,exlucde
 python -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
 
@@ -71,10 +67,7 @@ In our case, we want only Cloud Run and Cloud Build (for [automating deployments
 
 We can programaically collect the information we need for this, and setup some of the policy binding we need, by running the following:
 
-```
-# SA == "Service Account". 
-# CB == "Cloud Build". 
-
+```shell
 export KMS_KEY=projects/${PROJECT_ID}/locations/global/keyRings/berglas/cryptoKeys/berglas-key
 export PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
 export SA_EMAIL=${PROJECT_NUMBER}-compute@developer.gserviceaccount.com
@@ -89,7 +82,7 @@ Now, we can create our secrets.
 
 For **each** `SECRET` and `VALUE`:
 
-```
+```shell,exclude
 # sample code
 berglas create ${BERGLAS_BUCKET}/$SECRET $VALUE --key ${KMS_KEY}
 berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
@@ -104,12 +97,15 @@ These three commands will:
 
 So you'll end up running: 
 
-```
-berglas create ${BERGLAS_BUCKET}/database_url $DATABASE_URL       --key ${KMS_KEY}
-berglas create ${BERGLAS_BUCKET}/media_bucket ${PROJECT_ID}-media --key ${KMS_KEY}
-berglas create ${BERGLAS_BUCKET}/superuser    admin               --key ${KMS_KEY}
-berglas create ${BERGLAS_BUCKET}/superpass    <SECRET_VALUE>      --key ${KMS_KEY}
-berglas create ${BERGLAS_BUCKET}/secret_key   <SECRET_VALUE>      --key ${KMS_KEY}
+```shell
+export SUPERPASS=$(python -c "import secrets; print(secrets.token_urlsafe(50))")
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(50))")
+
+berglas create ${BERGLAS_BUCKET}/database_url $DATABASE_URL  --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/media_bucket $MEDIA_BUCKET  --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/superuser    admin          --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/superpass    $SUPERPASS     --key ${KMS_KEY}
+berglas create ${BERGLAS_BUCKET}/secret_key   $SECRET_KEY    --key ${KMS_KEY}
 
 for SECRET in $(berglas list ${BERGLAS_BUCKET}); do
 	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
@@ -120,13 +116,13 @@ done
 
 You can confirm you're ready for the next step by listing the secrets in the bucklet: 
 
-```
-berglas list ${BERGLAS_BUCKET}
+```shell
+berglas list $BERGLAS_BUCKET
 ```
 
 The output for this should be: 
 
-```
+```exclude
 database_url
 media_bucket
 secret_key
@@ -136,7 +132,7 @@ superuser
  
 If you *need* to get the **value** of these secrets, you can run: 
 
-```
+```shell,exclude
 berglas access ${BERGLAS_BUCKET}/$SECRET
 ```
 
