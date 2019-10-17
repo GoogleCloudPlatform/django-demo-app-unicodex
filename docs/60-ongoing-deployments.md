@@ -39,13 +39,13 @@ From here, we're going to enter the following details:
 
 * **Description**: push on master
 * **Branch (regex)**: master
-* **Build condiguration**: Cloud Build configuration file
+* **Build configuration**: Cloud Build configuration file
 * **Cloud Build configuration file location**: `.cloudbuild/build-migrate-deploy.yaml`
 * **Substitution variables**:
   * `_IMAGE`: unicodex
   * `_DATABASE_INSTANCE`: yourproject:yourregion:yourinstance
   * `_SERVICE`: unicodex
-
+  * `_BERGLAS_BUCKET`: yourproject-secrets
  
 ---
 
