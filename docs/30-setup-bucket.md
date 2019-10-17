@@ -7,7 +7,8 @@ Compared to the complexity of the [last section](20-setup-sql.md) section, this 
 We need to create a new bucket to store our media assets (django admin access, design images, etc). This won't be the last bucket we'll create, so a suggested name is `${PROJECT_ID}-media`.
 
 ```shell
-gsutil mb gs://${PROJECT_ID}-media
+export MEDIA_BUCKET=${PROJECT_ID}-media
+gsutil mb gs://${MEDIA_BUCKET}
 ```
 
 ---
