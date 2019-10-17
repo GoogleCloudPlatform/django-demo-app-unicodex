@@ -118,7 +118,7 @@ The commands we need to execute are creating our user, and giving it access to o
 
 ```sql,exclude
 CREATE USER username WITH PASSWORD password; 
-GRANT ALL PRIVILEGES ON DATABASE database TO username;"
+GRANT ALL PRIVILEGES ON DATABASE database TO username;
 ```
 
 Some notes: 
