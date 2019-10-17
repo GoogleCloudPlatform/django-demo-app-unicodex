@@ -27,7 +27,7 @@ Then, we can (finally!) create our Cloud Run service using this image. We'll als
 ```shell
 gcloud beta run deploy unicodex \
     --allow-unauthenticated \
-    --region us-central1 \
+    --region $REGION \
     --image gcr.io/$PROJECT_ID/unicodex \
     --update-env-vars DATABASE_URL=berglas://${BERGLAS_BUCKET}/database_url,SECRET_KEY=berglas://${BERGLAS_BUCKET}/secret_key,GS_BUCKET_NAME=berglas://${BERGLAS_BUCKET}/media_bucket \
     --add-cloudsql-instances $DATABASE_INSTANCE
@@ -90,11 +90,11 @@ This code is similar to the `add-iam-policy-binding` code we used to [setup berg
 export PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
 export SA_CB_EMAIL=${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com
 
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+for role in cloudsql.client run.admin iam.serviceAccountUser; do
+	gcloud projects add-iam-policy-binding ${PROJECT_ID} \
 	--member serviceAccount:${SA_CB_EMAIL} \
-	--role roles/cloudsql.client \
-	--role roles/run.admin \
-	--role roles/iam.serviceAccountUser
+	--role roles/${role}
+done
 ```
 
 You can check the current roles by:
@@ -106,7 +106,7 @@ From here, we can then run our `gcloud builds submit` command again, but with ne
 
 ```shell
 gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
-    --substitutions="_IMAGE=unicodex,_DATABASE_INSTANCE=${DATABASE_INSTANCE},_SERVICE=unicodex"
+    --substitutions="_IMAGE=unicodex,_DATABASE_INSTANCE=${DATABASE_INSTANCE},_SERVICE=unicodex,_BERGLAS_BUCKET=${BERGLAS_BUCKET}"
 ```
 
 As suggested by the filename, this will perform three tasks for us: 

@@ -1,4 +1,6 @@
-This directory serves to store some utility helpers, that are outside of the deployment of unicodex, but help with the demo as a whole. 
+This directory serves to store some utility helpers, that are outside of the deployment of unicodex, but help with the demo as a whole.
+
+This is assumed to be advanced operator documentation.  
 
 
 ### Scriptable Deployment
@@ -10,24 +12,21 @@ Using the `shell` markers in `docs/`, it's possible to extract all the code to a
 To generate: 
 
 ```
-python parse_docs.py /path/to/docs/ 
+python .util/parse_docs.py docs/ > deploy.sh
 ```
 
 To deploy: 
 
  * If your project doesn't already exist: 
-  * Create and enable billing. 
- * Replace `YourProjectID` with your product
+   * Create and enable billing. 
+ * Replace `YourProjectID` with your project ID
+ * Replace `us-central1` with your preferred region
+   * noting it must support both Cloud Run and Cloud SQL
+ * If your database doesn't exist yet: 
+   * Replace `YourInstanceId` with what you want your instance to be called. 
  * If your database exists already: 
    * Replace `YourInstanceID` with your existing database instance ID
    * Replace `PGPASSWORD` with `$(cat /path/to/afilewithyour/PGPASS)`
-
- * If your database doesn't exist yet: 
-   * Replace `YourInstanceId` with what you want your instance to be called. 
-  
-Your django superuser password will be available in `$PASSWORD`
-
-
 
 The setup assumes a 1:1:1 setup. To optionally deploy multiple instances of unicodex in the same project, additionally: 
 
@@ -37,3 +36,12 @@ The setup assumes a 1:1:1 setup. To optionally deploy multiple instances of unic
  * Replace `USERNAME` with `${SLUG}-django`
 
 
+Then run: 
+
+```
+bash -ex deploy.sh
+```
+  
+Your passwords will be echoed in the output. 
+
+The entire process will take ~10-15 minutes, less if you aren't creating a new database instance. 

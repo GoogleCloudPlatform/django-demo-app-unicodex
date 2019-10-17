@@ -34,12 +34,16 @@ gcloud sql instances list
 
 Make note of the "NAME", which we will call `INSTANCE_NAME`, to avoid confusion later. We will also use the "LOCATION" later as our `REGION`.
 
-```shell
+```shell,exclude
 export INSTANCE_NAME=YourInstanceName
 export REGION=us-central1 # probably
 ```
 
-Note, the region we need may be listed as, for example, "us-central1-a", but we don't require the zone ("-a"). 
+You can programmatically get the region for your instance by running a `filter/format` command: 
+
+```shell,exclude
+gcloud sql instances list --format 'value(region)' --filter name=$INSTANCE_NAME
+```
 
 ### Our Database 
 
@@ -127,21 +131,21 @@ Some notes:
 📝 You could execute all the steps in this section up to now non-interactively. You should have an understanding of what these commands are executing before starting. 
 
 ```shell
-export INSTANCE_NAME=postgres-django
+export INSTANCE_NAME=YourInstanceName 
+export REGION=us-central1
 export DATABASE_NAME=unicodex
 
 export PGPASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
 
-gcloud sql instances describe $INSTANCE_NAME --project=$PROJECT_ID &> /dev/null
-
-# only create the instance if it doesn't already exist. 
-if [ $? -ne 0 ]; then
-  gcloud sql instances create $DATABASE_INSTANCE \
-  	 --database-version=POSTGRES_11 \
-  	 --tier=db-f1-micro  \
-	 --region=$REGION \
-	 --project=$PROJECT_ID \ 
-	 --root-password=$PGPASSWORD
+if $(gcloud sql instances describe $INSTANCE_NAME --project=$PROJECT_ID); then
+  echo "instance exists, skipping"
+else
+  gcloud sql instances create $INSTANCE_NAME \
+    --database-version=POSTGRES_11 \
+    --tier=db-f1-micro  \
+    --region=$REGION \
+    --project=$PROJECT_ID \
+    --root-password=$PGPASSWORD
 fi
 	 
 export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
@@ -149,9 +153,14 @@ export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
 export USERNAME=django
 export PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 30 | head -n 1)
 
-gcloud sql databases create $DATABASE_NAME --instance=$INSTANCE_NAME
+if $(gcloud sql databases describe $DATABASE_NAME --instance=$INSTANCE_NAME); then
+    echo "database exists, skipping"
+else
+    gcloud sql databases create $DATABASE_NAME --instance=$INSTANCE_NAME
+fi
 
 cloud_sql_proxy -instances=$DATABASE_INSTANCE=tcp:5435 &
+sleep 5
 
 psql -U postgres --port 5435 --host localhost -c "CREATE USER \"$USERNAME\" WITH PASSWORD '${PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE \"$DATABASE_NAME\" TO \"$USERNAME\";"
 ```
