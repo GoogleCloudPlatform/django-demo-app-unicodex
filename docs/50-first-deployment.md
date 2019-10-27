@@ -16,11 +16,20 @@ So we just need to build the other image!
 
 For that, we'll be using Cloud Build. This is a similar process to `docker build .`, but this will build the image on Google Cloud itself, and publish the image to the Google Cloud image repository, `gcr.io`. 
 
-To build the image:
+If you haven't already done so, you'll need to clone the code into a local copy: 
+
+```shell
+git clone https://github.com/GoogleCloudPlatform/django-demo-app-unicodex
+cd django-demo-app-unicodex
+```
+
+Then, build the image using the `gcloud` command:
 
 ```shell
 gcloud builds submit --tag gcr.io/$PROJECT_ID/unicodex .
 ```
+
+This will build the image much like Docker might locally, but within Google Cloud (no need to install Docker locally!)
 
 Then, we can (finally!) create our Cloud Run service using this image. We'll also tell it all about the database we setup earlier, and all those secrets: 
 
@@ -62,6 +71,7 @@ Then, we can redeploy our service, updating *just* this new environment variable
 
 ```shell
 gcloud beta run services update unicodex \
+	--region $REGION \
 	--update-env-vars CURRENT_HOST=$SERVICE_URL
 ```
 

@@ -18,10 +18,19 @@ This setup looks a bit long, but application security security is no joke, and t
 
 To setup berglas, follow its [setup documentation](https://github.com/GoogleCloudPlatform/berglas#setup). 
 
-You'll end up running a command like: 
+Installation steps depend on your operating system: maOS, Linux, Windows, Homebrew, or Docker. 
+
+To install berglas without installing the executable you can use the docker image: 
 
 ```shell
-export BERGLAS_BUCKET=${PROJECT_ID}-secrets
+docker pull gcr.io/berglas/berglas
+alias berglas="docker run --rm gcr.io/berglas/berglas"
+```
+
+You'll end up running a series of commands like this: 
+
+```shell
+export BERGLAS_BUCKET=${PROJECT_ID}-unicodex-secrets
 
 berglas bootstrap --project $PROJECT_ID --bucket $BERGLAS_BUCKET
 ```
@@ -41,13 +50,25 @@ berglas list ${PROJECT_ID}-secrets
 
 From here, we need to create a number of secrets. 
 
-Two of these need to be random strings. You can generate a string like so: 
+---
+
+A few of these secrets need to be passwords or other random strings. You can generate a string like so: 
 
 ```shell,exlucde
+cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1
+```
+
+This command is doing at lot, but in essense: macOS/Linux systems, this will generate a psudo-random string of 64 characters. 
+
+There are other ways you can generate random strings, for example with pure python: 
+
+```shell,exclude
 python -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
 
-This is a [Python standard library method](https://docs.python.org/3/library/secrets.html#secrets.token_urlsafe) that will generate a 50 byte string for us. This will be around ~65 characters, which is plenty for our purposes.
+This is a [Python standard library method](https://docs.python.org/3/library/secrets.html#secrets.token_urlsafe) that will generate a 50 byte string for us, or around ~65 characters. Plenty long enough for a password.
+
+---
 
 The secrets we need to create: 
 
@@ -98,8 +119,8 @@ These three commands will:
 So you'll end up running: 
 
 ```shell
-export SUPERPASS=$(python -c "import secrets; print(secrets.token_urlsafe(50))")
-export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(50))")
+export SUPERPASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 30 | head -n 1)
+export SECRET_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)
 
 berglas create ${BERGLAS_BUCKET}/database_url $DATABASE_URL  --key ${KMS_KEY}
 berglas create ${BERGLAS_BUCKET}/media_bucket $MEDIA_BUCKET  --key ${KMS_KEY}
@@ -107,7 +128,7 @@ berglas create ${BERGLAS_BUCKET}/superuser    admin          --key ${KMS_KEY}
 berglas create ${BERGLAS_BUCKET}/superpass    $SUPERPASS     --key ${KMS_KEY}
 berglas create ${BERGLAS_BUCKET}/secret_key   $SECRET_KEY    --key ${KMS_KEY}
 
-for SECRET in $(berglas list ${BERGLAS_BUCKET}); do
+for SECRET in database_url media_bucket superuser superpass secret_key; do
 	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
 	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_CB_EMAIL}
 done
