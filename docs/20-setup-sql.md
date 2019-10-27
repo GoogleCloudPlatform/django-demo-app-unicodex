@@ -128,7 +128,14 @@ Some notes:
 
 ----
 
-📝 You could execute all the steps in this section up to now non-interactively. You should have an understanding of what these commands are executing before starting. 
+📝 You *could* execute all the steps in this section up to now non-interactively. This script does this, under the following assumptions: 
+
+* If the database instance already exists, **we will reset the root password** so we know it. 
+  * This is a bad idea for instances that are shared with non-unicodex content. Edit the script if you are sharing an instance. 
+* If the database user already exists, we will reset the psasword so we know it. 
+
+ 
+**You should understand all of these considerations before executing this script.**
 
 ```shell
 export INSTANCE_NAME=YourInstanceName 
@@ -137,32 +144,53 @@ export DATABASE_NAME=unicodex
 
 export PGPASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
 
-if $(gcloud sql instances describe $INSTANCE_NAME --project=$PROJECT_ID); then
-  echo "instance exists, skipping"
-else
-  gcloud sql instances create $INSTANCE_NAME \
-    --database-version=POSTGRES_11 \
-    --tier=db-f1-micro  \
-    --region=$REGION \
-    --project=$PROJECT_ID \
-    --root-password=$PGPASSWORD
-fi
-	 
+export USERNAME=unicodex-django
+export PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 30 | head -n 1)
 export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
 
-export USERNAME=django
-export PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 30 | head -n 1)
-
-if $(gcloud sql databases describe $DATABASE_NAME --instance=$INSTANCE_NAME); then
-    echo "database exists, skipping"
+# Create database instance, if it doesn't already exist. 
+EXISTING=$(gcloud sql instances list --format "value(name)" --filter="name=${INSTANCE_NAME}")
+if [ $? -eq 0 ] && [ "${EXISTING}" = "${INSTANCE_NAME}" ]; then
+    echo "Database instance ${INSTANCE_NAME} already exists in project ${PROJECT_ID}. Resetting password."
+    gcloud sql users set-password postgres --instance=$INSTANCE_NAME --password=$PGPASSWORD
+    export PWRESET=1
 else
-    gcloud sql databases create $DATABASE_NAME --instance=$INSTANCE_NAME
+    gcloud sql instances create $INSTANCE_NAME \
+	   --database-version=POSTGRES_11 \
+	   --tier=db-f1-micro  \
+	   --region=$REGION \
+	   --project=$PROJECT_ID \
+	   --root-password=$PGPASSWORD
 fi
 
-cloud_sql_proxy -instances=$DATABASE_INSTANCE=tcp:5435 &
-sleep 5
+# Create database, if it doesn't already exist. 
+EXISTING=$(gcloud sql databases list --instance $INSTANCE_NAME \
+           --format "value(name)" --filter="name=${DATABASE_NAME}")
+if [ $? -eq 0 ] && [ "${EXISTING}" = "${DATABASE_NAME}" ]; then
+    echo "Database ${DATABASE_NAME} already exists in ${INSTANCE_NAME}. Skipping."
+else
+    gcloud sql databases create $DATABASE_NAME --instance=$INSTANCE_NAME
+    sleep 5
+fi
 
-psql -U postgres --port 5435 --host localhost -c "CREATE USER \"$USERNAME\" WITH PASSWORD '${PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE \"$DATABASE_NAME\" TO \"$USERNAME\";"
+# Create database user, if it doesn't already exist. 
+EXISTING=$(gcloud sql users list --instance $INSTANCE_NAME \
+           --format "value(name)" --filter name="${USERNAME}")
+if [ $? -eq 0 ] && [ "${EXISTING}" = "${USERNAME}" ]; then
+    echo "Username ${USERNAME} already exists in ${INSTANCE_NAME}. Resetting password."
+    gcloud sql users set-password $USERNAME --instance=$INSTANCE_NAME --password=$PASSWORD
+else
+    # Extra hoops since we can't set roles in gcloud
+    if [ -z ${PWRESET} ]; then # only  resetting the password if we have not already done so.
+        gcloud sql users set-password postgres --instance=$INSTANCE_NAME --password=$PGPASSWORD
+    fi
+
+    cloud_sql_proxy -instances=$DATABASE_INSTANCE=tcp:5435 &
+    sleep 5
+
+    psql -U postgres --port 5435 --host localhost -c "CREATE USER \"$USERNAME\" WITH PASSWORD '${PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE \"$DATABASE_NAME\" TO \"$USERNAME\";"
+    kill $(pgrep cloud_sql_proxy)
+fi
 ```
 
 

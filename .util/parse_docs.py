@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # parse_docs.py /path/to/docs
 # takes the living tutorial documentation and extracts any stanza marked shell
 
 import re
 import sys
+import argparse
+import datetime
 from pathlib import Path
 
 
@@ -39,12 +40,44 @@ def extract(f, filter=None):
             code_blocks.append("".join(code_block[:-1]))
     return code_blocks
 
+parser = argparse.ArgumentParser()
 
-targets = sorted(Path(sys.argv[1]).glob("*.md"))
+parser.add_argument("path")
+parser.add_argument("--project-id")
+parser.add_argument("--instance-name")
+parser.add_argument("--region")
+parser.add_argument("--slug")
+
+args = parser.parse_args()
+
+targets = sorted(Path(args.path).glob("*.md"))
+
+r = []
+
+r = ["#!/bin/bash -ex",
+     "shopt -s expand_aliases",
+     "",
+     "# Generated from " + sys.argv[1] + " on " + str(datetime.datetime.now()),
+     "# execute with: bash -ex script.sh",
+     ""]
 
 for x in targets:
-    print(f"# {x.name}")
+    r.append(f"# {x.name}")
     with open(x) as f:
         data = extract(f, "shell")
 
-    print("\n".join(data))
+    r.append("\n".join(data))
+
+script = "\n".join(r)
+
+if args.project_id:
+    script = script.replace("YourProjectID", args.project_id)
+if args.instance_name:
+    script = script.replace("YourInstanceName", args.instance_name)
+if args.region:
+    script = script.replace("us-central1", args.region)
+if args.slug:
+    script = script.replace("unicodex", "unicodex-" + args.slug)
+    script = script.replace("django-demo-app-unicodex-" + args.slug, "django-demo-app-unicodex")
+
+print(script)

@@ -9,39 +9,57 @@ This is assumed to be advanced operator documentation.
 
 Using the `shell` markers in `docs/`, it's possible to extract all the code to a single file to at least somewhat automate the setup.
 
+We can also make placeholder substitutions at parse time, to have a script that's all ready for you. 
+
 To generate: 
 
 ```
-python .util/parse_docs.py docs/ > deploy.sh
+python .util/parse_docs.py docs/ \
+	--project-id YourProjectID \
+	--instance-name YourInstanceName \
+	[--region us-central1] [--slug SLUG] \
+	> deploy.sh
 ```
 
-To deploy: 
+This assumes:
 
- * If your project doesn't already exist: 
-   * Create and enable billing. 
- * Replace `YourProjectID` with your project ID
- * Replace `us-central1` with your preferred region
-   * noting it must support both Cloud Run and Cloud SQL
- * If your database doesn't exist yet: 
-   * Replace `YourInstanceId` with what you want your instance to be called. 
- * If your database exists already: 
-   * Replace `YourInstanceID` with your existing database instance ID
-   * Replace `PGPASSWORD` with `$(cat /path/to/afilewithyour/PGPASS)`
+ * The `YourProjectID` project already exists 
+ * The `YourInstanceName` database instance already exists
 
-The setup assumes a 1:1:1 setup. To optionally deploy multiple instances of unicodex in the same project, additionally: 
+ 
+Optional arguments:
 
- * `s/unicodex/$SLUG/` where `$SLUG` could be, for example `unicodex-stage`
- * Replace `BERGLAS_BUCKET` with `${PROJECT_ID}-${SLUG}-secrets`
- * Replace `MEDIA_BUCKET` with `${PROJECT_ID}-${SLUG}-media`
- * Replace `USERNAME` with `${SLUG}-django`
+ * You can set a new `region` (noting it must support both Cloud Run and Cloud SQL)
+ * You can set a slug, replacing `unicodex` with `unicodex-SLUG`
+ 	* this allows you to have, say, `unicodex-qa` aand `unicodex-test` in the same project, moving away from the default 1:1:1 setup.
+ 	
+---
 
-
-Then run: 
+Then, in a Cloud Shell 
 
 ```
-bash -ex deploy.sh
+time bash -ex deploy.sh
 ```
-  
+
 Your passwords will be echoed in the output. 
 
 The entire process will take ~10-15 minutes, less if you aren't creating a new database instance. 
+
+  
+You *can* run this on your local machine, assuming: 
+
+* You're running macOS or a Linux variant
+* You have `gcloud`, and `psql`, and `docker` installed locally.
+
+
+---
+
+To setup for a new run (e.g. debugging): 
+
+* remove created buckets
+* remove local clone of code
+
+---
+
+This is a work around. We've tried to make this process repeatable, but it's no replacement for a full Infrastructure as Code solution, such as terraform. 
+  
