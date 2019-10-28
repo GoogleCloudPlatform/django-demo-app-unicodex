@@ -44,6 +44,8 @@ gcloud beta run deploy unicodex \
 
 *Note:* Cloud Run is still in beta at the time of writing. There may be additional options you have to set here. Best bet is to choose the default that is offered. 
 
+*Note:* We are using the fully-qualified database instance name here. Although not strictly required, as our database is in the same project and region, it helps with clarity. 
+
 Sadly, we have a few more steps. Even though we have deployed our service, **Django won't work yet**. Because: 
 
 * We need to tell Django where to expect our service to run, and 
