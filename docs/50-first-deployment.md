@@ -118,7 +118,7 @@ From here, we can then run our `gcloud builds submit` command again, but with ne
 
 ```shell
 gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
-    --substitutions="_IMAGE=unicodex,_DATABASE_INSTANCE=${DATABASE_INSTANCE},_SERVICE=unicodex,_BERGLAS_BUCKET=${BERGLAS_BUCKET}"
+    --substitutions="_REGION=${REGION},_DATABASE_INSTANCE=${DATABASE_INSTANCE},_SERVICE=unicodex,_BERGLAS_BUCKET=${BERGLAS_BUCKET}"
 ```
 
 As suggested by the filename, this will perform three tasks for us: 

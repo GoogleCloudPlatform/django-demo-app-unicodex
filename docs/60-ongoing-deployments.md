@@ -42,7 +42,7 @@ From here, we're going to enter the following details:
 * **Build configuration**: Cloud Build configuration file
 * **Cloud Build configuration file location**: `.cloudbuild/build-migrate-deploy.yaml`
 * **Substitution variables**:
-  * `_IMAGE`: unicodex
+  * `_REGION`: us-central1
   * `_DATABASE_INSTANCE`: yourproject:yourregion:yourinstance
   * `_SERVICE`: unicodex
   * `_BERGLAS_BUCKET`: yourproject-secrets
