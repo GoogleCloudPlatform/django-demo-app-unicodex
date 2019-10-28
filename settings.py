@@ -30,15 +30,18 @@ TEMPLATE_DEBUG = DEBUG
 
 SECRET_KEY = env("SECRET_KEY")
 
-# handle raw host, or http(s):// host, or no host. 
+# handle raw host(s), or http(s):// host(s), or no host. 
 if "CURRENT_HOST" in os.environ:
     CURRENT_HOST = os.environ["CURRENT_HOST"]
-    if "://" in CURRENT_HOST:
-        CURRENT_HOST = CURRENT_HOST.split("://")[1]
+    HOSTS = []
+    for h in CURRENT_HOST.split(","):
+        if "://" in h:
+            h = h.split("://")[1]
+        HOSTS.append(h)
 else:
-    CURRENT_HOST = "localhost"
+    HOSTS = ["localhost"]
 
-ALLOWED_HOSTS = [CURRENT_HOST, "127.0.0.1"]
+ALLOWED_HOSTS = ["127.0.0.1"] + HOSTS
 
 # Enable Django security precautions if *not* running locally
 if "0.0.0.0" not in ALLOWED_HOSTS:
