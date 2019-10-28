@@ -16,11 +16,11 @@ steps:
       # BUILD
     - id: 'build image'
       name: 'gcr.io/cloud-builders/docker'
-      args: ['build', '-t', 'gcr.io/$PROJECT_ID/${_IMAGE}', '.']
+      args: ['build', '-t', 'gcr.io/$PROJECT_ID/${_SERVICE}', '.']
 
     - id: 'push image'
       name: 'gcr.io/cloud-builders/docker'
-      args: ['push', 'gcr.io/$PROJECT_ID/${_IMAGE}']
+      args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE}']
 
       # MIGRATE
     - id: 'read secrets with berglas'
@@ -36,7 +36,7 @@ steps:
 
     - id: 'perform django migration, collect static'
       name: "gcr.io/google-appengine/exec-wrapper"
-      args: ["-i", "gcr.io/$PROJECT_ID/${_IMAGE}",
+      args: ["-i", "gcr.io/$PROJECT_ID/${_SERVICE}",
          "-e", "ENV_PATH=/secrets/.env",
          "-s", "${_DATABASE_INSTANCE}",
          "--", "sh", ".cloudbuild/django_migrate.sh"]
@@ -47,10 +47,10 @@ steps:
         # DEPLOY
     - id: 'deploy service'
       name: 'gcr.io/cloud-builders/gcloud'
-      args: ['beta', 'run', 'deploy', '${_SERVICE}', '--image', 'gcr.io/$PROJECT_ID/${_IMAGE}', '--region', 'us-central1', '--platform', 'managed']
+      args: ['beta', 'run', 'deploy', '${_SERVICE}', '--image', 'gcr.io/$PROJECT_ID/${_SERVICE}', '--region', '${_REGION}', '--platform', 'managed']
 
 # substitutions:
-#   _IMAGE: (the image name)
+#   _REGION: (the region)
 #   _DATABASE_INSTANCE: (the database instance name (project:region:instance))
 #   _SERVICE: (the cloud run service)
 #   _BERGLAS_BUCKET: (the bucket in which stores secrets)
