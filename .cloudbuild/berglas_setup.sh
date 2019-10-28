@@ -38,5 +38,5 @@ for i in $(cat $ENVFILE); do echo $i | cut -d"=" -f1; done
 
 echo "DEBUGGING: cat $DBFILE"
 cat $DBFILE
-echo "\nDEBUGGING: echo DATABASE_URL | cut -d'@' -f2"
-echo $DATABASE_URL | cut -d'@' -f2
+echo "\nDEBUGGING: echo berglas DATABASE_URL | cut -d'@' -f2"
+cat /secrets/database_url | cut -d'@' -f2
