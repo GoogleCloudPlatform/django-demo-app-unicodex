@@ -36,7 +36,6 @@ Then, we can (finally!) create our Cloud Run service using this image. We'll als
 ```shell
 gcloud beta run deploy unicodex \
     --allow-unauthenticated \
-    --region $REGION \
     --image gcr.io/$PROJECT_ID/unicodex \
     --update-env-vars DATABASE_URL=berglas://${BERGLAS_BUCKET}/database_url,SECRET_KEY=berglas://${BERGLAS_BUCKET}/secret_key,GS_BUCKET_NAME=berglas://${BERGLAS_BUCKET}/media_bucket \
     --add-cloudsql-instances $DATABASE_INSTANCE
@@ -73,7 +72,6 @@ Then, we can redeploy our service, updating *just* this new environment variable
 
 ```shell
 gcloud beta run services update unicodex \
-	--region $REGION \
 	--update-env-vars CURRENT_HOST=$SERVICE_URL
 ```
 
