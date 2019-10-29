@@ -65,6 +65,14 @@ When we get to the Cloud Run sections, we'll be using the managed Cloud Run plat
 gcloud config set run/platform managed
 ```
 
+We'll also want to default to the `us-central1` region, which we can also tell `gcloud` about. 
+
+```shell
+export REGION=us-central1
+gcloud config set run/region $REGION
+```
+
+
 Finally, we will be using a number of Google Cloud services in this tutorial. We can save time by enabling them ahead of time: 
 
 ```shell

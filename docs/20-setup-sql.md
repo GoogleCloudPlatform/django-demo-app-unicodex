@@ -36,7 +36,6 @@ Make note of the "NAME", which we will call `INSTANCE_NAME`, to avoid confusion 
 
 ```shell,exclude
 export INSTANCE_NAME=YourInstanceName
-export REGION=us-central1 # probably
 ```
 
 You can programmatically get the region for your instance by running a `filter/format` command: 
@@ -103,7 +102,6 @@ Some notes:
 
 ```shell
 export INSTANCE_NAME=YourInstanceName 
-export REGION=us-central1
 export DATABASE_NAME=unicodex
 
 export PGPASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
