@@ -34,14 +34,12 @@ This will build the image much like Docker might locally, but within Google Clou
 Then, we can (finally!) create our Cloud Run service using this image. We'll also tell it all about the database we setup earlier, and all those secrets: 
 
 ```shell
-gcloud beta run deploy unicodex \
+gcloud run deploy unicodex \
     --allow-unauthenticated \
     --image gcr.io/$PROJECT_ID/unicodex \
     --update-env-vars DATABASE_URL=berglas://${BERGLAS_BUCKET}/database_url,SECRET_KEY=berglas://${BERGLAS_BUCKET}/secret_key,GS_BUCKET_NAME=berglas://${BERGLAS_BUCKET}/media_bucket \
     --add-cloudsql-instances $DATABASE_INSTANCE
 ```
-
-*Note:* Cloud Run is still in beta at the time of writing. There may be additional options you have to set here. Best bet is to choose the default that is offered. 
 
 *Note:* We are using the fully-qualified database instance name here. Although not strictly required, as our database is in the same project and region, it helps with clarity. 
 
@@ -55,13 +53,13 @@ Sadly, we have a few more steps. Even though we have deployed our service, **Dja
 We can either copy the URL from the output we got from the last step, or we can get it from `gcloud`
 
 ```shell,exclude
-gcloud beta run services list
+gcloud run services list
 ```
 
 We could copy the URL from this output, or we can use [`--format` and `--filter`](https://dev.to/googlecloud/giving-format-to-your-gcloud-output-57gm) parameters:
 
 ```shell
-export SERVICE_URL=$(gcloud beta run services list \
+export SERVICE_URL=$(gcloud run services list \
 	--format="value(status.url)" \
 	--filter="metadata.name=unicodex")
 	 
@@ -71,7 +69,7 @@ echo $SERVICE_URL
 Then, we can redeploy our service, updating *just* this new environment variable: 
 
 ```shell
-gcloud beta run services update unicodex \
+gcloud run services update unicodex \
 	--update-env-vars CURRENT_HOST=$SERVICE_URL
 ```
 
