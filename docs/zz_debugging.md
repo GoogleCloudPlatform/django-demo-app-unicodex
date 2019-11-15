@@ -9,7 +9,7 @@ For security reasons, `DEBUG` should not be enabled in production. So, we didn't
 To temporary enable it:
 
 ```
-gcloud beta run services update unicodex --update-env-vars DEBUG=True
+gcloud run services update unicodex --update-env-vars DEBUG=True
 ```
 
 You should then reload the page, and see a more useful error. 
@@ -17,7 +17,7 @@ You should then reload the page, and see a more useful error.
 Remember to turn it off again!
 
 ```
-gcloud beta run services update unicodex --update-env-vars DEBUG=False
+gcloud run services update unicodex --update-env-vars DEBUG=False
 ```
 
 
