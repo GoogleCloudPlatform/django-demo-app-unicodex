@@ -27,7 +27,7 @@ class Codepoint(models.Model):
         blank=True,
     )
     emojipedia_name = models.CharField(
-        max_length=20,
+        max_length=50,
         help_text="If the name of this codepoint is strange on Emojipedia, add it here. Otherwise, I'll work it out myself.",
         blank=True,
     )
