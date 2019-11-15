@@ -51,17 +51,17 @@ From here, we're going to enter the following details:
 
 With this setup, any time we push code to the `master` branch, our service will be deployed. 
 
-This works well when you have Pull Requests in Github being merged to the `master` branch: any merged PR will automatically initalise a new deployment. 
+This works well when you have Pull Requests in Github being merged to the `master` branch: any merged PR will automatically initialise a new deployment. 
 
 ---
 
-We only implemeted one trigger here. 
+We only implemented one trigger here. 
 
 You could customise this for your own project in a number of ways. 
 
 Perhaps make use of the [included files](https://cloud.google.com/cloud-build/docs/running-builds/automate-builds#build_trigger) feature, and trigger a build that makes database migrations only if there have been changes to files in `unicodex/migrations/*`. You could then remove that step from the unconditional `master` branch build.
 
-Using [substituion variables](https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values#using_user-defined_substitutions), you could setup multiple triggers: ones that on master deploy to a staging environment, and on a tagged release deploy to production. Changing the substitution variables allows you to use the same code and aim the deploy at different places. 
+Using [substitution variables](https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values#using_user-defined_substitutions), you could setup multiple triggers: ones that on master deploy to a staging environment, and on a tagged release deploy to production. Changing the substitution variables allows you to use the same code and aim the deploy at different places. 
 
 You could also take advantage of [build concurrency](https://cloud.google.com/cloud-build/docs/configuring-builds/configure-build-step-order), if you have steps that don't need to be run one at a time.
 
@@ -69,6 +69,10 @@ You can always also skip builds entirely if the commit messages includes the str
 
 ---
 
-Next step: None! You're done! 🧁
+Next step: None! You're done! 🧁 
+
+---
+
+Don't forget to [clean-up](90-cleanup.md) your resources if you don't want to continue running your app. 
 
 ---

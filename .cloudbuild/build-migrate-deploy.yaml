@@ -44,9 +44,10 @@ steps:
       - name: secrets
         path: /secrets
 
-        # DEPLOY
+      # DEPLOY
+      # Using the gcloud-slim image, but also forcing a version with > SDK 271
     - id: 'deploy service'
-      name: 'gcr.io/cloud-builders/gcloud'
+      name: 'gcr.io/cloud-builders/gcloud-slim@sha256:aae22f2af7c345c8dbc21e09361ec1a52fed57d66493938e8acee72a8341806f'
       args: ['run', 'deploy', '${_SERVICE}', '--image', 'gcr.io/$PROJECT_ID/${_SERVICE}', '--region', '${_REGION}', '--platform', 'managed']
 
 # substitutions:

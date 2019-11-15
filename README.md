@@ -24,7 +24,6 @@ Unicodex uses:
 5. [Create some Berglas Secrets](docs/40-setup-secrets.md)
 6. [First Deployment](docs/50-first-deployment.md)
 7. [Ongoing Deployments](docs/60-ongoing-deployments.md)
-8. [Setup a Cloud Build trigger](docs/70-setup-trigger.md)
 
 ## Application Design
 

@@ -1,4 +1,4 @@
-Django
+Django==3.0.0rc1
 django-environ
 gunicorn
 pyyaml

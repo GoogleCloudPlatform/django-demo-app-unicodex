@@ -6,11 +6,11 @@
 
 We're up to deploying our project for the first time!
 
-This is going to be a bit complicated at first, but the work we do here will make every other deployment much simplier. 
+This is going to be a bit complicated at first, but the work we do here will make every other deployment much simpler. 
 
 You'll remember way back when we were [testing locally](00-test-local.md) we built two images: a `web` image and a `db` image. 
 
-`db` will be replaced with the proper postgres database we've [already setup](20-setup-sql.md). 
+`db` will be replaced with the proper PostgreSQL database we've [already setup](20-setup-sql.md). 
 
 So we just need to build the other image!
 
@@ -119,13 +119,13 @@ gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
 
 As suggested by the filename, this will perform three tasks for us: 
 
-* Build the image (like we were doing before, 
+* Build the image (like we were doing before), 
 * Apply the database migrations, and
 * Deploy the service with the new image. 
 
 But additionally: 
 
-* it uses Berglas to pull the secrets we stored earlier to create a local `.env` file
+* it uses berglas to pull the secrets we stored earlier to create a local `.env` file
 * using that `.env`, runs the django management commands: 
   * `./manage.py migrate`, which applies our database migrations
   * `./manage.py collectstatic`, which uploads our local static files to the media bucket
@@ -140,6 +140,7 @@ Noted custom configurations:
 * We use `gcr.io/google-appengine/exec-wrapper` as an easier way to setup a Cloud SQL proxy. 
 * We make own `.env` file using the ability for berglas to store a secret in a file (via `?destination`). This is because [Cloud Build envvars don't persist through steps](https://github.com/GoogleCloudPlatform/berglas/tree/master/examples/cloudbuild)
 * We throw all our asks in one giant honking `.yaml`, because then we only need to call one `submit` command. 
+* We also make assumptions about the secrets that we created earlier, so we only specify the bucket in which we are storing our secrets. 
 
 We are also running this command with [substitutions](https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values#using_user-defined_substitutions). These allow us to change the image, service, and database instance (which will be helpful later on when we define multiple environments). You can hardcode these yourself by commenting out the `substutitions:` stanza in the yaml file. 
 
@@ -168,7 +169,7 @@ If this is as far as you want to take this project, think about [cleaning up](90
 
 ---
 
-After all this work, each future deployment is exceedindly less complex. 
+After all this work, each future deployment is exceedingly less complex. 
 
 ---
 

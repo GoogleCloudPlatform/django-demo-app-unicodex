@@ -177,7 +177,7 @@ Then, we can create our `DATABASE_URL`:
 export DATABASE_URL=postgres://$USERNAME:${PASSWORD}@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
 ```
 
-For convenience, later we will also need a smaller version of this string, which just our absolute Cloud SQL Instance identifer: 
+For convenience, later we will also need a smaller version of this string, which just our absolute Cloud SQL Instance identifier: 
 
 ```shell,exclude
 export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
