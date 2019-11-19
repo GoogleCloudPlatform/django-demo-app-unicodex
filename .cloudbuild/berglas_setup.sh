@@ -32,11 +32,3 @@ echo "GS_BUCKET_NAME=$(cat /secrets/media_bucket)" >> $ENVFILE
 
 DBFILE=/secrets/database
 echo "$(cat /secrets/database_url | cut -d'/' -f6)" >> $DBFILE
-
-echo "DEBUGGING: cat $ENVFILE"
-for i in $(cat $ENVFILE); do echo $i | cut -d"=" -f1; done
-
-echo "DEBUGGING: cat $DBFILE"
-cat $DBFILE
-echo "\nDEBUGGING: echo berglas DATABASE_URL | cut -d'@' -f2"
-cat /secrets/database_url | cut -d'@' -f2
