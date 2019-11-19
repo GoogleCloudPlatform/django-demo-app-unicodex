@@ -1,4 +1,4 @@
-FROM python:3.8-slim-stretch
+FROM python:3.8-slim-buster
 
 ENV APP_HOME /app
 ENV PORT 8080
