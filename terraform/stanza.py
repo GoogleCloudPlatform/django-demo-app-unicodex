@@ -1,3 +1,6 @@
+# Generates singleton ACL items for berglas secrets and access control
+# https://github.com/hashicorp/terraform-plugin-sdk/issues/174
+
 value = """
 #
 # Defining secret "{0}"

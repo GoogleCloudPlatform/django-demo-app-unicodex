@@ -1,8 +1,12 @@
 ###################################################################################
+
+# Creates permissions and misc components
+
+###################################################################################
 # MEDIA
 
 resource "google_storage_bucket" "media_bucket" {
-  name       = "${var.project}-${var.slug}-media"
+  name = "${var.project}-${var.slug}-media"
 }
 resource "google_storage_bucket_access_control" "media_bucket_public_rule" {
   bucket = google_storage_bucket.media_bucket.name
@@ -19,12 +23,12 @@ resource "google_service_account" "berglas" {
 }
 
 resource "random_password" "secret_key" {
-  length = 50
+  length  = 50
   special = false
 }
 
 resource "random_password" "superpass" {
-  length = 30
+  length  = 30
   special = false
 }
 
@@ -35,26 +39,26 @@ locals {
     superuser    = "admin"
     superpass    = random_password.superpass.result
     secret_key   = random_password.secret_key.result
-    media_bucket = google_storage_bucket.media_bucket.name 
+    media_bucket = google_storage_bucket.media_bucket.name
   }
 
   sa_email    = "${google_service_account.berglas.account_id}@${var.project}.iam.gserviceaccount.com"
   sa_cb_email = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
-  
+
 }
 
-resource "google_kms_crypto_key_iam_member" "service_account" { 
-    crypto_key_id = local.berglas_key
-    role = "roles/cloudkms.cryptoKeyDecrypter"
-    member = "serviceAccount:${local.sa_email}"
-} 
+resource "google_kms_crypto_key_iam_member" "service_account" {
+  crypto_key_id = local.berglas_key
+  role          = "roles/cloudkms.cryptoKeyDecrypter"
+  member        = "serviceAccount:${local.sa_email}"
+}
 
 
-resource "google_kms_crypto_key_iam_member" "cloudbuild" { 
-    crypto_key_id = local.berglas_key
-    role = "roles/cloudkms.cryptoKeyDecrypter"
-    member = "serviceAccount:${local.sa_cb_email}"
-} 
+resource "google_kms_crypto_key_iam_member" "cloudbuild" {
+  crypto_key_id = local.berglas_key
+  role          = "roles/cloudkms.cryptoKeyDecrypter"
+  member        = "serviceAccount:${local.sa_cb_email}"
+}
 
 
 # https://github.com/hashicorp/terraform-plugin-sdk/issues/174
@@ -214,7 +218,6 @@ resource google_storage_object_access_control secret_key_sa_cb_email {
 # GENERATED SECTION END
 
 ###################################################################################
-
 
 # IAM Permissions for service accounts. 
 
