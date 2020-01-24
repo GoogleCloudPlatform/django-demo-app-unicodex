@@ -28,9 +28,8 @@ steps:
       name: gcr.io/berglas/berglas
       entrypoint: '/bin/sh'
       args: ['.cloudbuild/berglas_setup.sh']
-      env:
-          - 'PROJECT_ID=$PROJECT_ID'
-          - 'BERGLAS_BUCKET=${_BERGLAS_BUCKET}'
+      env: ['PROJECT_ID=$PROJECT_ID',
+            'BERGLAS_BUCKET=${_BERGLAS_BUCKET}']
       volumes:
           - name: secrets
             path: /secrets
@@ -50,12 +49,11 @@ steps:
       name: 'gcr.io/cloud-builders/gcloud'
       entrypoint: '/bin/sh'
       args: [".cloudbuild/run_deploy.sh"]
-      env: 
-        - PROJECT_ID=$PROJECT_ID
-        - _SERVICE=${_SERVICE}
-        - _DATABASE_INSTANCE=${_DATABASE_INSTANCE}
-        - _BERGLAS_BUCKET=${_BERGLAS_BUCKET}
-        - _REGION=${_REGION}
+      env: [ "PROJECT_ID=$PROJECT_ID",
+            "_SERVICE=${_SERVICE}",
+            "_DATABASE_INSTANCE=${_DATABASE_INSTANCE}",
+            "_BERGLAS_BUCKET=${_BERGLAS_BUCKET}",
+            "_REGION=${_REGION}"]
 
 # substitutions:
 #   _REGION: (the region)
