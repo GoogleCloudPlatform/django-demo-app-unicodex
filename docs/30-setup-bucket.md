@@ -8,7 +8,7 @@ We need to create a new bucket to store our media assets (django admin access, d
 
 ```shell
 export MEDIA_BUCKET=${PROJECT_ID}-unicodex-media
-gsutil mb gs://${MEDIA_BUCKET}
+gsutil mb gs://${MEDIA_BUCKET} -l ${REGION}
 ```
 
 ---

@@ -73,7 +73,7 @@ This is a [Python standard library method](https://docs.python.org/3/library/sec
 The secrets we need to create: 
 
  * `database_url`, with the value `DATABASE_URL`, as mentioned earlier in the Database section
- * `secret_key`, a mininum 50 character random string, for django's `SECRET_KEY`
+ * `secret_key`, a minimum 50 character random string, for django's `SECRET_KEY`
  * `media_bucket`, the media bucket we created earlier (`${PROJECT_ID}-media`)
 
 And for the django admin (`/admin`), we'll need our superuser: 

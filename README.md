@@ -17,13 +17,25 @@ Unicodex uses:
 
 ## Steps
 
-1. [Try the application locally](docs/00-test-local.md) *optional*
+[Try the application locally](docs/00-test-local.md) *optional*
+
+Manual deployment:
+
 2. [Setup Google Cloud Platform environment](docs/10-setup-gcp.md)
 3. [Create a Cloud SQL Instance](docs/20-setup-sql.md)
 4. [Create a Cloud Storage Bucket](docs/30-setup-bucket.md)
 5. [Create some Berglas Secrets](docs/40-setup-secrets.md)
 6. [First Deployment](docs/50-first-deployment.md)
 7. [Ongoing Deployments](docs/60-ongoing-deployments.md)
+
+Automated deployment: 
+
+1. [Deploy with Terraform](docs/80-automation.md)
+
+Cleanup: 
+
+1. [Cleanup your project resources](docs/90-cleanup.md)
+
 
 ## Application Design
 
@@ -47,11 +59,6 @@ This implementation is live at [https://unicodex.gl.asnt.app/](https://unicodex.
 ### Other service designs
 
 With a few find/replace of some critical values, this setup can be converted to have multiple versions of the service each having their own database in a shared instance. More information for this can be found in the [.util](.util/README.md) directory. 
-
-### TODO
-
-* implement custom database *name* (as well as instance)
-* allow multiple `CURRENT_HOST` values (useful when handling custom domains)
 
 
 ## Contributions

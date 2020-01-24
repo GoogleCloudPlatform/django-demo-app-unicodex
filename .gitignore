@@ -3,3 +3,19 @@ media/
 
 # ignore python cache
 __pycache__/
+.env
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ignore vim caches
+*.swp
+
+# ignore terraform
+terraform/.terraform/*
+.terraform/*
+*.tfstate
+*.tfstate.*
+crash.logs
+*.tfvars

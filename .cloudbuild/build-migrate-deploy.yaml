@@ -11,44 +11,49 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 steps:
-      # BUILD
+    # BUILD
     - id: 'build image'
       name: 'gcr.io/cloud-builders/docker'
-      args: ['build', '-t', 'gcr.io/$PROJECT_ID/${_SERVICE}', '.']
+      args: ['build', 
+            '-t', 'gcr.io/$PROJECT_ID/${_SERVICE}', 
+            '.']
 
     - id: 'push image'
       name: 'gcr.io/cloud-builders/docker'
       args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE}']
 
-      # MIGRATE
+    # MIGRATE
     - id: 'read secrets with berglas'
       name: gcr.io/berglas/berglas
-      entrypoint: "/bin/sh"
-      args: [".cloudbuild/berglas_setup.sh"]
-      env:
-        - 'PROJECT_ID=$PROJECT_ID'
-        - 'BERGLAS_BUCKET=${_BERGLAS_BUCKET}'
+      entrypoint: '/bin/sh'
+      args: ['.cloudbuild/berglas_setup.sh']
+      env: ['PROJECT_ID=$PROJECT_ID',
+            'BERGLAS_BUCKET=${_BERGLAS_BUCKET}']
       volumes:
-      - name: secrets
-        path: /secrets
+          - name: secrets
+            path: /secrets
 
     - id: 'perform django migration, collect static'
-      name: "gcr.io/google-appengine/exec-wrapper"
-      args: ["-i", "gcr.io/$PROJECT_ID/${_SERVICE}",
-         "-e", "ENV_PATH=/secrets/.env",
-         "-s", "${_DATABASE_INSTANCE}",
-         "--", "sh", ".cloudbuild/django_migrate.sh"]
+      name: 'gcr.io/google-appengine/exec-wrapper'
+      args: ['-i', 'gcr.io/$PROJECT_ID/${_SERVICE}',
+             '-e', 'ENV_PATH=/secrets/.env',
+             '-s', '${_DATABASE_INSTANCE}',
+             '--', 'sh', '.cloudbuild/django_migrate.sh']
       volumes:
-      - name: secrets
-        path: /secrets
+          - name: secrets
+            path: /secrets
 
-      # DEPLOY
-      # Using the gcloud-slim image, but also forcing a version with > SDK 271
+    # DEPLOY
     - id: 'deploy service'
-      name: 'gcr.io/cloud-builders/gcloud-slim@sha256:aae22f2af7c345c8dbc21e09361ec1a52fed57d66493938e8acee72a8341806f'
-      args: ['run', 'deploy', '${_SERVICE}', '--image', 'gcr.io/$PROJECT_ID/${_SERVICE}', '--region', '${_REGION}', '--platform', 'managed']
+      name: 'gcr.io/cloud-builders/gcloud'
+      entrypoint: '/bin/sh'
+      args: [".cloudbuild/run_deploy.sh"]
+      env: [ "PROJECT_ID=$PROJECT_ID",
+            "_SERVICE=${_SERVICE}",
+            "_DATABASE_INSTANCE=${_DATABASE_INSTANCE}",
+            "_BERGLAS_BUCKET=${_BERGLAS_BUCKET}",
+            "_REGION=${_REGION}"]
 
 # substitutions:
 #   _REGION: (the region)
