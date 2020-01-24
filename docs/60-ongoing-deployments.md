@@ -71,6 +71,8 @@ You can always also skip builds entirely if the commit messages includes the str
 
 Next step: None! You're done! 🧁 
 
+But if you really want to, you can [automate this entire process with Terraform](80-automation.md).
+
 ---
 
 Don't forget to [clean-up](90-cleanup.md) your resources if you don't want to continue running your app. 
