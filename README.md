@@ -6,7 +6,7 @@ Let's build a demo application, using a whole bunch o' Google Cloud components. 
 
 Unicodex uses: 
 
- * [Django 2.2](https://docs.djangoproject.com/en/2.2/) as the web framework
+ * [Django 3.0](https://docs.djangoproject.com/en/3.0/) as the web framework
  * [Google Cloud Run](https://cloud.google.com/run/) as the hosting platform
  * [Google Cloud SQL](https://cloud.google.com/sql/) as the managed database, via [django-environ](https://django-environ.readthedocs.io/en/latest/)
  * [Google Cloud Storage](https://cloud.google.com/storage/) as the media storage platform, via [django-storages](https://django-storages.readthedocs.io/en/latest/)
@@ -21,20 +21,20 @@ Unicodex uses:
 
 Manual deployment:
 
-2. [Setup Google Cloud Platform environment](docs/10-setup-gcp.md)
-3. [Create a Cloud SQL Instance](docs/20-setup-sql.md)
-4. [Create a Cloud Storage Bucket](docs/30-setup-bucket.md)
-5. [Create some Berglas Secrets](docs/40-setup-secrets.md)
-6. [First Deployment](docs/50-first-deployment.md)
-7. [Ongoing Deployments](docs/60-ongoing-deployments.md)
+1. [Setup Google Cloud Platform environment](docs/10-setup-gcp.md)
+1. [Create a Cloud SQL Instance](docs/20-setup-sql.md)
+1. [Create a Cloud Storage Bucket](docs/30-setup-bucket.md)
+1. [Create some Berglas Secrets](docs/40-setup-secrets.md)
+1. [First Deployment](docs/50-first-deployment.md)
+1. [Ongoing Deployments](docs/60-ongoing-deployments.md)
 
 Automated deployment: 
 
-1. [Deploy with Terraform](docs/80-automation.md)
+* [Deploy with Terraform](docs/80-automation.md)
 
 Cleanup: 
 
-1. [Cleanup your project resources](docs/90-cleanup.md)
+* [Cleanup your project resources](docs/90-cleanup.md)
 
 
 ## Application Design
