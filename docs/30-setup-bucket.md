@@ -4,11 +4,23 @@
 
 Compared to the complexity of the [last section](20-setup-sql.md) section, this part is fairly painless. 😂
 
-We need to create a new bucket to store our media assets (django admin access, design images, etc). This won't be the last bucket we'll create, so a suggested name is `${PROJECT_ID}-media`.
+---
+
+We need to create a new bucket to store our media assets (django admin assets, design images, etc). 
+
+Bucket names are **globally unique** across all of Google Cloud, so consider the scope of the bucket when you create it. 
+
+We suggest that you name it something unique to the project, but still noting it's purpose. Here's what we suggest:
 
 ```shell
-export MEDIA_BUCKET=${PROJECT_ID}-unicodex-media
-gsutil mb gs://${MEDIA_BUCKET} -l ${REGION}
+export GS_BUCKET_NAME=${PROJECT_ID}-media
+gsutil mb -l ${REGION} gs://${GS_BUCKET_NAME}
+```
+
+We'll also need to give our service account permission to operate on this bucket (which it needs to do Django admin action based [storage object alteration](https://cloud.google.com/storage/docs/access-control/using-iam-permissions#bucket-add): 
+
+```shell
+gsutil iam ch serviceAccount:${CLOUDRUN_SA}:roles/storage.objectAdmin gs://${GS_BUCKET_NAME} 
 ```
 
 ---
@@ -17,4 +29,4 @@ We now have somewhere to store our media! 🖼
 
 ---
 
-Next step: [Create some Berglas secrets](40-setup-secrets.md)
+Next step: [Create some secrets](40-setup-secrets.md)

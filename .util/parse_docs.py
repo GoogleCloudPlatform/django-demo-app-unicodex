@@ -43,10 +43,10 @@ def extract(f, filter=None):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("path")
+parser.add_argument("--variables", default=False, action='store_true')
 parser.add_argument("--project-id")
 parser.add_argument("--instance-name")
 parser.add_argument("--region")
-parser.add_argument("--slug")
 
 args = parser.parse_args()
 
@@ -76,8 +76,14 @@ if args.instance_name:
     script = script.replace("YourInstanceName", args.instance_name)
 if args.region:
     script = script.replace("us-central1", args.region)
-if args.slug:
-    script = script.replace("unicodex", "unicodex-" + args.slug)
-    script = script.replace("django-demo-app-unicodex-" + args.slug, "django-demo-app-unicodex")
+
+if args.variables:
+    newscript = []
+    for x in script.split("\n"):
+        if "export" in x:
+            var = x.split(" ")[1].split("=")[0]
+            newscript.append(f"echo {var} = ${var}")
+    script = '# Debugging -- export all the variables\n' + "; ".join(newscript)
+
 
 print(script)

@@ -43,10 +43,8 @@ From here, we're going to enter the following details:
 * **Cloud Build configuration file location**: `.cloudbuild/build-migrate-deploy.yaml`
 * **Substitution variables**:
   * `_REGION`: us-central1
-  * `_DATABASE_INSTANCE`: yourproject:yourregion:yourinstance
-  * `_SERVICE`: unicodex
-  * `_BERGLAS_BUCKET`: yourproject-secrets
- 
+  * `_INSTANCE_NAME`: yourproject:yourregion:instance_name
+  * `_SERVICE`: unicodex 
 ---
 
 With this setup, any time we push code to the `master` branch, our service will be deployed. 

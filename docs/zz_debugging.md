@@ -72,6 +72,12 @@ Finally, we ran a tiny bit of Python that used the used the PostgreSQL adapter a
 
 ---
 
+## Still more database issues
+
+TODO(glasnt); doc how to check iam permissions for cloud build <-> cloud sql access
+
+---
+
 Did you encounter a different problem? [Log an issue](https://github.com/GoogleCloudPlatform/django-demo-app-unicodex/issues)
 
 ---

@@ -1,4 +1,4 @@
-Django==3.0.0rc1
+Django==3.0.3
 django-environ
 gunicorn
 pyyaml
@@ -6,3 +6,4 @@ bs4
 requests
 psycopg2-binary
 django-storages[google]
+google-cloud-secret-manager==0.1.1

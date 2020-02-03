@@ -3,7 +3,6 @@ media/
 
 # ignore python cache
 __pycache__/
-.env
 venv/
 __pycache__/
 *.py[cod]
