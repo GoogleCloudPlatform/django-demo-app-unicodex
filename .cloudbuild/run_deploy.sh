@@ -1,5 +1,4 @@
 # /bin/bash
-set -eEuo pipefail
 
 gcloud run deploy ${_SERVICE} \
     --platform managed --region ${_REGION} \
