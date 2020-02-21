@@ -1,21 +1,20 @@
 variable "project" {
   type        = string
-  description = "Google Cloud Platform project name"
+  description = "The Google Cloud Platform project name"
+}
+
+variable "service" {
+  description = "Name of the service"
+  type        = string
 }
 
 variable "region" {
-  type    = string
-  description  = "Google Cloud Platform region name"
   default = "us-central1"
+  type    = string
 }
 
 variable "instance_name" {
+  description = "Name of the postgres instance (PROJECT_ID:REGION:INSTANCE_NAME))"
   type        = string
-  description = "Name of the postgres instance to use (for your project and region)"
-}
-
-variable "slug" {
-  type        = string
-  description = "A prefix slug for this instance (e.g prod, test)"
 }
 

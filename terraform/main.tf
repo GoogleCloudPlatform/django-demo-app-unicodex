@@ -7,8 +7,6 @@
 //
 // Assumptions: 
 //  * project_id is an existing, billing enabled, project.
-//  * berglas bootstrap on the "berglas_bucket"
-//   - provider requires manual installation https://github.com/sethvargo/terraform-provider-berglas#installation
 
 
 provider "google" {
@@ -17,24 +15,41 @@ provider "google" {
 
 # Enable all services
 module "services" {
-  source = "./services"
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "4.0.0"
+
+  project_id = var.project
+
+  activate_apis = [
+    "run.googleapis.com",
+    "compute.googleapis.com",
+    "sql-component.googleapis.com",
+    "sqladmin.googleapis.com",
+    "storage-component.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "cloudkms.googleapis.com",
+    "storage-api.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "secretmanager.googleapis.com"
+  ]
 }
 
 # Create database
 module "database" {
   source = "./database"
 
-  project       = var.project
-  instance_name = var.instance_name
+  project       = module.services.project_id
+  service       = var.service
   region        = var.region
-  slug          = var.slug
+  instance_name = var.instance_name
 }
 
-# Add permissions/misc 
+# Add permissions/secrets 
 module "permissions" {
-  source         = "./permissions"
-  project        = var.project
-  berglas_bucket = var.berglas_bucket
-  slug           = var.slug
-  database_url   = module.database.database_url
+  source = "./permissions"
+
+  project      = module.services.project_id
+  service      = var.service
+  region       = var.region
+  database_url = module.database.database_url
 }

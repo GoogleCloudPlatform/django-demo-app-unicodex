@@ -89,13 +89,11 @@ We're going to use [Cloud Build](https://cloud.google.com/cloud-build/) and inst
 But to start, we need to give Cloud Build permission to do all these fancy things (like [deployment](https://cloud.google.com/run/docs/reference/iam/roles#additional-configuration): 
 
 ```shell
-for role in cloudsql.admin run.admin; do
+for role in cloudsql.client run.admin; do
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member serviceAccount:${CLOUDBUILD_SA} \
     --role roles/${role}
 done
-
-# TODO(glasnt) "cloudsql.admin" re: b/149802598
 ```
 
 We'll also need to ensure that for the final step in our deployment, Cloud Build has permission to deploy as Cloud Run. For that, we'll configure our Cloud Build to [act as our service account](https://cloud.google.com/run/docs/continuous-deployment-with-cloud-build#continuous-iam): 
@@ -134,6 +132,7 @@ By 'migrate', we mean:
   * `./manage.py migrate`, which applies our database migrations
   * `./manage.py collectstatic`, which uploads our local static files to the media bucket
 * automatically, if there's no existing superuser, create a superuser, using the `superuser/superpass` we created earlier.
+ * ⚠️ This needs to be run at least once, but you can choose to remove this part of the script later. 
 
 The full contents of the script is in [.cloudbuild/build-migrate-deploy.yaml](../.cloudbuild/build-migrate-deploy.yaml). 
 

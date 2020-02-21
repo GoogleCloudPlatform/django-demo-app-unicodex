@@ -45,6 +45,9 @@ From here, we're going to enter the following details:
   * `_REGION`: us-central1
   * `_INSTANCE_NAME`: yourproject:yourregion:instance_name
   * `_SERVICE`: unicodex 
+
+You may notice this looks similar to the `gcloud builds submit --config` command we ran in the [last section](50-first-deployment.md). That's because it is! All we're doing is telling out system to run the deployment command when an event happens. In this case, the event is when we put new code into the master branch. 
+
 ---
 
 With this setup, any time we push code to the `master` branch, our service will be deployed. 

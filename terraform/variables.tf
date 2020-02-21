@@ -3,13 +3,8 @@ variable "project" {
   description = "The Google Cloud Platform project name"
 }
 
-variable "berglas_bucket" {
-  description = "The bucket **that has already been boostrapped** by berglas"
-  type        = string
-}
-
-variable "slug" {
-  description = "A prefix slug for this instance (e.g prod, test)"
+variable "service" {
+  description = "Name of the service"
   type        = string
 }
 
@@ -19,6 +14,6 @@ variable "region" {
 }
 
 variable "instance_name" {
-  description = "Name of the postgres instance to use (for your project and region)"
+  description = "Name of the postgres instance (PROJECT_ID:REGION:INSTANCE_NAME))"
   type        = string
 }

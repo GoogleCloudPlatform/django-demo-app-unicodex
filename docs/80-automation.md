@@ -33,7 +33,22 @@ resource "google_cloud_run_service" "default" {
 
 This page has other sample provisionings, such as [Cloud Run + Cloud SQL](https://www.terraform.io/docs/providers/google/r/cloud_run_service.html#example-usage-cloud-run-service-sql) setup, or [Allow Unauthenticated](https://www.terraform.io/docs/providers/google/r/cloud_run_service.html#example-usage-cloud-run-service-noauth) for example.
 
-But our setup is a little bit more complex. We've provided the Terraform files in `terraform/`, so navigate there and initialise:
+---
+
+Our setup is a little bit more complex than a 'Hello World', so we're going to provision and deploy in a few steps: 
+
+ * *Provision* the infrastructure with Terraform, then
+ * *Create* the service manually once, then we can setup
+ * Continuous *Deployment*.
+ 
+ 
+There is a reason for this separation. All the manual configurations required to get our sample application out into the real world were detailed in the last half-dozen pages of this tutorial. The *provisioning* itself was most of that. But we can use Terraform to re-create all that once. However, when you run Terraform on your local machine, you run Terraform in the same Owner permissions you run `gcloud` with. It makes sense to keep the manual configuration with these permissions, but for automated processes -- such as our triggers -- it makes sense to keep these processes to the minimum possible permissions. This has consequences in the scripts we use to deploy, so to mitigate that, we'll do a manual deployment once, which creates our service. Then, our updates can happen with the most focused permissions required. 
+
+---
+
+### Provision Infrastructure
+
+We've provided the Terraform files in `terraform/`, so navigate there and initialise:
 
 ```shell,exclude
 git clone git@github.com/GoogleCloudPlatform/django-demo-app-unicodex
@@ -42,16 +57,30 @@ cd django-demo-app-unicodex/terraform
 
 You'll also have to follow the [Getting Started - Adding Credentials](https://www.terraform.io/docs/providers/google/getting_started.html#adding-credentials) section in order to apply any configurations to your project, saving the path to your configuration in `GOOGLE_CLOUD_KEYFILE_JSON`. 
 
-But, with all this setup, it could just be a case of running:
+Once you have this configured, you need to initialise Terrafrom:
 
 ```shell,exclude
 terraform init
-terraform apply 
 ```
 
-This will prompt you for some variables (with details about what's required, see `variables.tf` for the full list), and to check the changes that will be applied (which can be checked without potentially applying with `terraform plan`). 
+Then apply the configurations: 
 
-You'll see we're separating our Terraform process into three major segments: 
+```shell,exclude
+terraform apply
+```
+
+Without specifying any other flags, this command will prompt you for some variables (with details about what's required, see `variables.tf` for the full list), and to check the changes that will be applied (which can be checked without potentially applying with `terraform plan`). 
+
+You can specify your variables using [command-line flags](https://learn.hashicorp.com/terraform/getting-started/variables.html#command-line-flags), which would look something like this: 
+
+```shell,exclude
+terraform apply -var 'region=us-central1' -var 'service=unicodex' -var 'project=MyProject' -var 'instance_name=psql'
+```
+
+⚠️ Since we are dynamically creating our secret strings, our [terraform state is considered sensitive data](https://www.terraform.io/docs/state/sensitive-data.html).
+
+
+Looking within `terraform/`, you'll see we're separating our Terraform process into three major segments: 
 
  * Enabling the service APIs (which then allows us to)
  * Create the Cloud SQL database (which then allows us to)
@@ -59,7 +88,39 @@ You'll see we're separating our Terraform process into three major segments:
 
 This separation means we can stagger out setup where core sections that depend on each other are completed one at a time. 
 
-Once this *provisioning* is done, you can configure the *automated deployment* as in the [last step](60-ongoing-deployments.md), where the first time you run the deployment, the Cloud Run service will be first deployed for you.
+Once this processes finishes, everything will be setup. We could have configured terraform to export values to help with the next step, e.g. your admin password, but you should probably use the Google Cloud Console to `gcloud` to get those directly yourself. (All this information is in the [local terraform state](https://www.terraform.io/docs/state/index.html), but it's always a good idea to get configurations from the one source of truth.)
+
+ℹ️ Unlike the shell scripts we used earlier, we can re-`apply` terraform at any time. So if you have any component that doesn't seem to work, or you manually change something and want to change it back, just run `terraform apply` again. This can help with issues of eventual consistency, network latency, or any other gremlins in the system. 
+
+
+### Create service
+
+Now the infrastructure is around, we can deploy first time, using the same script from the [first deployment](50-first-deployment.md) section, using the sample values we provided above. 
+
+```shell,exclude
+# Build the image
+gcloud builds submit --tag gcr.io/MyProject/unicodex .
+
+# Create the service
+gcloud run deploy unicodex \
+    --allow-unauthenticated \
+    --image gcr.io/MyProject/unicodex \
+    --add-cloudsql-instances MyProject:us-central1:psql \
+    --service-account unicodex@myproject.iam.gserviceaccount.com
+   
+# Configure the Service URL to be recognised by Django
+export SERVICE_URL=$(gcloud run services describe unicodex --format="value(status.url)")
+gcloud run services update unicodex --update-env-vars CURRENT_HOST=$SERVICE_URL
+
+# Database migration, creating superuser/pass
+gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
+    --substitutions="_REGION=us-central1,_INSTANCE_NAME=psql,_SERVICE=unicodex"
+
+```
+
+The output of the last command will show you where your service is deployed. You can use the superuser/pass via `gcloud beta secrets versions access latest` to log in. 
+
+Once this *provisioning* and *first deploy* is done, you can configure the *automated deployment* as in the [last step](60-ongoing-deployments.md), which is effectively setting up the last command in our above script to trigger automatically. 
 
 ---
 
