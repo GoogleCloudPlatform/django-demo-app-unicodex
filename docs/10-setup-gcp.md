@@ -111,11 +111,10 @@ export CLOUDRUN_SA=${SERVICE_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
 
 (In this case "SA" refers to "Service Account".)
 
-We'll also need to tell this account what it's allowed to access. It needs to be allowed to [connect to our database](https://cloud.google.com/sql/docs/postgres/connect-run#configuring), TODO(glasnt):
+We'll also need to tell this account what it's allowed to access. It needs to be allowed to [connect to our database](https://cloud.google.com/sql/docs/postgres/connect-run#configuring), and be our Cloud Run administrator:
 
 ```shell
-# TODO(glasnt): confirm if "run.admin" or "run.??" sufficient here.
-for role in cloudsql.client; do
+for role in cloudsql.client run.admin; do
   gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member serviceAccount:$CLOUDRUN_SA \
     --role roles/${role}

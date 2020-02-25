@@ -35,19 +35,7 @@ steps:
       args: ["run", "deploy", "${_SERVICE}", 
             "--platform", "managed", 
             "--region", "${_REGION}",
-            "--image", "gcr.io/$PROJECT_ID/${_SERVICE}",
-            "--add-cloudsql-instances", "${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}",
-            "--service-account","${_SERVICE}@${PROJECT_ID}.iam.gserviceaccount.com"]
-
-    - id: 'allow  '
-      name: 'gcr.io/cloud-builders/gcloud'
-      entrypoint: '/bin/sh'
-      args: [".cloudbuild/allow_host.sh"]
-      env: [ "PROJECT_ID=${PROJECT_ID}",
-            "_SERVICE=${_SERVICE}",
-            "_DATABASE_INSTANCE=${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}",
-            "_REGION=${_REGION}"]
-
+            "--image", "gcr.io/$PROJECT_ID/${_SERVICE}"]
 
 # substitutions:
 #   _REGION: (the region)

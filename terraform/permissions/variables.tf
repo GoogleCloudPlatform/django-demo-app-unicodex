@@ -1,19 +1,28 @@
+
 variable "project" {
   type        = string
-  description = "Google Cloud Platform project name"
+  description = "The Google Cloud Platform project name"
 }
 
-variable "berglas_bucket" {
+variable "service" {
   type        = string
-  description = "The bucket **that has already been boostrapped** by berglas"
+  description = "Name of the service"
 }
 
-variable "slug" {
-  type        = string
-  description = "A prefix slug for this instance (e.g prod, test)"
+variable "region" {
+  type    = string
+  default = "us-central1"
 }
+
 
 variable "database_url" {
   type        = string
   description = "The ODBC connection string"
 }
+
+variable "superuser" {
+  type        = string
+  description = "The Django admin user account to create"
+  default     = "admin"
+}
+

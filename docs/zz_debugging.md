@@ -23,6 +23,16 @@ gcloud run services update unicodex --update-env-vars DEBUG=False
 
 ## Database issues
 
+### Check your instance settings
+
+Is the instance you are connecting to correct?
+
+For a number of configurations, the database instance needs to be in the form PROJECT_ID:REGION:INSTANCE_NAME. 
+
+Check the instance name is correct by going to the [SQL Instances](https://console.cloud.google.com/sql/instances) listing and confirming your configuration matches the "instance connection name" listing for your instance. 
+
+### Check your DATABASE_URL
+
 Is your `DATABASE_URL` correct? Test it with `cloud_sql_proxy`!
 
 Install the [`cloud_sql_proxy` client](https://cloud.google.com/sql/docs/postgres/sql-proxy#install) for your platform.  More instructions are in the [database](20-setup-sql.md) section. 
@@ -74,7 +84,7 @@ Finally, we ran a tiny bit of Python that used the used the PostgreSQL adapter a
 
 ## Still more database issues
 
-TODO(glasnt); doc how to check iam permissions for cloud build <-> cloud sql access
+TODO(glasnt); doc how to check IAM permissions for cloud build <-> cloud sql access
 
 ---
 
