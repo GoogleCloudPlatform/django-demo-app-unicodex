@@ -48,11 +48,11 @@ For **each** `SECRET` and `VALUE` and `SERVICEACCOUNT`, we would run:
 
 ```shell,exclude
 # sample code
-gcloud beta secrets create $SECRET
+gcloud secrets create $SECRET
 
-echo -n "$VALUE" | gcloud beta secret versions add $SECRET --data-file=-
+echo -n "$VALUE" | gcloud secret versions add $SECRET --data-file=-
 
-gcloud beta secrets add-iam-policy-binding $SECRET \
+gcloud secrets add-iam-policy-binding $SECRET \
   --member $SERVICEACCOUNT \
   --role roles/secretmanager.secretAccessor
 ```
@@ -76,12 +76,12 @@ export SECRET_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n
 # GS_BUCKET_NAME was defined back in the media setup step
 
 for SECRET in DATABASE_URL GS_BUCKET_NAME SECRET_KEY SUPERUSER SUPERPASS; do
-  gcloud beta secrets create $SECRET --replication-policy automatic
+  gcloud secrets create $SECRET --replication-policy automatic
     
-  echo -n "${!SECRET}" | gcloud beta secrets versions add $SECRET --data-file=-
+  echo -n "${!SECRET}" | gcloud secrets versions add $SECRET --data-file=-
     
   for role in $CLOUDRUN_SA $CLOUDBUILD_SA; do
-    gcloud beta secrets add-iam-policy-binding $SECRET \
+    gcloud secrets add-iam-policy-binding $SECRET \
       --member serviceAccount:${role} --role roles/secretmanager.secretAccessor
   done
 done 
@@ -97,7 +97,7 @@ Some of the bash tricks we're using here:
 If you *need* to get the **value** of these secrets, you can run the following: 
 
 ```shell,exclude
- gcloud beta secrets versions access latest --secret="$SECRET"
+ gcloud secrets versions access latest --secret="$SECRET"
 ```
 
 ---

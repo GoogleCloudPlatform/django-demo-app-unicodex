@@ -118,7 +118,7 @@ gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
 
 ```
 
-The output of the last command will show you where your service is deployed. You can use the superuser/pass via `gcloud beta secrets versions access latest` to log in. 
+The output of the last command will show you where your service is deployed. You can use the superuser/pass via `gcloud secrets versions access latest` to log in. 
 
 Once this *provisioning* and *first deploy* is done, you can configure the *automated deployment* as in the [last step](60-ongoing-deployments.md), which is effectively setting up the last command in our above script to trigger automatically. 
 
