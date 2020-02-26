@@ -11,7 +11,7 @@ Unicodex uses:
  * [Google Cloud SQL](https://cloud.google.com/sql/) as the managed database, via [django-environ](https://django-environ.readthedocs.io/en/latest/)
  * [Google Cloud Storage](https://cloud.google.com/storage/) as the media storage platform, via [django-storages](https://django-storages.readthedocs.io/en/latest/)
  * [Google Cloud Build](https://cloud.google.com/cloud-build/) for build and deployment automation
- * [Google Secret Manager](https://cloud.google.com/solutions/secrets-management/) for managing encrypted values
+ * [Google Secret Manager](https://cloud.google.com/secret-manager/) for managing encrypted values
 
 *This repo serves as a proof of concept of showing how you can piece all the above technologies together into a working project.*
 
@@ -70,5 +70,4 @@ Please see the [contributing guidelines](CONTRIBUTING.md)
 ## License
 
 This library is licensed under Apache 2.0. Full license text is available in [LICENSE](LICENSE).
-
 
