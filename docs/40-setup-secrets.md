@@ -60,7 +60,7 @@ gcloud secrets add-iam-policy-binding $SECRET \
 These commands will: 
 
  * create the secret
- * add a new version of the secret (actually set the value), and
+ * add a new version of the secret (with an actual value), and
  * allow our service account to access the secret. 
 
 ---
@@ -91,6 +91,7 @@ Some of the bash tricks we're using here:
 
 * Many of the commands are very similar, so we're using `for` loops a lot.
 * The `${!var}` expands the value of `var`, which allows us to dynamically define variables. This works in bash, but may not work in other shells. Running all these scripts in bash is a good idea, just in case the eccentric doesn't work in your shell. 
+* The `-n` in `echo` makes sure we don't accidentally save any trailing newline characters to our secret. 
 
 ---
  
