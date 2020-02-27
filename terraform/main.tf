@@ -22,6 +22,7 @@ module "services" {
 
   activate_apis = [
     "run.googleapis.com",
+    "iam.googleapis.com",
     "compute.googleapis.com",
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
