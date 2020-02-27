@@ -10,9 +10,35 @@ To store our application data, we'll need to setup a [Cloud SQL](https://console
 
 ---
 
-It's a *really very good idea* to setup our database in a way that's going to be secure. You *could* run just the basic `gcloud sql` commands here to create an instance and user, but using these commands gives the user [too many permissions](https://cloud.google.com/sql/docs/postgres/users#default-users).
+It's a *really very good idea* to setup our database in a way that's going to be secure. You *could* run just the basic `gcloud sql` commands here to create an instance and user, but using these commands gives the user [too many permissions](https://cloud.google.com/sql/docs/postgres/users#default-users). 
 
-This is why we're taking the time to set things up explicitly. 
+The Cloud SQL API is designed to give the same functionality to multiple different database implementations: (for the most part) the same commands will create databases and users in Postgres, MySQL, or infact MSSQL instances. Since these databases are so different, there's no(t yet an) implementation for explicitly setting Postgres roles, so we have no option to set this in the API (which is used by both `gcloud` and the web Cloud Console.0
+
+This is why we're taking the time to set things up explicitly. We'll create our instance and database, then take the time to create a low-access user that Django will use to login to the database. 
+
+---
+
+### A note on generating passwords
+
+There are a number of secret strings for passwords and such that we will be generating in this tutorial. Ensuring a unique and complex password is paramount for security. 
+
+For many of our examples, we'll be using this sequence to generate a random string: 
+
+```shell,exlucde
+cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1
+```
+
+Breaking this command down, it uses input from [urandom](https://www.2uo.de/myths-about-urandom/), deletes any non letter or number values, gives us this value in 64-character length chunks, and gives us the first line in that output. As a mess of characters that is probably never going to ever return us the same value, this is good enough for our purposes (and many other purposes. The discussion about true randomness and the entire field of cryptography is outside the scope of this tutorial.)
+
+There are other ways you can generate random strings, for example with pure python: 
+
+```shell,exclude
+python -c "import secrets; print(secrets.token_urlsafe(50))"
+```
+
+This is a [Python standard library method](https://docs.python.org/3/library/secrets.html#secrets.token_urlsafe) that will generate a 50 byte string for us, or around ~65 characters. Plenty long enough for a password.
+
+For our purposes, we'll stick to the `/dev/urandom` method. 
 
 ---
 
@@ -20,11 +46,25 @@ This is why we're taking the time to set things up explicitly.
 
 The database instance creation process has many configuration options, as detailed by the [Create a Cloud SQL instance](https://cloud.google.com/sql/docs/postgres/quickstart#create-instance) section of the "Quickstart for Cloud SQL for PostgreSQL" tutorial.
 
-Important notes: 
+Some important notes: 
 
 * The default configurations may work for you, but be sure to check if there's anything you want to change.
-* Make sure you make note of the "Default User Password". We'll refer to this as `MASTER_PASSWORD`.
-* The instance creation may take **several minutes.** 
+* Make sure you make note of the "Default User Password". We'll refer to this as `ROOT_PASSWORD`.
+* The instance creation will take **several minutes**. Do not worry. 
+
+A sample version of what you'd end up running, if you chose the defaults (the latest Postgres version with the smallest instance size), and generating a random password, would be the following: 
+
+```shell
+export INSTANCE_NAME=YourInstanceName 
+export ROOT_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
+
+gcloud sql instances create $INSTANCE_NAME \
+  --database-version POSTGRES_11 \
+  --tier db-f1-micro  \
+  --region $REGION \
+  --project $PROJECT_ID \
+  --root-password $ROOT_PASSWORD
+```
 
 We can confirm we've correctly setup this database for our project by checking for it in `gcloud`: 
 
@@ -32,28 +72,27 @@ We can confirm we've correctly setup this database for our project by checking f
 gcloud sql instances list
 ```
 
-Make note of the "NAME", which we will call `INSTANCE_NAME`, to avoid confusion later. We will also use the "LOCATION" later as our `REGION`.
+Google Cloud often refers to "fully-qualified" identifier to specify our database instance, which is a a combination of our project ID, region, and the instance name itself. We can set this variable now to use it later on. 
 
-```shell,exclude
-export INSTANCE_NAME=YourInstanceName
+```shell
+export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
 ```
 
-You can programmatically get the region for your instance by running a `filter/format` command: 
-
-```shell,exclude
-gcloud sql instances list --format 'value(region)' --filter name=$INSTANCE_NAME
-```
+This is an great time to make note about disambiguation: We will talk about databases within database instances a lot, but when we use the three-segmented version, we are talking about the Cloud SQL managed database instance. 
 
 ### Our Database 
 
 Our database **instance** can hold many **databases**. For our purposes, we're going to setup a `unicodex` database: 
 
-```shell,exclude
-gcloud sql databases create unicodex --instance=$INSTANCE_NAME
+```shell
+export DATABASE_NAME=unicodex
+gcloud sql databases create $DATABASE_NAME \
+  --instance=$INSTANCE_NAME
 ```
 
-And then, the user for this database. 
+### A user that can access only our database. 
 
+Finally, our user. This is where it gets complex. 
 
 Since by default [users created using Cloud SQL have the privileges associated with the `cloudsqlsuperuser` role](https://cloud.google.com/sql/docs/postgres/create-manage-users#creating), we don't want our django user to have such permissions. So, we'll have to manually create our user. 
 
@@ -65,7 +104,7 @@ gcloud sql connect $INSTANCE_NAME
 
 There will be a bit of output here. This is generated by [Cloud SQL Proxy](https://cloud.google.com/sql/docs/postgres/sql-proxy), which `gcloud` is using behind the scenes. 
 
-But, you will be prompted for the password for `SQL user [postgres]`. This is the `MASTER_PASSWORD` we set earlier. 
+But, you will be prompted for the DBPASSWORD for `SQL user [postgres]`. This is the `ROOT_PASSWORD` we set earlier. 
 
 Once successfully connected, you'll be dropped into a postgres console. It will look something like this: 
 
@@ -79,108 +118,43 @@ unicodex=>
 From here, the commands we need to execute are: creating our user, and giving it access to only our specific database:
 
 ```sql,exclude
-CREATE USER username WITH PASSWORD password; 
-GRANT ALL PRIVILEGES ON DATABASE database TO username;
+CREATE USER "DBUSERNAME" WITH PASSWORD "DBPASSWORD"; 
+GRANT ALL PRIVILEGES ON DATABASE "DATABASE_NAME" TO "DBUSERNAME";
 ```
 
 Some notes: 
 
-* environment variables won't explicitly work here; they are being used as placeholders.
-* Our `django` user needs `CREATE` and `ALTER` permissions to perform database migrations. It only needs these permissions on the database we created, not any other database in our instance. 
+* environment variables won't explicitly work here. All the terms in `"DOUBLE-QUOTES"` will need to be replaced manually. 
+* Our `django` user needs `CREATE` and `ALTER` permissions to perform database migrations. It only needs these permissions on the database we created, not any other database in our instance. Hence, we're being explicit. 
 
 ----
 
-📝 You *could* execute all the steps in this section up to now non-interactively. This script does this, under the following assumptions: 
-
-* If the database instance already exists, **we will reset the root password** so we know it. 
-  * This is a bad idea for instances that are shared with non-unicodex content. Edit the script if you are sharing an instance. 
-* If the database user already exists, we will reset the psasword so we know it. 
-* Since we cannot rely on interactivity, running the Cloud SQL Proxy ourselves.
-
+You **could** create the user using just the `gcloud` command yourself, but there are some limitations to this method: 
  
-**You should understand all of these considerations before executing this script.**
+ * The `gcloud` command does not handle custom roles, and your default role will be `cloudsqladmin`, which is tremendously high for a Django database user. 
+ * You will have to manually go and change the role yourself after. 
 
 ```shell
-export INSTANCE_NAME=YourInstanceName 
-export DATABASE_NAME=unicodex
+export DBUSERNAME=unicodex-django
+export DBPASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 40 | head -n 1)
 
-export PGPASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-
-export USERNAME=unicodex-django
-export PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 30 | head -n 1)
-export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
-
-# Create database instance, if it doesn't already exist. 
-EXISTING=$(gcloud sql instances list --format "value(name)" --filter="name=${INSTANCE_NAME}")
-if [ $? -eq 0 ] && [ "${EXISTING}" = "${INSTANCE_NAME}" ]; then
-    echo "Database instance ${INSTANCE_NAME} already exists in project ${PROJECT_ID}. Resetting password."
-    gcloud sql users set-password postgres --instance=$INSTANCE_NAME --password=$PGPASSWORD
-    export PWRESET=1
-else
-    gcloud sql instances create $INSTANCE_NAME \
-	   --database-version=POSTGRES_11 \
-	   --tier=db-f1-micro  \
-	   --region=$REGION \
-	   --project=$PROJECT_ID \
-	   --root-password=$PGPASSWORD
-fi
-
-# Create database, if it doesn't already exist. 
-EXISTING=$(gcloud sql databases list --instance $INSTANCE_NAME \
-           --format "value(name)" --filter="name=${DATABASE_NAME}")
-if [ $? -eq 0 ] && [ "${EXISTING}" = "${DATABASE_NAME}" ]; then
-    echo "Database ${DATABASE_NAME} already exists in ${INSTANCE_NAME}. Skipping."
-else
-    gcloud sql databases create $DATABASE_NAME --instance=$INSTANCE_NAME
-    sleep 5
-fi
-
-# Create database user, if it doesn't already exist. 
-EXISTING=$(gcloud sql users list --instance $INSTANCE_NAME \
-           --format "value(name)" --filter name="${USERNAME}")
-if [ $? -eq 0 ] && [ "${EXISTING}" = "${USERNAME}" ]; then
-    echo "Username ${USERNAME} already exists in ${INSTANCE_NAME}. Resetting password."
-    gcloud sql users set-password $USERNAME --instance=$INSTANCE_NAME --password=$PASSWORD
-else
-    # Extra hoops since we can't set roles in gcloud
-    if [ -z ${PWRESET} ]; then # only  resetting the password if we have not already done so.
-        gcloud sql users set-password postgres --instance=$INSTANCE_NAME --password=$PGPASSWORD
-    fi
-
-    cloud_sql_proxy -instances=$DATABASE_INSTANCE=tcp:5435 &
-    sleep 5
-
-    psql -U postgres --port 5435 --host localhost -c "CREATE USER \"$USERNAME\" WITH PASSWORD '${PASSWORD}'; GRANT ALL PRIVILEGES ON DATABASE \"$DATABASE_NAME\" TO \"$USERNAME\";"
-    kill $(pgrep cloud_sql_proxy)
-fi
+gcloud sql users create $DBUSERNAME \
+	--password $DBPASSWORD \
+	--instance $INSTANCE_NAME
 ```
-
 
 ---
 
 ### Configuring our Database URL
 
-We now have all the elements we need to create our `DATABASE_URL`. This is a format defined in a lot of systems, including [`django-environ`](https://django-environ.readthedocs.io/en/latest/). 
+We now have all the elements we need to create our `DATABASE_URL`. It's a connection URL, a configuration format shared by many systems including [`django-environ`](https://django-environ.readthedocs.io/en/latest/). 
 
-Back in our **local terminal** (hello old friend!), we will need the `USERNAME` and `PASSWORD` for the `DATABASE_NAME` on the `INSTANCE_NAME` we created, in whatever `REGION` to form the `DATABASE_URL`:
+This string is **super secret**, so it's one of the secrets we'll be encrypting later.
 
-```shell,exclude
-# use the values from your previous commands
-export USERNAME=django
-export PASSWORD=secret_password
-export DATABASE_NAME=unicodex
-```
-
-Then, we can create our `DATABASE_URL`:
+To create the DATABASE_URL, we'll need the `DBUSERNAME` and `DBPASSWORD` for the `DATABASE_NAME` on the `INSTANCE_NAME` we created, in whatever `REGION` to form the `DATABASE_URL`:
 
 ```shell
-export DATABASE_URL=postgres://$USERNAME:${PASSWORD}@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
-```
-
-For convenience, later we will also need a smaller version of this string, which just our absolute Cloud SQL Instance identifier: 
-
-```shell,exclude
-export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
+export DATABASE_URL=postgres://$DBUSERNAME:${DBPASSWORD}@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
 ```
 
 We now have the environment variables we need! 🍪

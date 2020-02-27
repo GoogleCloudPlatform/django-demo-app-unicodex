@@ -3,23 +3,84 @@
 # Creates permissions and misc components
 
 ###################################################################################
+
+data "google_project" "project" {
+  project_id = var.project
+}
+
+resource "google_service_account" "cloudrun" {
+  account_id   = var.service
+  display_name = "${var.service} service account"
+}
+
+###################################################################################
 # MEDIA
 
 resource "google_storage_bucket" "media_bucket" {
-  name = "${var.project}-${var.slug}-media"
+  name = "${var.project}-media"
 }
+
 resource "google_storage_bucket_access_control" "media_bucket_public_rule" {
   bucket = google_storage_bucket.media_bucket.name
   role   = "READER"
   entity = "allUsers"
 }
 
+resource "google_storage_bucket_iam_member" "cloudrun_admin" {
+  bucket = google_storage_bucket.media_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = local.cloudrun_sa
+  depends_on = [google_service_account.cloudrun]
+}
 ###################################################################################
-# BERGLAS
+# Permissions
 
-resource "google_service_account" "berglas" {
-  account_id   = "cloudrun-berglas-python"
-  display_name = "Unicodex service account"
+locals {
+  cloudrun_sa   = "serviceAccount:${google_service_account.cloudrun.email}"
+  cloudbuild_sa = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+}
+
+resource "google_project_iam_binding" "cloudbuild_sa_permissions" {
+  for_each = toset([
+    "run.admin", "iam.serviceAccountUser", "cloudsql.client"
+  ])
+
+  role    = "roles/${each.key}"
+  members = [local.cloudbuild_sa]
+}
+
+resource "google_project_iam_binding" "cloudrun_sa_permissions" {
+  for_each = toset([
+    "run.admin", "cloudsql.client"
+  ])
+  role       = "roles/${each.key}"
+  members    = [local.cloudrun_sa]
+  depends_on = [google_service_account.cloudrun]
+}
+
+
+###################################################################################
+# Secrets
+# Secrets both Cloud Run and Cloud Build need.
+
+module secret_database_url {
+  source  = "./secret"
+  project = var.project
+
+  name        = "DATABASE_URL"
+  secret_data = var.database_url
+  accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
+}
+
+##
+
+module secret_gs_media_bucket {
+  source  = "./secret"
+  project = var.project
+
+  name        = "GS_BUCKET_NAME"
+  secret_data = google_storage_bucket.media_bucket.name
+  accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
 }
 
 resource "random_password" "secret_key" {
@@ -27,67 +88,37 @@ resource "random_password" "secret_key" {
   special = false
 }
 
+module secret_secret_key {
+  source  = "./secret"
+  project = var.project
+
+  name        = "SECRET_KEY"
+  secret_data = random_password.secret_key.result
+  accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
+}
+
+# Secret values only Cloud Build needs
+
+module secret_superuser {
+  source  = "./secret"
+  project = var.project
+
+  name        = "SUPERUSER"
+  secret_data = var.superuser
+  accessors   = [local.cloudbuild_sa]
+}
+
 resource "random_password" "superpass" {
   length  = 30
   special = false
 }
 
-locals {
-  berglas_key = "projects/${var.project}/locations/global/keyRings/berglas/cryptoKeys/berglas-key"
-  berglas_secrets_list = {
-    database_url = var.database_url
-    superuser    = "admin"
-    superpass    = random_password.superpass.result
-    secret_key   = random_password.secret_key.result
-    media_bucket = google_storage_bucket.media_bucket.name
-  }
+module secret_superpass {
+  source  = "./secret"
+  project = var.project
 
-  sa_email    = "${google_service_account.berglas.account_id}@${var.project}.iam.gserviceaccount.com"
-  sa_cb_email = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
-
-}
-
-resource "google_kms_crypto_key_iam_member" "service_account" {
-  crypto_key_id = local.berglas_key
-  role          = "roles/cloudkms.cryptoKeyDecrypter"
-  member        = "serviceAccount:${local.sa_email}"
-}
-
-
-resource "google_kms_crypto_key_iam_member" "cloudbuild" {
-  crypto_key_id = local.berglas_key
-  role          = "roles/cloudkms.cryptoKeyDecrypter"
-  member        = "serviceAccount:${local.sa_cb_email}"
-}
-
-###################################################################################
-
-# IAM Permissions for service accounts. 
-
-data "google_project" "project" {
-  project_id = var.project
-}
-
-resource "google_project_iam_binding" "sa_runview" {
-  role = "roles/run.viewer"
-
-  members = ["serviceAccount:${local.sa_email}"]
-}
-
-resource "google_project_iam_binding" "cloudbuild" {
-  for_each = toset([
-    "run.admin", "iam.serviceAccountUser", "cloudsql.admin"
-  ])
-
-  role    = "roles/${each.key}"
-  members = ["serviceAccount:${local.sa_cb_email}"]
-}
-
-resource "google_project_iam_binding" "cloudrun" {
-  for_each = toset([
-    "run.admin", "cloudsql.client"
-  ])
-  role    = "roles/cloudsql.client"
-  members = ["serviceAccount:${local.sa_email}"]
+  name        = "SUPERPASS"
+  secret_data = random_password.superpass.result
+  accessors   = [local.cloudbuild_sa]
 }
 

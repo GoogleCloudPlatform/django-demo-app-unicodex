@@ -5,6 +5,7 @@
 
 *We'll create two local images, which we will then connect together, and test the application's functionality.*
 
+---
 
 You will need to install: 
 
@@ -72,15 +73,9 @@ You can now see unicodex running in your browser at [http://0.0.0.0:8080/](http:
 
 If you've loaded the sample data correctly, you'll have a display that shows the Waving emoji.
 
-[Clicking on the emoji][hand] shows the designs for that emoji. 
+[Clicking on the emoji][hand] shows the designs for that emoji. Of which, currently, there are none. That's okay, we'll add some. 
 
-Of which, currently, there are none. That's okay, we'll add some. 
-
-Go to the [django admin](http://0.0.0.0:8080/admin) and login with the username and password you set up in `automatesuperuser`. 
-
-From there, click on the ["Codepoint" model](http://0.0.0.0:8080/admin/unicodex/codepoint/). You should see one listing, `1F44B`. 
-
-Now, select that listing by clicking on the checkbox on the far left side, and in the Action dropdown, select 'Generate designs for available vendor versions'. 
+Go to the [django admin](http://0.0.0.0:8080/admin) and login with the username and password you set up in `automatesuperuser`. From there, click on the ["Codepoint" model](http://0.0.0.0:8080/admin/unicodex/codepoint/). You should see one listing, `1F44B`. Now, select that listing by clicking on the checkbox on the far left side, and in the Action dropdown, select 'Generate designs for available vendor versions'. 
 
 Your `docker-compose` window will show a lot of output. What this [admin action](https://docs.djangoproject.com/en/2.2/ref/contrib/admin/actions/) is doing is getting the Emojipedia page for ["waving hand sign"](https://emojipedia.org/waving-hand-sign/), and cross-referencing all the vendors it knows about; downloading and creating the Design objects as it goes. 
 

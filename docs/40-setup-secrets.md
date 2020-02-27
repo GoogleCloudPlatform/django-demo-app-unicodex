@@ -1,14 +1,14 @@
-# Create some Berglas secrets
+# Create some Secrets
 
 *In this section, we will setup some secrets!*
 
-To encode our secrets, we'll be using [berglas](https://github.com/GoogleCloudPlatform/berglas).
+To encode our secrets, we'll be using [Secrets Manager](https://cloud.google.com/secret-manager/docs
 
 ----
 
 > But why? 
 
-It's a *stonkingly good idea* to ensure that only our application can access our database. To do that, we spent a whole lot of time setting up passwords. It's also a really good idea if only our application has access to these passwords. 
+It's a *exceedingly good idea* to ensure that only our application can access our database. To do that, we spent a whole lot of time setting up passwords. It's also a really good idea if only our application has access to these passwords. 
 
 Plus, we'll be using `django-environ` later, which is directly influenced by [The Twelve Factor App](https://12factor.net/). You can read up how [Cloud Run complies with the Twelve Factor application](https://cloud.google.com/blog/products/serverless/a-dozen-reasons-why-cloud-run-complies-with-the-twelve-factor-app-methodology).
 
@@ -16,148 +16,90 @@ This setup looks a bit long, but application security security is no joke, and t
 
 ---
 
-To setup berglas, follow its [setup documentation](https://github.com/GoogleCloudPlatform/berglas#setup). 
+Back in [an earlier step](docs/10-setup-gcp.md) we enabled the Secret Manager API, so we now have access to use it. So now, we can create our secrets. 
 
-Installation steps depend on your operating system: maOS, Linux, Windows, Homebrew, or Docker. 
+There are five secrets we need to create. 
 
-To install berglas without installing the executable you can use the docker image: 
+Three are our base django secrets: 
 
-```shell
-docker pull gcr.io/berglas/berglas
-alias berglas="docker run --rm gcr.io/berglas/berglas"
-```
-
-You'll end up running a series of commands like this: 
-
-```shell
-export BERGLAS_BUCKET=${PROJECT_ID}-unicodex-secrets
-
-berglas bootstrap --project $PROJECT_ID --bucket $BERGLAS_BUCKET
-```
-
-Specific things to note: 
-
-* We already have our `PROJECT_ID`.
-* The `BERGLAS_BUCKET` is **NOT** `${PROJECT_ID}-media` from earlier. We suggest using something like `${PROJECT_ID}-secrets`. This bucket should not yet exist: berglas will create it for us. 
-* Berglas will suggest enabling a bunch of services, but we did that already. Re-enabling won't affect our setup. 
-
-You should now be able to check that berglas works, and doesn't see any active secrets: 
-
-```shell,exclude
-berglas --version
-berglas list ${PROJECT_ID}-secrets
-```
-
-From here, we need to create a number of secrets. 
-
----
-
-A few of these secrets need to be passwords or other random strings. You can generate a string like so: 
-
-```shell,exlucde
-cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1
-```
-
-This command is doing at lot, but in essense: macOS/Linux systems, this will generate a psudo-random string of 64 characters. 
-
-There are other ways you can generate random strings, for example with pure python: 
-
-```shell,exclude
-python -c "import secrets; print(secrets.token_urlsafe(50))"
-```
-
-This is a [Python standard library method](https://docs.python.org/3/library/secrets.html#secrets.token_urlsafe) that will generate a 50 byte string for us, or around ~65 characters. Plenty long enough for a password.
-
----
-
-The secrets we need to create: 
-
- * `database_url`, with the value `DATABASE_URL`, as mentioned earlier in the Database section
- * `secret_key`, a minimum 50 character random string, for django's `SECRET_KEY`
- * `media_bucket`, the media bucket we created earlier (`${PROJECT_ID}-media`)
-
-And for the django admin (`/admin`), we'll need our superuser: 
-
- * `superuser`, a superuser name (`admin`? your name?)
- * `superpass`, a secret password, using our generator from earlier. 
-
+ * `DATABASE_URL `, with the value `DATABASE_URL`, as [mentioned earlier](20-setup-sql.md),
+ * `SECRET_KEY`, a minimum 50 character random string for django's `SECRET_KEY`,
+ * `GS_BUCKET_KEY`, the media bucket we [created earlier](30-setup-media.md).
  
-Also, for each of these secrets, we need to define *who* can access them. Berglas allows us to define exactly which parts of Google Cloud is allowed to use our secrets. Nifty!
+We'll also need an additional two for our django admin login (`/admin`):
+
+ * `SUPERUSER`, a superuser name (`admin`? your name?)
+ * `SUPERPASS`, a secret password, using our generator from earlier. 
+
+Also, for each of these secrets, we need to define *who* can access them. 
 
 In our case, we want only Cloud Run and Cloud Build (for [automating deployments](60-ongoing-deployment.md) later) to be able to view our secrets. In order to do that, we need to get their service account names. 
 
-We can programaically collect the information we need for this, and setup some of the policy binding we need, by running the following:
+We know our Cloud Run service account, because we explicitly created it earlier. So we just need our Cloud Build account. It was automatically created for us when we enabled the Cloud Build API, and is identified by an email address that uses our project number (rather than the project ID we've been using so far): 
 
 ```shell
-export KMS_KEY=projects/${PROJECT_ID}/locations/global/keyRings/berglas/cryptoKeys/berglas-key
-export PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
-export SA_EMAIL=${PROJECT_NUMBER}-compute@developer.gserviceaccount.com
-export SA_CB_EMAIL=${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com
-
-gcloud projects add-iam-policy-binding ${PROJECT_ID} --member serviceAccount:${SA_EMAIL} --role roles/run.viewer
+export PROJECTNUM=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
+export CLOUDBUILD_SA=${PROJECTNUM}@cloudbuild.gserviceaccount.com
 ```
 
-<small>Tip: The vaues used for the `KMS_KEY` assumes you used the default value from the Berglas setup.</small>
+---
 
-Now, we can create our secrets. 
-
-For **each** `SECRET` and `VALUE`:
+For **each** `SECRET` and `VALUE` and `SERVICEACCOUNT`, we would run:
 
 ```shell,exclude
 # sample code
-berglas create ${BERGLAS_BUCKET}/$SECRET $VALUE --key ${KMS_KEY}
-berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
-berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_CB_EMAIL}
+gcloud secrets create $SECRET
+
+echo -n "$VALUE" | gcloud secret versions add $SECRET --data-file=-
+
+gcloud secrets add-iam-policy-binding $SECRET \
+  --member $SERVICEACCOUNT \
+  --role roles/secretmanager.secretAccessor
 ```
 
-These three commands will: 
+These commands will: 
 
  * create the secret
- * allow the Cloud Run service access the secret
- * allow the Cloud **Build** service access the secret. 
+ * add a new version of the secret (with an actual value), and
+ * allow our service account to access the secret. 
 
-So you'll end up running: 
+---
+
+So, to configure the setup we want, we can run the following: 
 
 ```shell
+export SUPERUSER="admin"
 export SUPERPASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 30 | head -n 1)
 export SECRET_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)
 
-berglas create ${BERGLAS_BUCKET}/database_url $DATABASE_URL  --key ${KMS_KEY}
-berglas create ${BERGLAS_BUCKET}/media_bucket $MEDIA_BUCKET  --key ${KMS_KEY}
-berglas create ${BERGLAS_BUCKET}/superuser    admin          --key ${KMS_KEY}
-berglas create ${BERGLAS_BUCKET}/superpass    $SUPERPASS     --key ${KMS_KEY}
-berglas create ${BERGLAS_BUCKET}/secret_key   $SECRET_KEY    --key ${KMS_KEY}
+# DATABASE_URL   was defined back in the database setup step
+# GS_BUCKET_NAME was defined back in the media setup step
 
-for SECRET in database_url media_bucket superuser superpass secret_key; do
-	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_EMAIL}
-	berglas grant ${BERGLAS_BUCKET}/$SECRET --member serviceAccount:${SA_CB_EMAIL}
-done
-
+for SECRET in DATABASE_URL GS_BUCKET_NAME SECRET_KEY SUPERUSER SUPERPASS; do
+  gcloud secrets create $SECRET --replication-policy automatic
+    
+  echo -n "${!SECRET}" | gcloud secrets versions add $SECRET --data-file=-
+    
+  for role in $CLOUDRUN_SA $CLOUDBUILD_SA; do
+    gcloud secrets add-iam-policy-binding $SECRET \
+      --member serviceAccount:${role} --role roles/secretmanager.secretAccessor
+  done
+done 
 ```
 
-You can confirm you're ready for the next step by listing the secrets in the bucklet: 
+Some of the bash tricks we're using here: 
 
-```shell
-berglas list $BERGLAS_BUCKET
-```
+* Many of the commands are very similar, so we're using `for` loops a lot.
+* The `${!var}` expands the value of `var`, which allows us to dynamically define variables. This works in bash, but may not work in other shells. Running all these scripts in bash is a good idea, just in case the eccentric doesn't work in your shell. 
+* The `-n` in `echo` makes sure we don't accidentally save any trailing newline characters to our secret. 
 
-The output for this should be: 
-
-```exclude
-database_url
-media_bucket
-secret_key
-superpass
-superuser
-```
+---
  
-If you *need* to get the **value** of these secrets, you can run: 
+If you *need* to get the **value** of these secrets, you can run the following: 
 
 ```shell,exclude
-berglas access ${BERGLAS_BUCKET}/$SECRET
+ gcloud secrets versions access latest --secret="$SECRET"
 ```
-
-Note that the secret values will not have a new-line character at the end, so they'll look a little funny in your terminal. They're machine-readable, though!
 
 ---
 

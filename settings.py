@@ -17,6 +17,10 @@
 import os
 import environ
 
+# Import specific values from Secret Manager
+import sm_helper
+secrets = sm_helper.access_secrets(["DATABASE_URL","GS_BUCKET_NAME","SECRET_KEY"])
+os.environ.update(secrets)
 
 env = environ.Env(DEBUG=(bool, False), GS_BUCKET_NAME=(str, None))
 
@@ -32,9 +36,8 @@ SECRET_KEY = env("SECRET_KEY")
 
 # handle raw host(s), or http(s):// host(s), or no host. 
 if "CURRENT_HOST" in os.environ:
-    CURRENT_HOST = os.environ["CURRENT_HOST"]
     HOSTS = []
-    for h in CURRENT_HOST.split(","):
+    for h in env.list("CURRENT_HOST"):
         if "://" in h:
             h = h.split("://")[1]
         HOSTS.append(h)
@@ -126,9 +129,7 @@ WSGI_APPLICATION = "unicodex.wsgi.application"
 DATABASES = {"default": env.db()}
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
