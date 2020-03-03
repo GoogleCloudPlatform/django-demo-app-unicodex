@@ -73,17 +73,17 @@ Finally, we will be using a number of Google Cloud services in this tutorial. We
 
 ```shell
 gcloud services enable \
-    run.googleapis.com \
-    iam.googleapis.com \
-    compute.googleapis.com \
-    sql-component.googleapis.com \
-    sqladmin.googleapis.com \
-    storage-component.googleapis.com \
-    cloudbuild.googleapis.com \
-    cloudkms.googleapis.com \
-    storage-api.googleapis.com \
-    cloudresourcemanager.googleapis.com \
-    secretmanager.googleapis.com
+  run.googleapis.com \
+  iam.googleapis.com \
+  compute.googleapis.com \
+  sql-component.googleapis.com \
+  sqladmin.googleapis.com \
+  storage-component.googleapis.com \
+  cloudbuild.googleapis.com \
+  cloudkms.googleapis.com \
+  storage-api.googleapis.com \
+  cloudresourcemanager.googleapis.com \
+  secretmanager.googleapis.com
 ```
 
 This operation may take a few minutes to complete. 

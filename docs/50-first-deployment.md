@@ -31,10 +31,10 @@ Then, we can (finally!) create our Cloud Run service, telling it about the image
 
 ```shell
 gcloud run deploy $SERVICE_NAME \
-    --allow-unauthenticated \
-    --image gcr.io/$PROJECT_ID/$SERVICE_NAME \
-    --add-cloudsql-instances $PROJECT_ID:$REGION:$INSTANCE_NAME \
-    --service-account $CLOUDRUN_SA
+  --allow-unauthenticated \
+  --image gcr.io/$PROJECT_ID/$SERVICE_NAME \
+  --add-cloudsql-instances $PROJECT_ID:$REGION:$INSTANCE_NAME \
+  --service-account $CLOUDRUN_SA
 ```
 
 *Note:* We are using the fully-qualified database instance name here. Although not strictly required, as our database is in the same project and region, it helps with clarity. 
@@ -58,7 +58,7 @@ We could copy the URL from this output, or we can use a [`--format`](https://dev
 
 ```shell
 export SERVICE_URL=$(gcloud run services describe $SERVICE_NAME \
-	--format="value(status.url)")
+  --format "value(status.url)")
 	 
 echo $SERVICE_URL
 ```
@@ -67,7 +67,7 @@ Then, we can redeploy our service, updating *just* this new environment variable
 
 ```shell
 gcloud run services update $SERVICE_NAME \
-	--update-env-vars CURRENT_HOST=$SERVICE_URL
+  --update-env-vars "CURRENT_HOST=${SERVICE_URL}"
 ```
 
 In this case, `CURRENT_HOST` is setup in our [settings.py](../settings.py) to be added to the `ALLOWED_HOSTS`, if defined. 
@@ -100,8 +100,8 @@ We'll also need to ensure that for the final step in our deployment, Cloud Build
 
 ```shell
 gcloud iam service-accounts add-iam-policy-binding ${CLOUDRUN_SA} \
-  --member="serviceAccount:${CLOUDBUILD_SA}" \
-  --role="roles/iam.serviceAccountUser"
+  --member "serviceAccount:${CLOUDBUILD_SA}" \
+  --role "roles/iam.serviceAccountUser"
 ```
 
 You can check the current roles by:
@@ -113,8 +113,9 @@ From here, we can then run our `gcloud builds submit` command again, but this ti
 
 ```shell
 # migrate and deploy
-gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
-    --substitutions="_REGION=${REGION},_INSTANCE_NAME=${INSTANCE_NAME},_SERVICE=${SERVICE_NAME}"
+gcloud builds submit \
+  --config .cloudbuild/build-migrate-deploy.yaml \
+  --substitutions "_REGION=${REGION},_INSTANCE_NAME=${INSTANCE_NAME},_SERVICE=${SERVICE_NAME}"
 ```
 
 This command will take a few minutes to complete, but the output will show you what it's doing as it goes.
