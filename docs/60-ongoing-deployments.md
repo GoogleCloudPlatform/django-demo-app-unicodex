@@ -13,15 +13,17 @@ Please note that the following descriptions may change as functionality is updat
 
 We're going to get our service setup with continuous deployment by adding a build trigger through Cloud Build. 
 
-To start, you'll need to have your copy of this repo code setup in it's own repo. We'll be using GitHub (as that's what the project itself uses), but you can do this with BitBucket or Cloud Source Repositories. 
+To start, you'll need to have your copy of this repo code setup in it's own repo. We'll be using GitHub for this tutorial, but you can also do this a Cloud Source Repository.
 
-We're going to setup our `master` branch to deploy to our `unicodex` service on merge. 
+If you're unfamiliar with forking a respository, you can follow [GitHub's tutorial on the subject](https://help.github.com/en/github/getting-started-with-github/fork-a-repo). 
+
+We're going to setup our `master` branch on our fork deploy to our `unicodex` service on merge. 
 
 ---
 
-To setup our triggers, we're going to have to go to the [Cloud Build triggers](https://console.cloud.google.com/cloud-build/triggers/) page in the console, and click [Connect repository](https://console.cloud.google.com/cloud-build/triggers/connect). 
+Before we can setup our trigger, we're going to have to [connect to our source repository](https://cloud.google.com/cloud-build/docs/running-builds/create-manage-triggers#connecting_to_source_repositories). The full instructions for this are on the [Google Cloud docs page](https://cloud.google.com/cloud-build/docs/running-builds/create-manage-triggers)
 
-From here, you'll need to sign into GitHub, then install Google Cloud Build as an application, against your repository (or all repositories, if you wish.)
+You'll need to sign into GitHub, whereever you made a copy of your repo, then install Google Cloud Build as an application against your repository (or all repositories, if you wish.)
 
 **Note**: If you have already installed Cloud Build and did not allow access to all repositories, you'll have to add more from the "Edit repositories on GitHub ⬀" link. 
 
@@ -33,26 +35,35 @@ Finally, click 'Skip' to skip implementing the suggested default trigger. We'll 
 
 Now that we've connected our accounts, we can setup the trigger. 
 
-Click the 'Add trigger' from the "..." menu on your repo. 
+This command is similar to the `gcloud builds submit --config` command we ran in the [last section](50-first-deployment.md), and for good reason. Instead of having to manually choose when we run this command, we're essentially setting up a listener to do this for us. 
 
-From here, we're going to enter the following details: 
+For this command, you'll have to define your own GitHub username as the `REPO_OWNER`:
 
-* **Description**: push on master
-* **Branch (regex)**: master
-* **Build configuration**: Cloud Build configuration file
-* **Cloud Build configuration file location**: `.cloudbuild/build-migrate-deploy.yaml`
-* **Substitution variables**:
-  * `_REGION`: us-central1
-  * `_INSTANCE_NAME`: yourproject:yourregion:instance_name
-  * `_SERVICE`: unicodex 
+```shell,exclude
+REPO_OWNER=you
 
-You may notice this looks similar to the `gcloud builds submit --config` command we ran in the [last section](50-first-deployment.md). That's because it is! All we're doing is telling out system to run the deployment command when an event happens. In this case, the event is when we put new code into the master branch. 
-
----
+gcloud beta builds triggers create github \
+  --repo-name django-demo-app-unicodex \
+  --repo-owner ${REPO_OWNER} \
+  --branch-pattern master \
+  --build-config .cloudbuild/build-migrate-deploy.yaml \
+  --substitutions "_REGION=${REGION},_INSTANCE_NAME=${INSTANCE_NAME},_SERVICE=${SERVICE_NAME}"
+```
 
 With this setup, any time we push code to the `master` branch, our service will be deployed. 
 
-This works well when you have Pull Requests in Github being merged to the `master` branch: any merged PR will automatically initialise a new deployment. 
+You can test that this works by making a pull request on your own repo, merge it, and see your changes automatically deployed. 
+
+What could you change? 
+ 
+ * Want to change the home page from "✨ Unicodex ✨"?
+   * Try changing the `block title` on `unicodex/templates/index.html`
+ * Want to add another field to the 	Codepoint display?
+   * Try adding a new field on the `unicodex/models.py`
+   * Be sure to add this new field on `unicodex/templates/codepoint.html`
+   * Make sure you run `./manage.py makemigrations` and commit the new `migrations` file it generates!
+ * Want to add something more?
+   * Go wild! ✨
 
 ---
 
@@ -79,3 +90,4 @@ But if you really want to, you can [automate this entire process with Terraform]
 Don't forget to [clean-up](90-cleanup.md) your resources if you don't want to continue running your app. 
 
 ---
+
