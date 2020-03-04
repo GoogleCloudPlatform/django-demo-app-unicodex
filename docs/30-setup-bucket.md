@@ -20,7 +20,9 @@ gsutil mb -l ${REGION} gs://${GS_BUCKET_NAME}
 We'll also need to give our service account permission to operate on this bucket (which it needs to do Django admin action based [storage object alteration](https://cloud.google.com/storage/docs/access-control/using-iam-permissions#bucket-add): 
 
 ```shell
-gsutil iam ch serviceAccount:${CLOUDRUN_SA}:roles/storage.objectAdmin gs://${GS_BUCKET_NAME} 
+gsutil iam ch \
+  serviceAccount:${CLOUDRUN_SA}:roles/storage.objectAdmin \
+  gs://${GS_BUCKET_NAME} 
 ```
 
 ---

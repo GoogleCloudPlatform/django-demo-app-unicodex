@@ -82,7 +82,8 @@ for SECRET in DATABASE_URL GS_BUCKET_NAME SECRET_KEY SUPERUSER SUPERPASS; do
     
   for role in $CLOUDRUN_SA $CLOUDBUILD_SA; do
     gcloud secrets add-iam-policy-binding $SECRET \
-      --member serviceAccount:${role} --role roles/secretmanager.secretAccessor
+      --member serviceAccount:${role} \
+      --role roles/secretmanager.secretAccessor
   done
 done 
 ```
@@ -98,7 +99,7 @@ Some of the bash tricks we're using here:
 If you *need* to get the **value** of these secrets, you can run the following: 
 
 ```shell,exclude
- gcloud secrets versions access latest --secret="$SECRET"
+gcloud secrets versions access latest --secret $SECRET
 ```
 
 ---

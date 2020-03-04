@@ -139,8 +139,8 @@ export DBUSERNAME=unicodex-django
 export DBPASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 40 | head -n 1)
 
 gcloud sql users create $DBUSERNAME \
-	--password $DBPASSWORD \
-	--instance $INSTANCE_NAME
+  --password $DBPASSWORD \
+  --instance $INSTANCE_NAME
 ```
 
 ---
