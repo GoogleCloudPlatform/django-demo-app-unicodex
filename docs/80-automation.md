@@ -12,7 +12,21 @@ But for deploying multiple setups, such as if you wanted to implement the projec
 
 This tutorial isn't a full Terraform 101, but it should help guide you along the process. 
 
-To start with, you'll need to [install Terraform for your operating system](https://learn.hashicorp.com/terraform/getting-started/install.html), and [setup your local credentials](https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually) (we did something similar earlier, just create a "terraform-provision" service as an owner and save your key somewhere outside of your project code).
+To start with, you'll need to [install Terraform for your operating system](https://learn.hashicorp.com/terraform/getting-started/install.html), and [authenticate against the Cloud SDK](https://cloud.google.com/sdk/gcloud/reference/auth/application-default) (this will open a browser window for you to sign into): 
+
+```
+gcloud auth application-default login
+```
+
+---
+
+🤔 Didn't we already do this authentication step?
+
+We did, back in [the GCP setup section](10-setup-gcp.md); we authenicated to let `gcloud` act as us. Now, we're authenticating against the Cloud SDK, which lets other applications operate as us. 
+
+If you'd rather only let terraform have access to your unicodex project, you can [setup a new service account](https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually) and use those credentials instead. 
+
+---
 
 To give an overview of how you can use terraform, a basic Cloud Run setup might be as simple as the [provided example](https://www.terraform.io/docs/providers/google/r/cloud_run_service.html): 
 
@@ -124,9 +138,7 @@ The output of the last command will show you where your service is deployed. You
 
 ℹ️ A note on permissions: 
 
-The permissions that Terraform configures are slightly different than the guided walkthrough. In this version of the provisioning process you never run `gcloud`, but Terraform itself is setting up things as you. However, since *you* never setup the Cloud Run service, Cloud Build needs more permissions (there are explicit 'create' permissions that differ from 'update'). 
-
-All this being said, the configuration that terraform sets up is more permissive than the manual process. If you plan to use the terraform configurations as is in your own setup, keep this in mind. 
+TODO(glasnt): update note on permissions
 
 
 ### Continuous deployment

@@ -28,9 +28,9 @@ If you happen to already have a Google Cloud Platform account, create a new proj
 
 We're also going to be using the command line utility (CLI) for Google Cloud, `gcloud`, wherever possible. 
 
-Go to the [`gcloud` install website](https://cloud.google.com/sdk/docs/#install_the_latest_cloud_tools_version_cloudsdk_current_version) and follow the instructions your operating system. 
+Go to the [`gcloud` install website](https://cloud.google.com/sdk/docs/#install_the_latest_cloud_tools_version_cloudsdk_current_version) download a version for your operating system. You'll then be guided to install the tool and then initialise it (which handles logging into Google Cloud, so that `gcloud` can perform operations as you.)
 
-To test your `gcloud` works and is up to date: 
+To test your `gcloud` CLI works and is up to date: 
 
 ```shell,exclude
 gcloud --version
