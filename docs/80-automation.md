@@ -88,7 +88,11 @@ Without specifying any other flags, this command will prompt you for some variab
 You can specify your variables using [command-line flags](https://learn.hashicorp.com/terraform/getting-started/variables.html#command-line-flags), which would look something like this: 
 
 ```shell,exclude
-terraform apply -var 'region=us-central1' -var 'service=unicodex' -var 'project=MyProject' -var 'instance_name=psql'
+terraform apply \
+  -var 'region=us-central1' 
+  -var 'service=unicodex' 
+  -var 'project=MyProject' 
+  -var 'instance_name=psql'
 ```
 
 ⚠️ Since we are dynamically creating our secret strings, our [terraform state is considered sensitive data](https://www.terraform.io/docs/state/sensitive-data.html).
