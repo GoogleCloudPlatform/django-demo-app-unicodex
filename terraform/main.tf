@@ -16,7 +16,7 @@ provider "google" {
 # Enable all services
 module "services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "4.0.0"
+  version = "7.0.2"
 
   project_id = var.project
 
