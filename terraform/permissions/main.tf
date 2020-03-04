@@ -30,7 +30,7 @@ resource "google_storage_bucket_iam_member" "cloudrun_admin" {
   bucket = google_storage_bucket.media_bucket.name
   role   = "roles/storage.objectAdmin"
   member = local.cloudrun_sa
-  depends_on = [google_service_account.cloudrun]
+  depends_on = [google_service_account.cloudrun, google_storage_bucket.media_bucket]
 }
 ###################################################################################
 # Permissions
