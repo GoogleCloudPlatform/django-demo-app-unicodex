@@ -27,9 +27,9 @@ resource "google_storage_bucket_access_control" "media_bucket_public_rule" {
 }
 
 resource "google_storage_bucket_iam_member" "cloudrun_admin" {
-  bucket = google_storage_bucket.media_bucket.name
-  role   = "roles/storage.objectAdmin"
-  member = local.cloudrun_sa
+  bucket     = google_storage_bucket.media_bucket.name
+  role       = "roles/storage.objectAdmin"
+  member     = local.cloudrun_sa
   depends_on = [google_service_account.cloudrun, google_storage_bucket.media_bucket]
 }
 ###################################################################################
@@ -40,24 +40,23 @@ locals {
   cloudbuild_sa = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
 }
 
-resource "google_project_iam_binding" "cloudbuild_sa_permissions" {
-  for_each = toset([
-    "run.admin", "iam.serviceAccountUser", "cloudsql.client"
-  ])
 
-  role    = "roles/${each.key}"
-  members = [local.cloudbuild_sa]
-}
-
-resource "google_project_iam_binding" "cloudrun_sa_permissions" {
+resource "google_project_iam_binding" "service_permissions" {
   for_each = toset([
     "run.admin", "cloudsql.client"
   ])
+
   role       = "roles/${each.key}"
-  members    = [local.cloudrun_sa]
+  members    = [local.cloudbuild_sa, local.cloudrun_sa]
   depends_on = [google_service_account.cloudrun]
 }
 
+resource "google_service_account_iam_binding" "cloudbuild_sa" {
+  service_account_id = google_service_account.cloudrun.name
+  role               = "roles/iam.serviceAccountUser"
+
+  members = [local.cloudbuild_sa]
+}
 
 ###################################################################################
 # Secrets
