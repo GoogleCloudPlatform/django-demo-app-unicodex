@@ -22,7 +22,7 @@ There are five secrets we need to create.
 
 Three are our base django secrets: 
 
- * `DATABASE_URL `, with the value `DATABASE_URL`, as [mentioned earlier](20-setup-sql.md),
+ * `DATABASE_URL`, with the value `DATABASE_URL`, as [mentioned earlier](20-setup-sql.md),
  * `SECRET_KEY`, a minimum 50 character random string for django's `SECRET_KEY`,
  * `GS_BUCKET_KEY`, the media bucket we [created earlier](30-setup-media.md).
  
