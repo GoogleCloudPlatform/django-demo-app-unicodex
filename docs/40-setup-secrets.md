@@ -48,9 +48,9 @@ For **each** `SECRET` and `VALUE` and `SERVICEACCOUNT`, we would run:
 
 ```shell,exclude
 # sample code
-gcloud secrets create $SECRET
+gcloud secrets create $SECRET --replication-policy automatic
 
-echo -n "$VALUE" | gcloud secret versions add $SECRET --data-file=-
+echo -n "$VALUE" | gcloud secrets versions add $SECRET --data-file=-
 
 gcloud secrets add-iam-policy-binding $SECRET \
   --member $SERVICEACCOUNT \
