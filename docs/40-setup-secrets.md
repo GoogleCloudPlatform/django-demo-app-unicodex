@@ -2,7 +2,7 @@
 
 *In this section, we will setup some secrets!*
 
-To encode our secrets, we'll be using [Secrets Manager](https://cloud.google.com/secret-manager/docs
+To encode our secrets, we'll be using [Secrets Manager](https://cloud.google.com/secret-manager/docs)
 
 ----
 
