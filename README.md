@@ -50,7 +50,7 @@ In the django admin, an admin action has been setup so that you can select a Cod
 
 ### Service design - 1:1:1
 
-Unicodex runs as a Cloud Run service. Using the Python package `django-storages`, it's been configured to take a `GS_BUCKET_NAME` as a storage place for its media. Using the Python package `django-environ` it takes a complex `DATABASE_URL`, which will point to a Cloud SQL PostgreSQL database. The `settings.py` is also designed to pull specifically named secrets into the environment. These are all designed to live in the same Google Cloud Project.
+Unicodex runs as a Cloud Run service. Using the Python package `django-storages`, it's been configured to take a `GS_BUCKET_NAME` as a storage place for its media. Using the Python package `django-environ` it takes a complex `DATABASE_URL`, which will point to a Cloud SQL PostgreSQL database. The `settings.py` is also designed to pull specifically named secrets into the environment. These are all designed to live in the same Google Cloud Project. Secrets are given specific names. 
 
 In this way, Unicodex runs 1:1:1 -- one Cloud Run Service, one Cloud SQL Database, one Google Storage bucket. It also assumes that there is *only* one service/database/bucket. 
 
