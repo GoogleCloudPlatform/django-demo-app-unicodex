@@ -26,10 +26,8 @@ module "services" {
     "compute.googleapis.com",
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
-    "storage-component.googleapis.com",
     "cloudbuild.googleapis.com",
     "cloudkms.googleapis.com",
-    "storage-api.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "secretmanager.googleapis.com"
   ]
