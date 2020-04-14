@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 steps:
-    # BUILD
     - id: 'build  '
       name: 'gcr.io/cloud-builders/docker'
-      args: ['build', 
-            '-t', 'gcr.io/${PROJECT_ID}/${_SERVICE}', 
-            '.']
+      args: ['build', '-t', 'gcr.io/${PROJECT_ID}/${_SERVICE}', '.']
 
     - id: 'push   '
       name: 'gcr.io/cloud-builders/docker'

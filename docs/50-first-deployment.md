@@ -78,7 +78,7 @@ In this case, `CURRENT_HOST` is setup in our [settings.py](../settings.py) to be
 
 Our database currently has no schema or data, so we need to now set that up. 
 
-Back in our [local testing](00-test-local.md), we did this by executing `migrate`, `loaddata` and `automatesuperuser` from the command line. 
+Back in our [local testing](00-test-local.md), we did this by executing `migrate` and `loaddata` from the command line. 
 
 The problem is, we don't have a command-line. 🤦‍♂️
 
@@ -132,8 +132,7 @@ By 'migrate', we mean:
 * run the django management commands: 
   * `./manage.py migrate`, which applies our database migrations
   * `./manage.py collectstatic`, which uploads our local static files to the media bucket
-* automatically, if there's no existing superuser, create a superuser, using the `superuser/superpass` we created earlier.
- * ⚠️ This needs to be run at least once, but you can choose to remove this part of the script later. 
+* ⚠️  These commands need to be run at least once, but you can choose to remove this part of the script later (for instance, if you want to manually do database migrations).
 
 The full contents of the script is in [.cloudbuild/build-migrate-deploy.yaml](../.cloudbuild/build-migrate-deploy.yaml). 
 
