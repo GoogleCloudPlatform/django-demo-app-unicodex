@@ -36,7 +36,9 @@ To test your `gcloud` CLI works and is up to date:
 gcloud --version
 ```
 
-If you see a "Updates area available" prompt, follow those installation instructions. 
+If you see a "Updates are available" prompt, follow those update instructions. 
+
+---
 
 Next, we need to set our project ID in both the command-line and as an environment variable. 
 
