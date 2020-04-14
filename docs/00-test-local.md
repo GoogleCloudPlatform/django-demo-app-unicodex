@@ -3,7 +3,7 @@
 
 *Before you get to deploying this application on Google Cloud, you can test the application locally with Docker and Docker Compose.*
 
-*We'll create two local images, which we will then connect together, and test the application's functionality.*
+*In this section, we'll build the application on our local machine, and using the provided configuration file, we'll deploy the app locally.*
 
 ---
 
@@ -13,6 +13,8 @@ You will need to install:
   * for Windows or macOS: use [Docker Desktop](https://www.docker.com/products/docker-desktop) 
   * for Linux: use [Docker CE](https://docs.docker.com/install/) ([Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/), [Debian](https://docs.docker.com/install/linux/docker-ce/debian/), [CentOS](https://docs.docker.com/install/linux/docker-ce/centos/), and [Fedora](https://docs.docker.com/install/linux/docker-ce/fedora/) have dedicated instructions)
  * [Docker Compose](https://docs.docker.com/compose/install/#install-compose)
+
+This local deployment will use the same image as our production deployment will, but will make use of the included `docker-compose.yml` to connect together the components. 
 
 ## Get a local copy of the code
 
@@ -26,34 +28,28 @@ cd django-demo-app-unicodex
 Otherwise, you can download and extract the latest [release](https://github.com/GoogleCloudPlatform/django-demo-app-unicodex/releases).
 
 
-## Build the images
+## Build the image
  
-Before we can run the images, they need to be built. We obtained the instructions that Docker needs for this in the last step.
-
-To build the images: 
+Before we can use our image, we have to build it. The database image will be pulled down later, so we just need to manually build our web image: 
 
 ```
 docker-compose build
 ``` 
 
-There will now be two images: a `web` container, and a `db` container. 
-
 
 ## Initialise the database
 
-At the moment the database is empty. We can use standard django commands to run our database migrations, add some starting data, and create our admin user; but these instructions need to be run the context of Docker: 
+At the moment the database is empty. We can use standard django commands to run our database migrations, and add some default data; these instructions need to be run the context of our web image: 
 
 ```
 docker-compose run --rm web python manage.py migrate
 docker-compose run --rm web python manage.py loaddata sampledata
-docker-compose run --rm web python manage.py automatesuperuser --username admin --password mysecretadminpassword
 ```
 
 **Tip**: `docker-compose run --rm` is quite long. You could create an alias for this command in your `.bashrc`. For example: `alias drc=docker-compose run --rm`. Adjust for your choice of terminal.
 
 <small>Notes: 
 
-* We use `automatesuperuser`, which is a modified version of `createsupseruser`, due to `createsuperuser` not being very script-happy. This is used later in our setup scripts.
 * If you received an error about `UserWarning: Error reading .env`, don't worry about this for now.
 </small>
 
@@ -75,7 +71,7 @@ If you've loaded the sample data correctly, you'll have a display that shows the
 
 [Clicking on the emoji][hand] shows the designs for that emoji. Of which, currently, there are none. That's okay, we'll add some. 
 
-Go to the [django admin](http://0.0.0.0:8080/admin) and login with the username and password you set up in `automatesuperuser`. From there, click on the ["Codepoint" model](http://0.0.0.0:8080/admin/unicodex/codepoint/). You should see one listing, `1F44B`. Now, select that listing by clicking on the checkbox on the far left side, and in the Action dropdown, select 'Generate designs for available vendor versions'. 
+Go to the [django admin](http://0.0.0.0:8080/admin) and login with the username and password from `docker-compose.yaml`. From there, click on the ["Codepoint" model](http://0.0.0.0:8080/admin/unicodex/codepoint/). You should see one listing, `1F44B`. Now, select that listing by clicking on the checkbox on the far left side, and in the Action dropdown, select 'Generate designs for available vendor versions'. 
 
 Your `docker-compose` window will show a lot of output. What this [admin action](https://docs.djangoproject.com/en/2.2/ref/contrib/admin/actions/) is doing is getting the Emojipedia page for ["waving hand sign"](https://emojipedia.org/waving-hand-sign/), and cross-referencing all the vendors it knows about; downloading and creating the Design objects as it goes. 
 

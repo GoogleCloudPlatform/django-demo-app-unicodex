@@ -159,7 +159,7 @@ gcloud run deploy unicodex \
 export SERVICE_URL=$(gcloud run services describe unicodex --format="value(status.url)")
 gcloud run services update unicodex --update-env-vars CURRENT_HOST=$SERVICE_URL
 
-# Database migration, creating superuser/pass
+# Do the migration (as well as a build and deploy)
 gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
     --substitutions="_REGION=us-central1,_INSTANCE_NAME=psql,_SERVICE=unicodex"
 
