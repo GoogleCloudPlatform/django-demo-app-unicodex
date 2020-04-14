@@ -53,7 +53,7 @@ gcloud secrets create $SECRET --replication-policy automatic
 echo -n "$VALUE" | gcloud secrets versions add $SECRET --data-file=-
 
 gcloud secrets add-iam-policy-binding $SECRET \
-  --member $SERVICEACCOUNT \
+  --member serviceAccount:$SERVICEACCOUNT \
   --role roles/secretmanager.secretAccessor
 ```
 
