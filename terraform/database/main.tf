@@ -6,8 +6,8 @@
 ###################################################################################
 
 locals {
-  database_user = "${var.service}-django-user"
-  database_name = "${var.service}-database"
+  database_user = "${var.service}-django"
+  database_name = "${var.service}"
 
   database_instance_fqdn = "${var.project}:${var.region}:${google_sql_database_instance.postgres.name}"
 }
