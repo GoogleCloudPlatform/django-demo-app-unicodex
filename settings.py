@@ -17,10 +17,15 @@
 import os
 import environ
 
-# Import specific values from Secret Manager
-import sm_helper
-secrets = sm_helper.access_secrets(["DATABASE_URL","GS_BUCKET_NAME","SECRET_KEY"])
-os.environ.update(secrets)
+mandatory_settings = ["DATABASE_URL","SECRET_KEY"]
+optional_settings = ["GS_BUCKET_NAME"]
+
+# If our mandatory settings aren't all already defined as environment variables
+# try pulling them from Secret Manager
+if not all (k in os.environ.keys() for k in set(mandatory_settings)):
+    import sm_helper
+    secrets = sm_helper.access_secrets(mandatory_settings + optional_settings)
+    os.environ.update(secrets)
 
 env = environ.Env(DEBUG=(bool, False), GS_BUCKET_NAME=(str, None))
 
