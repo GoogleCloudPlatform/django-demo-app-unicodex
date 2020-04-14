@@ -8,23 +8,52 @@ But for deploying multiple setups, such as if you wanted to implement the projec
 
 [Terraform](https://www.terraform.io/) allows us to automate infrastructure provisioning, and comes with a [Google Cloud Platform Provider](https://www.terraform.io/docs/providers/google/index.html) out of the box. 
 
----
-
 This tutorial isn't a full Terraform 101, but it should help guide you along the process. 
 
-To start with, you'll need to [install Terraform for your operating system](https://learn.hashicorp.com/terraform/getting-started/install.html), and [authenticate against the Cloud SDK](https://cloud.google.com/sdk/gcloud/reference/auth/application-default) (this will open a browser window for you to sign into): 
+---
 
-```
-gcloud auth application-default login
+To start with, you'll need to [install Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) for your operating system. 
+
+Once that's setup, you'll need to create a new service account that has Editor rights to your project, and [export an authentication key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) to that service account that Terraform can use. 
+
+```shell,exclude
+# Create the service account
+$ gcloud iam service-accounts create terraform \
+    --display-name "Terraform Service Account"
+
+# Grant editor permissions (lower than roles/owner)
+$ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  --member serviceAccount:terraform@${PROJECT_ID}.iam.gserviceaccount.com \
+  --role roles/editor
+
+# create and save a local private key
+$ gcloud iam service-accounts keys create ~/terraform-key.json \
+  --iam-account terraform@${PROJECT_ID}.iam.gserviceaccount.com 
+
+# store location of private key in environment that terraform can use
+export GOOGLE_APPLICATION_CREDENTIALS=~/terraform-key.json
 ```
 
 ---
 
 🤔 Didn't we already do this authentication step?
 
-We did, back in [the GCP setup section](10-setup-gcp.md); we authenicated to let `gcloud` act as us. Now, we're authenticating against the Cloud SDK, which lets other applications operate as us. 
+We did, back in [the GCP setup section](10-setup-gcp.md); we authenicated to let `gcloud` act as "us". Us, in this case, is your login to the Google Cloud Console. There you get the Project Owner role, which is universal admin rights. We don't want Terraform to have that level of control. Instead the Editor role gives access to do most things, but not the ability to grant roles to others.
 
-If you'd rather only let terraform have access to your unicodex project, you can [setup a new service account](https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually) and use those credentials instead. 
+---
+
+🧐 But why not just authenticate as ourselves?
+
+You could use `gcloud auth application-default login`, and other tutorials may suggest, but we aren't. There are reasons. 
+
+In the identity model that Google Cloud uses, service accounts belong to the project in which they were created. For example, a service account example@yourproject.iam.gserviceaccount.com belongs to the yourproject project. You can grant a service account a role in another project, but it will always be owned by the project in it's identifying email address. 
+
+Your identity (yourname@gmail.com) also belongs to a project, just not one you have access to. It belongs to a Google-owned project. Your account has some special automatic features -- such as automatically being granted Project Owner when you create a new project -- but otherwise it's not much different than a service account.
+
+When requests are issued to provision or alter resources, a number of checks are made before the action is performed: precondition checks, quota checks, and billing access checks. These checks are made on the project in which the credentials belong to, rather than the resource being altered. This means that if you ask to perform actions on your project using your identity, the checks are actually made against the Google-owned project, not your own. 
+
+In order to prevent any potential ownership and issues, it's recommended that for automation tasks you create a dedicated service account within the project you are performing automations. 
+
 
 ---
 
@@ -142,7 +171,11 @@ The output of the last command will show you where your service is deployed. You
 
 ℹ️ A note on permissions: 
 
-TODO(glasnt): update note on permissions
+This tutorial has two methods of provisioning: the shell scripts you saw earlier, and the Terraform scripts. Both setups are designed to produce the same project setup in the end, which means that although we could automate more in Terraform (such as creating the Cloud Run service), that would require a different set of permissions for the unicodex service accounts. 
+
+We granted Editor rights for the Terraform service account, as we are running it only locally on our own laptops. If you want to use Terraform within Cloud Build, you should absolutely use a lower level of access. 
+
+---
 
 
 ### Continuous deployment
