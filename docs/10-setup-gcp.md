@@ -98,7 +98,7 @@ Since this is the Unicodex project, we'll create a service account called unicod
 export SERVICE_NAME=unicodex
 
 gcloud iam service-accounts create $SERVICE_NAME \
-  --display-name "$SERVIE_NAME service account"
+  --display-name "$SERVICE_NAME service account"
 ```
 
 
