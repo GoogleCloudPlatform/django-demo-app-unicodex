@@ -63,6 +63,8 @@ These commands will:
  * add a new version of the secret (with an actual value), and
  * allow our service account to access the secret. 
 
+We should allow Cloud Run to see our database, media, and secret key values; and we should also allow Cloud Build to see these values, but **also** our login details. We use a data migration later to create our superuser, so Cloud Build needs this visibility, but Cloud Run doesn't need to know our login details. 
+
 ---
 
 So, to configure the setup we want, we can run the following: 
@@ -80,12 +82,17 @@ for SECRET in DATABASE_URL GS_BUCKET_NAME SECRET_KEY SUPERUSER SUPERPASS; do
     
   echo -n "${!SECRET}" | gcloud secrets versions add $SECRET --data-file=-
     
-  for role in $CLOUDRUN_SA $CLOUDBUILD_SA; do
-    gcloud secrets add-iam-policy-binding $SECRET \
-      --member serviceAccount:${role} \
-      --role roles/secretmanager.secretAccessor
-  done
+  gcloud secrets add-iam-policy-binding $SECRET \
+    --member serviceAccount:$CLOUDBUILD_SA \
+    --role roles/secretmanager.secretAccessor
 done 
+
+for SECRET in DATABASE_URL GS_BUCKET_NAME SECRET_KEY; do
+  gcloud secrets add-iam-policy-binding $SECRET \
+    --member serviceAccount:$CLOUDRUN_SA \
+    --role roles/secretmanager.secretAccessor
+done
+
 ```
 
 Some of the bash tricks we're using here: 
