@@ -43,7 +43,7 @@ If you see a "Updates are available" prompt, follow those update instructions.
 Next, we need to set our project ID in both the command-line and as an environment variable. 
 
 
-Setting this as an environment variable will mean when you copy and paste code from this documentation, it will Just Work(tm). Note that this variable will only be set for your current terminal. Run it again if you open a new terminal window. 
+Setting this as an environment variable will mean when you copy and paste code from this tutorial, it will Just Work(tm). Note that this variable will only be set for your current terminal. Run it again if you open a new terminal window. 
 
 ```shell
 export PROJECT_ID=YourProjectID
@@ -56,7 +56,7 @@ You can check your current project settings by running:
 gcloud config list
 ```
 
-When we get to the Cloud Run sections, we'll be using the managed Cloud Run platform. To prevent us from having to define that each time (`--platform managed`), we can set the default now: 
+When we get to the Cloud Run sections, we'll be using the fully managed version of Cloud Run. To prevent us from having to define platform setting that each time (`--platform managed`), we can set the default: 
 
 ```shell
 gcloud config set run/platform managed
