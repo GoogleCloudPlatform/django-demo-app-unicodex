@@ -2,8 +2,6 @@
 
 *In this section we will be creating a place to store our media assets.*
 
-Compared to the complexity of the [last section](20-setup-sql.md) section, this part is fairly painless. 😂
-
 ---
 
 We need to create a new bucket to store our media assets (django admin assets, design images, etc). 
@@ -14,6 +12,11 @@ We suggest that you name it something unique to the project, but still noting it
 
 ```shell
 export GS_BUCKET_NAME=${PROJECT_ID}-media
+```
+
+Now, create our bucket using the [Google Storage utility](https://cloud.google.com/storage/docs/gsutil) `gsutil` (which was installed for you when you installed `gcloud`): 
+
+```shell
 gsutil mb -l ${REGION} gs://${GS_BUCKET_NAME}
 ```
 
