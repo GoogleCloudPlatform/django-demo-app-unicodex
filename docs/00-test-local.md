@@ -9,9 +9,9 @@
 
 You will need to install: 
 
- * Docker
-  * for Windows or macOS: use [Docker Desktop](https://www.docker.com/products/docker-desktop) 
-  * for Linux: use [Docker CE](https://docs.docker.com/install/) ([Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/), [Debian](https://docs.docker.com/install/linux/docker-ce/debian/), [CentOS](https://docs.docker.com/install/linux/docker-ce/centos/), and [Fedora](https://docs.docker.com/install/linux/docker-ce/fedora/) have dedicated instructions)
+ * Docker Desktop
+   * for Windows or macOS: use [Docker Desktop](https://www.docker.com/products/docker-desktop) 
+   * for Linux: use [Docker CE](https://docs.docker.com/install/) ([Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/), [Debian](https://docs.docker.com/install/linux/docker-ce/debian/), [CentOS](https://docs.docker.com/install/linux/docker-ce/centos/), and [Fedora](https://docs.docker.com/install/linux/docker-ce/fedora/) have dedicated instructions)
  * [Docker Compose](https://docs.docker.com/compose/install/#install-compose)
 
 This local deployment will use the same image as our production deployment will, but will make use of the included `docker-compose.yml` to connect together the components. 

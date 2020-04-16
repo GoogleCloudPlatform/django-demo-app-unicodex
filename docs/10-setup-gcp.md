@@ -36,12 +36,14 @@ To test your `gcloud` CLI works and is up to date:
 gcloud --version
 ```
 
-If you see a "Updates area available" prompt, follow those installation instructions. 
+If you see a "Updates are available" prompt, follow those update instructions. 
+
+---
 
 Next, we need to set our project ID in both the command-line and as an environment variable. 
 
 
-Setting this as an environment variable will mean when you copy and paste code from this documentation, it will Just Work(tm). Note that this variable will only be set for your current terminal. Run it again if you open a new terminal window. 
+Setting this as an environment variable will mean when you copy and paste code from this tutorial, it will Just Work(tm). Note that this variable will only be set for your current terminal. Run it again if you open a new terminal window. 
 
 ```shell
 export PROJECT_ID=YourProjectID
@@ -54,7 +56,7 @@ You can check your current project settings by running:
 gcloud config list
 ```
 
-When we get to the Cloud Run sections, we'll be using the managed Cloud Run platform. To prevent us from having to define that each time (`--platform managed`), we can set the default now: 
+When we get to the Cloud Run sections, we'll be using the fully managed version of Cloud Run. To prevent us from having to define platform setting that each time (`--platform managed`), we can set the default: 
 
 ```shell
 gcloud config set run/platform managed
@@ -98,7 +100,7 @@ Since this is the Unicodex project, we'll create a service account called unicod
 export SERVICE_NAME=unicodex
 
 gcloud iam service-accounts create $SERVICE_NAME \
-  --display-name "$SERVIE_NAME service account"
+  --display-name "$SERVICE_NAME service account"
 ```
 
 
@@ -126,11 +128,13 @@ We wouldn't normally have to be this explicit, but since we created a new servic
 
 ℹ️ A note on permissions: 
 
-This guided deployment makes liberal use of `gcloud`. When you setup `gcloud`, you configured it to run as you. That is, youremail@yourdomain.com. You are, by default, a member of the ["Owner" role](https://cloud.google.com/iam/docs/understanding-roles). Given this, you have permission to do *anything*. So for a lot of the `gcloud` commands you run, you have the rights to do that. But when we start getting into the [automation parts](50-first-deployment.md), we will be updating components that already exist. Therefore, we only need the 'update' permissions (as opposed to 'create'). (It takes more permissions to create a Cloud Run service than it does to update one that already exists, for example.)
+This guided deployment makes liberal use of `gcloud`. When you setup `gcloud`, you configured it to run as you. That is, youremail@yourdomain.com. You are, by default, a member of the ["Owner" role](https://cloud.google.com/iam/docs/understanding-roles). Given this, you have permission to do *anything*, so you will have permission to do anything in `gcloud` for your project. 
 
-We have another way to deploy this demo project, using [terraform](../terraform/README.md). This automation method assumes that there is no `gcloud`, and the entire setup is run through terraform. Therefore, the permissions used are different: terraform needs to be able to create and also update components. 
+But when we start getting into the [automation parts](50-first-deployment.md), 'we' won't be running these actions, our automation will. We really don't want our automation to be able to do just anything, so we're restricting it to just what it needs and nothing more. 
 
-If you are after ways in which to limit access across service accounts and IAM bindings in your own project, keep this implementation detail in mind.  
+How do you reduce down permissions? You can work through your automation steps, and work out which exact actions you are invoking, and if there are any default [roles](https://console.cloud.google.com/iam-admin/roles) that match your requirements. In our instance, we could create a custom role with specific permissions, like limiting to `run.services.get` and `run.services.update` instead of allowing `run.services.create` like the Cloud Run Admin role. Starting with a service account with no permissions and slowly working through the PermissionDenied errors will slowly build up the minimum permissions required.
+
+If you are after ways in which to limit access across service accounts and IAM bindings in your own project, keep this method in mind.  
 
 ---
 

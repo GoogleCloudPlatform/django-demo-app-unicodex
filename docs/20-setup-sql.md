@@ -12,7 +12,7 @@ To store our application data, we'll need to setup a [Cloud SQL](https://console
 
 It's a *really very good idea* to setup our database in a way that's going to be secure. You *could* run just the basic `gcloud sql` commands here to create an instance and user, but using these commands gives the user [too many permissions](https://cloud.google.com/sql/docs/postgres/users#default-users). 
 
-The Cloud SQL API is designed to give the same functionality to multiple different database implementations: (for the most part) the same commands will create databases and users in Postgres, MySQL, or infact MSSQL instances. Since these databases are so different, there's no(t yet an) implementation for explicitly setting Postgres roles, so we have no option to set this in the API (which is used by both `gcloud` and the web Cloud Console.0
+The Cloud SQL API is designed to give the same functionality to multiple different database implementations: (for the most part) the same commands will create databases and users in Postgres, MySQL, or infact MSSQL instances. Since these databases are so different, there's no(t yet an) implementation for explicitly setting Postgres roles, so we have no option to set this in the API (which is used by both `gcloud` and the web Cloud Console.)
 
 This is why we're taking the time to set things up explicitly. We'll create our instance and database, then take the time to create a low-access user that Django will use to login to the database. 
 
@@ -118,13 +118,13 @@ unicodex=>
 From here, the commands we need to execute are: creating our user, and giving it access to only our specific database:
 
 ```sql,exclude
-CREATE USER "DBUSERNAME" WITH PASSWORD "DBPASSWORD"; 
-GRANT ALL PRIVILEGES ON DATABASE "DATABASE_NAME" TO "DBUSERNAME";
+CREATE USER "<DBUSERNAME>" WITH PASSWORD "<DBPASSWORD>"; 
+GRANT ALL PRIVILEGES ON DATABASE "<DATABASE_NAME>" TO "<DBUSERNAME>";
 ```
 
 Some notes: 
 
-* environment variables won't explicitly work here. All the terms in `"DOUBLE-QUOTES"` will need to be replaced manually. 
+* environment variables won't explicitly work here. All the terms in `"<DOUBLE-QUOTES>"` will need to be replaced manually. 
 * Our `django` user needs `CREATE` and `ALTER` permissions to perform database migrations. It only needs these permissions on the database we created, not any other database in our instance. Hence, we're being explicit. 
 
 ----
@@ -149,7 +149,7 @@ gcloud sql users create $DBUSERNAME \
 
 We now have all the elements we need to create our `DATABASE_URL`. It's a connection URL, a configuration format shared by many systems including [`django-environ`](https://django-environ.readthedocs.io/en/latest/). 
 
-This string is **super secret**, so it's one of the secrets we'll be encrypting later.
+This string is **super secret**, so it's one of the secrets we'll be encrypting.
 
 To create the DATABASE_URL, we'll need the `DBUSERNAME` and `DBPASSWORD` for the `DATABASE_NAME` on the `INSTANCE_NAME` we created, in whatever `REGION` to form the `DATABASE_URL`:
 
