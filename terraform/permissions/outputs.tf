@@ -1,4 +1,5 @@
-output "media_bucket" {
-  description = "The mediabucket in which to store assets"
-  value       = google_storage_bucket.media_bucket.name
+output "service_account_email" {
+  description = "The identifying email address for the Cloud Run service account"
+  value       = google_service_account.cloudrun.email
 }
+
