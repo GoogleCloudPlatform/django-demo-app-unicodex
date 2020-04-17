@@ -10,6 +10,8 @@ But for deploying multiple setups, such as if you wanted to implement the projec
 
 This tutorial isn't a full Terraform 101, but it should help guide you along the process. 
 
+💡 If you want to, run this section in a new project. That way you can compare and constrast to your original project. Ensure you set your `gcloud config set project` and `$PROJECT_ID` before continuing!
+
 ---
 
 To start with, you'll need to [install Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) for your operating system. 
@@ -81,7 +83,7 @@ This page has other sample provisionings, such as [Cloud Run + Cloud SQL](https:
 Our setup is a little bit more complex than a 'Hello World', so we're going to provision and deploy in a few steps: 
 
  * [*Provision*](#provision-infrastructure) the infrastructure with Terraform, then
- * [*Create*](#create-service) the service manually once, then we can setup
+ * perform the initial [*migration*](#migrate-the-database), then setup
  * Continuous [*Deployment*](#continuous-deployment).
  
  
@@ -99,6 +101,25 @@ cd django-demo-app-unicodex/terraform
 ```
 
 You'll also have to follow the [Getting Started - Adding Credentials](https://www.terraform.io/docs/providers/google/getting_started.html#adding-credentials) section in order to apply any configurations to your project, saving the path to your configuration in `GOOGLE_CLOUD_KEYFILE_JSON`. 
+
+```
+gcloud iam service-accounts create terraform --display-name "Terraform Service Account"
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  --member serviceAccount:terraform@${PROJECT_ID}.iam.gserviceaccount.com \
+  --role roles/editor
+  
+$ gcloud iam service-accounts keys create ~/terraform-key.json \
+  --iam-account terraform@${PROJECT_ID}.iam.gserviceaccount.com 
+
+export GOOGLE_APPLICATION_CREDENTIALS=~/terraform-key.json
+```
+
+💡 If you chose to run this section in a new project, you will need to re-create the base image: 
+
+```shell,exclude
+gcloud builds submit --tag gcr.io/MyNewProject/unicodex .
+```
 
 Once you have this configured, you need to initialise Terrafrom:
 
@@ -118,54 +139,29 @@ You can specify your variables using [command-line flags](https://learn.hashicor
 
 ```shell,exclude
 terraform apply \
-  -var 'region=us-central1' 
-  -var 'service=unicodex' 
-  -var 'project=MyProject' 
+  -var 'region=us-central1' \
+  -var 'service=unicodex' \
+  -var 'project=MyProject' \
   -var 'instance_name=psql'
 ```
 
 ⚠️ Since we are dynamically creating our secret strings, our [terraform state is considered sensitive data](https://www.terraform.io/docs/state/sensitive-data.html).
 
 
-Looking within `terraform/`, you'll see we're separating our Terraform process into three major segments: 
+Looking within `terraform/`, you'll see we're separating our Terraform process into some major segments: 
 
  * Enabling the service APIs (which then allows us to)
  * Create the Cloud SQL database (which then allows us to)
- * Create the secrets, permissions, and other components required. 
+ * Create the secrets, permissions, and other components required, to finally allow us to
+ * Create the Cloud Run service.
 
 This separation means we can stagger out setup where core sections that depend on each other are completed one at a time. 
 
-Once this processes finishes, everything will be setup. We could have configured terraform to export values to help with the next step, e.g. your admin password, but you should probably use the Google Cloud Console to `gcloud` to get those directly yourself. (All this information is in the [local terraform state](https://www.terraform.io/docs/state/index.html), but it's always a good idea to get configurations from the one source of truth.)
+### Migrate database
+
+Once this processes finishes, everything will be setup ready for our build-migrate-deploy. The manifest will also output the the command for our build-migrate-deploy, as well as how to access the secrets required to login. (The secret values are stored in the [local terraform state](https://www.terraform.io/docs/state/index.html), but it's always a good idea to get configurations from the one source of truth.)
 
 ℹ️ Unlike the shell scripts we used earlier, we can re-`apply` terraform at any time. So if you have any component that doesn't seem to work, or you manually change something and want to change it back, just run `terraform apply` again. This can help with issues of eventual consistency, network latency, or any other gremlins in the system. 
-
-
-### Create service
-
-Now the infrastructure is around, we can deploy first time, using the same script from the [first deployment](50-first-deployment.md) section, using the sample values we provided above. 
-
-```shell,exclude
-# Build the image
-gcloud builds submit --tag gcr.io/MyProject/unicodex .
-
-# Create the service
-gcloud run deploy unicodex \
-    --allow-unauthenticated \
-    --image gcr.io/MyProject/unicodex \
-    --add-cloudsql-instances MyProject:us-central1:psql \
-    --service-account unicodex@myproject.iam.gserviceaccount.com
-   
-# Configure the Service URL to be recognised by Django
-export SERVICE_URL=$(gcloud run services describe unicodex --format="value(status.url)")
-gcloud run services update unicodex --update-env-vars CURRENT_HOST=$SERVICE_URL
-
-# Do the migration (as well as a build and deploy)
-gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
-    --substitutions="_REGION=us-central1,_INSTANCE_NAME=psql,_SERVICE=unicodex"
-
-```
-
-The output of the last command will show you where your service is deployed. You can use the superuser/pass via `gcloud secrets versions access latest` to log in. 
 
 ---
 
