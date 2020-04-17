@@ -18,7 +18,7 @@ variable "database_instance" {
   type        = string
 }
 
-variable "service_account_email" { 
+variable "service_account_email" {
   description = "The identifying email address for the Cloud Run service account"
-  type = string
+  type        = string
 }

@@ -57,16 +57,16 @@ module "permissions" {
 module "service" {
   source = "./service"
 
-  project      = module.services.project_id
-  service      = var.service
-  region       = var.region
-  database_instance = module.database.database_instance
+  project               = module.services.project_id
+  service               = var.service
+  region                = var.region
+  database_instance     = module.database.database_instance
   service_account_email = module.permissions.service_account_email
 }
 
 # Output the results to the user
-output "result" { 
-    value = <<EOF
+output "result" {
+  value = <<EOF
     ✨ 
     
     The ${var.service} is now running at ${module.service.service_url}
@@ -83,4 +83,4 @@ output "result" {
 
     ✨
     EOF
-} 
+}
