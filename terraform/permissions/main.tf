@@ -38,8 +38,12 @@ resource "google_storage_bucket_iam_member" "cloudrun_admin" {
 locals {
   cloudrun_sa   = "serviceAccount:${google_service_account.cloudrun.email}"
   cloudbuild_sa = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+  terraform_sa = "serviceAccount:${data.google_service_account.terraform.email}"
 }
 
+data google_service_account terraform { 
+    account_id = "terraform"
+}
 
 resource "google_project_iam_binding" "service_permissions" {
   for_each = toset([
@@ -68,7 +72,7 @@ module secret_database_url {
 
   name        = "DATABASE_URL"
   secret_data = var.database_url
-  accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
+  accessors   = [local.cloudbuild_sa, local.cloudrun_sa, local.terraform_sa]
 }
 
 ##
@@ -79,7 +83,7 @@ module secret_gs_media_bucket {
 
   name        = "GS_BUCKET_NAME"
   secret_data = google_storage_bucket.media_bucket.name
-  accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
+  accessors   = [local.cloudbuild_sa, local.cloudrun_sa, local.terraform_sa]
 }
 
 resource "random_password" "secret_key" {
@@ -93,7 +97,7 @@ module secret_secret_key {
 
   name        = "SECRET_KEY"
   secret_data = random_password.secret_key.result
-  accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
+  accessors   = [local.cloudbuild_sa, local.cloudrun_sa, local.terraform_sa]
 }
 
 # Secret values only Cloud Build needs
@@ -104,7 +108,7 @@ module secret_superuser {
 
   name        = "SUPERUSER"
   secret_data = var.superuser
-  accessors   = [local.cloudbuild_sa]
+  accessors   = [local.cloudbuild_sa, local.terraform_sa]
 }
 
 resource "random_password" "superpass" {
@@ -118,6 +122,6 @@ module secret_superpass {
 
   name        = "SUPERPASS"
   secret_data = random_password.superpass.result
-  accessors   = [local.cloudbuild_sa]
+  accessors   = [local.cloudbuild_sa, local.terraform_sa]
 }
 
