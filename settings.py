@@ -95,20 +95,19 @@ if GS_BUCKET_NAME:
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     GS_DEFAULT_ACL = "publicRead"
 
-    STATIC_HOST = "https://storage.googleapis.com/{GS_BUCKET_NAME}/"
-    STATIC_URL = f"{STATIC_HOST}/{STATIC_ROOT}"
-    MEDIA_ROOT = STATIC_HOST + "media/"
-    MEDIA_URL = STATIC_HOST + "media/"
-
     INSTALLED_APPS += ["storages"]
+
+#    STATIC_HOST = "https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+#    STATIC_URL = f"{STATIC_HOST}/{STATIC_ROOT}"
+#    MEDIA_ROOT = STATIC_HOST + "media/"
+#    MEDIA_URL = STATIC_HOST + "media/"
+
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    STATIC_URL = STATIC_ROOT
 
-    STATIC_HOST = "/"
-    STATIC_URL = "/static/"
-
-    MEDIA_ROOT = "media/"  # where files are stored on the local FS (in this case)
-    MEDIA_URL = "/media/"  # what is prepended to the image URL (in this case)
+    MEDIA_ROOT = "media/"  # where files are stored on the local filesystem
+    MEDIA_URL = "/media/"  # what is prepended to the image URL
 
 
 ROOT_URLCONF = "unicodex.urls"
