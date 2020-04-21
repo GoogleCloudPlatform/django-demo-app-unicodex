@@ -13,7 +13,6 @@ services:
     environment:
         DEBUG: "true"
         DATABASE_URL: postgres://postgres:mysecretpassword@db:5432/unicodex
-        GS_BUCKET_NAME: 
         SECRET_KEY: FP0hA3L14P1OeJg-youshouldChangeThis-Pr2gCEuNhH9dfjHJSY8cRlfen5jApzMan6E
         SUPERUSER: admin
         SUPERPASS: localUserPasswordHere
