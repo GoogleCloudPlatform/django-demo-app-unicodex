@@ -16,7 +16,7 @@ This tutorial isn't a full Terraform 101, but it should help guide you along the
 
 To start with, you'll need to [install Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) for your operating system. 
 
-Once that's setup, you'll need to create a new service account that has Editor rights to your project, and [export an authentication key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) to that service account that Terraform can use. 
+Once that's setup, you'll need to create a [new service account](https://www.terraform.io/docs/providers/google/getting_started.html#adding-credentials) that has Owner rights to your project, and [export an authentication key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) to that service account that Terraform can use. 
 
 ```shell,exclude
 # Create the service account
@@ -26,7 +26,7 @@ $ gcloud iam service-accounts create terraform \
 # Grant editor permissions (lower than roles/owner)
 $ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member serviceAccount:terraform@${PROJECT_ID}.iam.gserviceaccount.com \
-  --role roles/editor
+  --role roles/owner
 
 # create and save a local private key
 $ gcloud iam service-accounts keys create ~/terraform-key.json \
@@ -100,21 +100,6 @@ git clone git@github.com/GoogleCloudPlatform/django-demo-app-unicodex
 cd django-demo-app-unicodex/terraform
 ```
 
-You'll also have to follow the [Getting Started - Adding Credentials](https://www.terraform.io/docs/providers/google/getting_started.html#adding-credentials) section in order to apply any configurations to your project, saving the path to your configuration in `GOOGLE_CLOUD_KEYFILE_JSON`. 
-
-```
-gcloud iam service-accounts create terraform --display-name "Terraform Service Account"
-
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-  --member serviceAccount:terraform@${PROJECT_ID}.iam.gserviceaccount.com \
-  --role roles/editor
-  
-$ gcloud iam service-accounts keys create ~/terraform-key.json \
-  --iam-account terraform@${PROJECT_ID}.iam.gserviceaccount.com 
-
-export GOOGLE_APPLICATION_CREDENTIALS=~/terraform-key.json
-```
-
 💡 If you chose to run this section in a new project, you will need to re-create the base image: 
 
 ```shell,exclude
@@ -124,6 +109,7 @@ gcloud builds submit --tag gcr.io/MyNewProject/unicodex .
 Once you have this configured, you need to initialise Terrafrom:
 
 ```shell,exclude
+cd terraform
 terraform init
 ```
 

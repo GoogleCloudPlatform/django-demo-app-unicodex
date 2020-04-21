@@ -1,20 +1,9 @@
-// This terraform manifest PROVISIONS a project ready for a Unicodex DEPLOYMENT. 
-//
-// Order of operations: 
-//  * service enablement
-//  * database configuration
-//  * permissions, secrets, and access to secrets, misc items
-//
-// Assumptions: 
-//  * project_id is an existing, billing enabled, project.
-
-
-provider "google" {
+provider google {
   project = var.project
 }
 
 # Enable all services
-module "services" {
+module services {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "7.0.2"
 
@@ -33,9 +22,8 @@ module "services" {
   ]
 }
 
-# Create database
-module "database" {
-  source = "./database"
+module database {
+  source = "./modules/database"
 
   project       = module.services.project_id
   service       = var.service
@@ -43,9 +31,8 @@ module "database" {
   instance_name = var.instance_name
 }
 
-# Add permissions/secrets 
-module "permissions" {
-  source = "./permissions"
+module backing {
+  source = "./modules/backing"
 
   project      = module.services.project_id
   service      = var.service
@@ -53,22 +40,20 @@ module "permissions" {
   database_url = module.database.database_url
 }
 
-# Create a Cloud Run service
-module "service" {
-  source = "./service"
+module unicodex {
+  source = "./modules/unicodex"
 
   project               = module.services.project_id
   service               = var.service
   region                = var.region
   database_instance     = module.database.database_instance
-  service_account_email = module.permissions.service_account_email
+  service_account_email = module.backing.service_account_email
 }
 
-# Output the results to the user
-output "result" {
+output result {
   value = <<EOF
 
-    The ${var.service} is now running at ${module.service.service_url}
+    The ${var.service} is now running at ${module.unicodex.service_url}
 
     If you haven't deployed this service before, you will need to perform the initial database migrations: 
 
@@ -76,7 +61,7 @@ output "result" {
     gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
       --substitutions="_REGION=${var.region},_INSTANCE_NAME=${module.database.short_instance_name},_SERVICE=${var.service}"
 
-    You can then log into the Django admin: ${module.service.service_url}/admin
+    You can then log into the Django admin: ${module.unicodex.service_url}/admin
 
     The username and password are stored in these secrets: 
 

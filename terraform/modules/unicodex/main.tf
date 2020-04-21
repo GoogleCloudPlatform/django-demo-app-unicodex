@@ -1,9 +1,3 @@
-###################################################################################
-
-# Creates a Cloud Run Service
-
-###################################################################################
-
 resource google_cloud_run_service unicodex {
   name                       = var.service
   location                   = var.region
@@ -34,7 +28,7 @@ resource google_cloud_run_service unicodex {
   }
 }
 
-data "google_iam_policy" "noauth" {
+data google_iam_policy noauth {
   binding {
     role = "roles/run.invoker"
     members = [
@@ -43,7 +37,7 @@ data "google_iam_policy" "noauth" {
   }
 }
 
-resource "google_cloud_run_service_iam_policy" "noauth" {
+resource google_cloud_run_service_iam_policy noauth {
   location = google_cloud_run_service.unicodex.location
   project  = google_cloud_run_service.unicodex.project
   service  = google_cloud_run_service.unicodex.name
