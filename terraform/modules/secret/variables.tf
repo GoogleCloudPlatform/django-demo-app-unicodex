@@ -1,20 +1,19 @@
-
-variable "project" {
+variable project {
   type        = string
   description = "The Google Cloud Platform project name"
 }
 
-variable "name" {
+variable name {
   type        = string
   description = "Secret name"
 }
 
-variable "secret_data" {
+variable secret_data {
   description = "Secret data"
   type        = string
 }
 
-variable "accessors" {
+variable accessors {
   description = "List of accessors for secret (service accounts, etc)"
   type        = list(string)
 }

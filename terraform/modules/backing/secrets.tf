@@ -16,7 +16,7 @@ module secret_gs_media_bucket {
   accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
 }
 
-resource "random_password" "secret_key" {
+resource random_password secret_key {
   length  = 50
   special = false
 }
@@ -39,7 +39,7 @@ module secret_superuser {
   accessors   = [local.cloudbuild_sa]
 }
 
-resource "random_password" "superpass" {
+resource random_password superpass {
   length  = 30
   special = false
 }

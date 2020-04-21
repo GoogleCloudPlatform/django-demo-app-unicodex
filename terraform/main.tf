@@ -1,20 +1,9 @@
-// This terraform manifest PROVISIONS a project ready for a Unicodex DEPLOYMENT. 
-//
-// Order of operations: 
-//  * service enablement
-//  * database configuration
-//  * permissions, secrets, and access to secrets, misc items
-//
-// Assumptions: 
-//  * project_id is an existing, billing enabled, project.
-
-
-provider "google" {
+provider google {
   project = var.project
 }
 
 # Enable all services
-module "services" {
+module services {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "7.0.2"
 
@@ -33,8 +22,7 @@ module "services" {
   ]
 }
 
-# Create database
-module "database" {
+module database {
   source = "./modules/database"
 
   project       = module.services.project_id
@@ -43,8 +31,7 @@ module "database" {
   instance_name = var.instance_name
 }
 
-# Create all other backing items
-module "backing" {
+module backing {
   source = "./modules/backing"
 
   project      = module.services.project_id
@@ -53,8 +40,7 @@ module "backing" {
   database_url = module.database.database_url
 }
 
-# Create unicodex
-module "unicodex" {
+module unicodex {
   source = "./modules/unicodex"
 
   project               = module.services.project_id
@@ -64,8 +50,7 @@ module "unicodex" {
   service_account_email = module.backing.service_account_email
 }
 
-# Output the results to the user
-output "result" {
+output result {
   value = <<EOF
 
     The ${var.service} is now running at ${module.unicodex.service_url}
