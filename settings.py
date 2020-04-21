@@ -98,11 +98,6 @@ if GS_BUCKET_NAME:
 
     INSTALLED_APPS += ["storages"]
 
-#    STATIC_HOST = "https://storage.googleapis.com/{GS_BUCKET_NAME}/"
-#    STATIC_URL = f"{STATIC_HOST}/{STATIC_ROOT}"
-#    MEDIA_ROOT = STATIC_HOST + "media/"
-#    MEDIA_URL = STATIC_HOST + "media/"
-
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
     STATIC_URL = STATIC_ROOT
