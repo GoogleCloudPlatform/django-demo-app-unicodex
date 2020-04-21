@@ -42,7 +42,9 @@ locals {
 }
 
 data google_service_account terraform { 
+    project = var.project 
     account_id = "terraform"
+    
 }
 
 resource "google_project_iam_binding" "service_permissions" {
