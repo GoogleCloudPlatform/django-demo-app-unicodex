@@ -67,16 +67,18 @@ module "service" {
 # Output the results to the user
 output "result" {
   value = <<EOF
-    ✨ 
-    
+
     The ${var.service} is now running at ${module.service.service_url}
 
-    You need to perform the initial migrations: 
+    If you haven't deployed this service before, you will need to perform the initial database migrations: 
 
     cd ..
-    gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml --substitutions="_REGION=${var.region},_INSTANCE_NAME=${module.database.short_instance_name},_SERVICE=${var.service}"
+    gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
+      --substitutions="_REGION=${var.region},_INSTANCE_NAME=${module.database.short_instance_name},_SERVICE=${var.service}"
 
-    You can then log into the service using the superuser name and password: 
+    You can then log into the Django admin: ${module.service.service_url}/admin
+
+    The username and password are stored in these secrets: 
 
     gcloud secrets versions access latest --secret SUPERUSER
     gcloud secrets versions access latest --secret SUPERPASS
