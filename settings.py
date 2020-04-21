@@ -39,20 +39,21 @@ TEMPLATE_DEBUG = DEBUG
 
 SECRET_KEY = env("SECRET_KEY")
 
-# handle raw host(s), or http(s):// host(s), or no host. 
 if "CURRENT_HOST" in os.environ:
+    # handle raw host(s), or http(s):// host(s), or no host. 
     HOSTS = []
     for h in env.list("CURRENT_HOST"):
         if "://" in h:
             h = h.split("://")[1]
         HOSTS.append(h)
 else:
+    # Assume localhost if no CURRENT_HOST
     HOSTS = ["localhost"]
 
 ALLOWED_HOSTS = ["127.0.0.1"] + HOSTS
 
 # Enable Django security precautions if *not* running locally
-if "0.0.0.0" not in ALLOWED_HOSTS:
+if "localhost" not in ALLOWED_HOSTS:
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_HSTS_PRELOAD = True
@@ -95,20 +96,14 @@ if GS_BUCKET_NAME:
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     GS_DEFAULT_ACL = "publicRead"
 
-    STATIC_HOST = "https://storage.googleapis.com/{GS_BUCKET_NAME}/"
-    STATIC_URL = f"{STATIC_HOST}/{STATIC_ROOT}"
-    MEDIA_ROOT = STATIC_HOST + "media/"
-    MEDIA_URL = STATIC_HOST + "media/"
-
     INSTALLED_APPS += ["storages"]
+
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    STATIC_URL = STATIC_ROOT
 
-    STATIC_HOST = "/"
-    STATIC_URL = "/static/"
-
-    MEDIA_ROOT = "media/"  # where files are stored on the local FS (in this case)
-    MEDIA_URL = "/media/"  # what is prepended to the image URL (in this case)
+    MEDIA_ROOT = "media/"  # where files are stored on the local filesystem
+    MEDIA_URL = "/media/"  # what is prepended to the image URL
 
 
 ROOT_URLCONF = "unicodex.urls"
