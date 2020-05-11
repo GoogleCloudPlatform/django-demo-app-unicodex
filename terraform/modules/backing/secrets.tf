@@ -1,34 +1,24 @@
-module secret_database_url {
-  source  = "../secret"
-  project = var.project
-
-  name        = "DATABASE_URL"
-  secret_data = var.database_url
-  accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
-}
-
-module secret_gs_media_bucket {
-  source  = "../secret"
-  project = var.project
-
-  name        = "GS_BUCKET_NAME"
-  secret_data = google_storage_bucket.media_bucket.name
-  accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
-}
-
 resource random_password secret_key {
   length  = 50
   special = false
 }
 
-module secret_secret_key {
+module secret_django_settings {
   source  = "../secret"
   project = var.project
 
-  name        = "SECRET_KEY"
-  secret_data = random_password.secret_key.result
+  name        = "django_settings"
+  secret_data = templatefile("${path.module}/env.tpl", 
+    {
+        database_url = var.database_url
+        gs_bucket_name = google_storage_bucket.media_bucket.name
+        secret_key = random_password.secret_key.result
+    }) 
   accessors   = [local.cloudbuild_sa, local.cloudrun_sa]
 }
+
+
+
 
 module secret_superuser {
   source  = "../secret"
