@@ -44,40 +44,46 @@ export CLOUDBUILD_SA=${PROJECTNUM}@cloudbuild.gserviceaccount.com
 
 ---
 
-For **each** `SECRET` and `VALUE` and `SERVICEACCOUNT`, we would run:
+We can reduce the number of the secrets that need to stored by introducing some minor complexity: django-environ accepts a `.env` file of `key=value` pairs. We can create a file of settings that Django will always require: the databse connection string, media bucket, and secret key. The admin username and password can stay seperate, and have reduced access.  
 
-```shell,exclude
-# sample code
-gcloud secrets create $SECRET --replication-policy automatic
+Create a .env file, with the values defined earlier 
 
-echo -n "$VALUE" | gcloud secrets versions add $SECRET --data-file=-
+```
+echo DATABASE_URL=\"${DATABASE_URL}\" > .env
+echo GS_BUCKET_NAME=\"${GS_BUCKET_NAME}\" >> .env
+echo SECRET_KEY=\"$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)\" >> .env
+```
 
-gcloud secrets add-iam-policy-binding $SECRET \
-  --member serviceAccount:$SERVICEACCOUNT \
+Then, create the secret and assign the services access:
+
+```
+gcloud secrets create django_settings --replication-policy automatic
+
+gcloud secrets versions add django_settings --data-file .env
+
+gcloud secrets add-iam-policy-binding django_settings \
+  --member serviceAccount:$CLOUDRUN_SA \
+  --role roles/secretmanager.secretAccessor
+  
+  gcloud secrets add-iam-policy-binding django_settings \
+  --member serviceAccount:$CLOUDBUILD_SA \
   --role roles/secretmanager.secretAccessor
 ```
 
 These commands will: 
 
  * create the secret
- * add a new version of the secret (with an actual value), and
+ * add a new version of the secret from file, and
  * allow our service account to access the secret. 
 
-We should allow Cloud Run to see our database, media, and secret key values; and we should also allow Cloud Build to see these values, but **also** our login details. We use a data migration later to create our superuser, so Cloud Build needs this visibility, but Cloud Run doesn't need to know our login details. 
 
----
-
-So, to configure the setup we want, we can run the following: 
+As for the admin username and password secrets, they should only be accessed by Cloud Build: 
 
 ```shell
 export SUPERUSER="admin"
 export SUPERPASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 30 | head -n 1)
-export SECRET_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)
 
-# DATABASE_URL   was defined back in the database setup step
-# GS_BUCKET_NAME was defined back in the media setup step
-
-for SECRET in DATABASE_URL GS_BUCKET_NAME SECRET_KEY SUPERUSER SUPERPASS; do
+for SECRET in SUPERUSER SUPERPASS; do
   gcloud secrets create $SECRET --replication-policy automatic
     
   echo -n "${!SECRET}" | gcloud secrets versions add $SECRET --data-file=-
@@ -86,13 +92,6 @@ for SECRET in DATABASE_URL GS_BUCKET_NAME SECRET_KEY SUPERUSER SUPERPASS; do
     --member serviceAccount:$CLOUDBUILD_SA \
     --role roles/secretmanager.secretAccessor
 done 
-
-for SECRET in DATABASE_URL GS_BUCKET_NAME SECRET_KEY; do
-  gcloud secrets add-iam-policy-binding $SECRET \
-    --member serviceAccount:$CLOUDRUN_SA \
-    --role roles/secretmanager.secretAccessor
-done
-
 ```
 
 Some of the bash tricks we're using here: 

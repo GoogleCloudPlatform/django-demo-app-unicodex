@@ -17,25 +17,31 @@
 import os
 import environ
 
-mandatory_settings = ["DATABASE_URL","SECRET_KEY"]
-optional_settings = ["GS_BUCKET_NAME"]
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env_file = os.path.join(BASE_DIR,  ".env")
 
-# If our mandatory settings aren't all already defined as environment variables
-# try pulling them from Secret Manager
-if not all (k in os.environ.keys() for k in set(mandatory_settings)):
-    import sm_helper
-    secrets = sm_helper.access_secrets(mandatory_settings + optional_settings)
-    os.environ.update(secrets)
+if not os.path.isfile('.env'):
+    import google.auth
+    from google.cloud import secretmanager_v1beta1 as sm
 
-env = environ.Env(DEBUG=(bool, False), GS_BUCKET_NAME=(str, None))
+    _, project = google.auth.default()
 
-env.read_env(os.environ.get("ENV_PATH", ".env"))
+    if project:
+        client = sm.SecretManagerServiceClient()
+        settings_name = os.environ.get("SETTINGS_NAME", "django_settings")
+        path = client.secret_version_path(project, settings_name, "latest")
+        payload = client.access_secret_version(path).payload.data.decode("UTF-8")
+
+        with open(env_file, "w") as f:
+            f.write(payload)
+
+env = environ.Env()
+env.read_env(env_file)
 
 root = environ.Path(__file__) - 3
 SITE_ROOT = root()
 
-DEBUG = env("DEBUG")
-TEMPLATE_DEBUG = DEBUG
+DEBUG = env("DEBUG", default=False)
 
 SECRET_KEY = env("SECRET_KEY")
 
@@ -89,9 +95,9 @@ MIDDLEWARE = [
 ]
 
 STATIC_ROOT = "/static/"
+GS_BUCKET_NAME = env("GS_BUCKET_NAME", default=None)
 
-GS_BUCKET_NAME = env("GS_BUCKET_NAME", None)
-if GS_BUCKET_NAME:
+if GS_BUCKET_NAME: 
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     GS_DEFAULT_ACL = "publicRead"
