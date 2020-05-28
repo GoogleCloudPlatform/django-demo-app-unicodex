@@ -4,6 +4,8 @@ Let's build a demo application, using a whole bunch o' Google Cloud components. 
 
 ✨ [unicodex](https://unicodex.gl.asnt.app/) ✨
 
+[![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run?branch=button)
+
 Unicodex uses: 
 
  * [Django 3.0](https://docs.djangoproject.com/en/3.0/) as the web framework

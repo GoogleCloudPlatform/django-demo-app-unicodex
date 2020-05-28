@@ -48,7 +48,7 @@ We can reduce the number of the secrets that need to stored by introducing some 
 
 Create a .env file, with the values defined earlier 
 
-```
+```shell
 echo DATABASE_URL=\"${DATABASE_URL}\" > .env
 echo GS_BUCKET_NAME=\"${GS_BUCKET_NAME}\" >> .env
 echo SECRET_KEY=\"$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)\" >> .env
@@ -56,7 +56,7 @@ echo SECRET_KEY=\"$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n
 
 Then, create the secret and assign the services access:
 
-```
+```shell
 gcloud secrets create django_settings --replication-policy automatic
 
 gcloud secrets versions add django_settings --data-file .env
