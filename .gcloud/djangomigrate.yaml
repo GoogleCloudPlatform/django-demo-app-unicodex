@@ -1,0 +1,11 @@
+# Image should already be in GCR, so pull it down then use it.
+steps:
+    - id: 'pull   '
+      name: 'gcr.io/cloud-builders/docker'
+      args: ['pull', 'gcr.io/${PROJECT_ID}/${_SERVICE}']
+    - id: 'migrate'
+      name: 'gcr.io/google-appengine/exec-wrapper'
+      args: ['-i', 'gcr.io/${PROJECT_ID}/${_SERVICE}',
+             '-s', '${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}',
+             '-e', 'PROJECT_ID=${PROJECT_ID}',
+             '--', 'sh', '.cloudbuild/django_migrate.sh']
