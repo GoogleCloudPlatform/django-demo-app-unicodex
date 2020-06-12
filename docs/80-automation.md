@@ -14,6 +14,8 @@ This tutorial isn't a full Terraform 101, but it should help guide you along the
 
 ---
 
+## Install Terraform and setup authentication
+
 To start with, you'll need to [install Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) for your operating system. 
 
 Once that's setup, you'll need to create a [new service account](https://www.terraform.io/docs/providers/google/getting_started.html#adding-credentials) that has Owner rights to your project, and [export an authentication key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) to that service account that Terraform can use. 
@@ -59,26 +61,9 @@ In order to prevent any potential ownership and issues, it's recommended that fo
 
 ---
 
-To give an overview of how you can use terraform, a basic Cloud Run setup might be as simple as the [provided example](https://www.terraform.io/docs/providers/google/r/cloud_run_service.html): 
-
-```shell,exclude
-resource "google_cloud_run_service" "default" {
-  name     = "tftest-cloudrun"
-  location = "us-central1"
-
-  template {
-    spec {
-      containers {
-        image = "gcr.io/cloudrun/hello"
-      }
-    }
-  }
-}
-```
+To give an overview of how you can use terraform, a basic Cloud Run setup might be as simple as the [provided example](https://www.terraform.io/docs/providers/google/r/cloud_run_service.html). 
 
 This page has other sample provisionings, such as [Cloud Run + Cloud SQL](https://www.terraform.io/docs/providers/google/r/cloud_run_service.html#example-usage-cloud-run-service-sql) setup, or [Allow Unauthenticated](https://www.terraform.io/docs/providers/google/r/cloud_run_service.html#example-usage-cloud-run-service-noauth) for example.
-
----
 
 Our setup is a little bit more complex than a 'Hello World', so we're going to provision and deploy in a few steps: 
 
@@ -145,7 +130,22 @@ This separation means we can stagger out setup where core sections that depend o
 
 ### Migrate database
 
-Once this processes finishes, everything will be setup ready for our build-migrate-deploy. The manifest will also output the the command for our build-migrate-deploy, as well as how to access the secrets required to login. (The secret values are stored in the [local terraform state](https://www.terraform.io/docs/state/index.html), but it's always a good idea to get configurations from the one source of truth.)
+Once this processes finishes, everything will be setup ready for our build-migrate-deploy: 
+
+```shell,exclude
+cd ..
+gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
+      --substitutions="[generated from terraform inputs]"
+```
+
+It will also show how to log into the Django admin, including how to retrieve the login secrets: 
+
+```shell,exclude
+gcloud secrets versions access latest --secret SUPERUSER
+gcloud secrets versions access latest --secret SUPERPASS
+``` 
+
+🗒 The secret values are stored in the [local terraform state](https://www.terraform.io/docs/state/index.html), but it's always a good idea to get configurations from the one source of truth.
 
 ℹ️ Unlike the shell scripts we used earlier, we can re-`apply` terraform at any time. So if you have any component that doesn't seem to work, or you manually change something and want to change it back, just run `terraform apply` again. This can help with issues of eventual consistency, network latency, or any other gremlins in the system. 
 
@@ -158,7 +158,6 @@ This tutorial has two methods of provisioning: the shell scripts you saw earlier
 We granted Editor rights for the Terraform service account, as we are running it only locally on our own laptops. If you want to use Terraform within Cloud Build, you should absolutely use a lower level of access. 
 
 ---
-
 
 ### Continuous deployment
 

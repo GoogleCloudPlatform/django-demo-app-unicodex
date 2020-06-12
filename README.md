@@ -19,6 +19,12 @@ This demo can be deployed by multiple different methods.
 
 See `app.json` and the `.gcloud/` folder for implementation details.
 
+### Terraform 
+
+* [Deploy with Terraform](docs/80-automation.md)
+
+See `terraform/` for configuration details.
+
 ### Manual
 
 * [Try the application locally](docs/00-test-local.md) (*optional*)
@@ -31,11 +37,6 @@ See `app.json` and the `.gcloud/` folder for implementation details.
 
 Don't forget to [cleanup your project resources](docs/90-cleanup.md) when you're done!
 
-### Terraform 
-
-* [Deploy with Terraform](docs/80-automation.md)
-
-See `terraform/` for configuration details.
 
 ## Application Design
 
