@@ -11,7 +11,7 @@ Unicodex is a demo database-backed serverless Django application, that uses:
 
 ## Deployment
 
-This demo can be deployed by multiple different methods. 
+This demo can be deployed by multiple different methods: via the Cloud Run button, through Terraform, or manually via a guided tutorial.  
 
 ### Automated
 
@@ -39,7 +39,6 @@ See `terraform/` for configuration details.
 
 Don't forget to [cleanup your project resources](docs/90-cleanup.md) when you're done!
 
-
 ## Application Design
 
 ### Unicodex itself
@@ -48,12 +47,12 @@ Don't forget to [cleanup your project resources](docs/90-cleanup.md) when you're
 
 In Unicodex, these relations are represented by a **codepoint** (Sparkles) having multiple **designs** (images). Each image represents a **version** from a **vendor** (e.g. Google Android 9.0, Twitter Twemoji 1.0, ...). These relations are represented by four models: `Codepoint`, `Design`, `VendorVersion` and `Vendor`, respectively. Designs have a FileField which stores the image. 
 
-In the Django admin, an admin action has been setup so that you can select a Codepoint, and run the "Generate designs" actions. This will -- for all configured vendors and vendor versions -- scrape Emojipedia for the information. Alternatively, you can enter this information manually from the django admin. 
+In the Django admin, an admin action has been setup so that you can select a Codepoint, and run the "Generate designs" actions. This will -- for all configured vendors and vendor versions -- scrape Emojipedia for the information, including uploading images. Alternatively, you can enter this information manually from the django admin. 
 
 
-### Service design - 1:1:1
+### Service design - one deployment per Google Cloud project
 
-Unicodex runs as a Cloud Run service. Using the Python package `django-storages`, it's been configured to take a `GS_BUCKET_NAME` as a storage place for its media. Using the Python package `django-environ` it takes a complex `DATABASE_URL`, which will point to a Cloud SQL PostgreSQL database. The `settings.py` is also designed to pull specifically named secrets into the environment. These are all designed to live in the same Google Cloud Project. Secrets are given specific names. 
+Unicodex runs as a Cloud Run service. Using the Python package `django-storages`, it's been configured to take a `GS_BUCKET_NAME` as a storage place for its media. Using the Python package `django-environ` it takes a complex `DATABASE_URL`, which will point to a Cloud SQL PostgreSQL database. The `settings.py` is also designed to pull a specific secret into the environment. These are all designed to live in the same Google Cloud Project.
 
 In this way, Unicodex runs 1:1:1 -- one Cloud Run Service, one Cloud SQL Database, one Google Storage bucket. It also assumes that there is *only* one service/database/bucket. 
 
