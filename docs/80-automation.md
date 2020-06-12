@@ -22,16 +22,16 @@ Once that's setup, you'll need to create a [new service account](https://www.ter
 
 ```shell,exclude
 # Create the service account
-$ gcloud iam service-accounts create terraform \
+gcloud iam service-accounts create terraform \
     --display-name "Terraform Service Account"
 
 # Grant editor permissions (lower than roles/owner)
-$ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member serviceAccount:terraform@${PROJECT_ID}.iam.gserviceaccount.com \
   --role roles/owner
 
 # create and save a local private key
-$ gcloud iam service-accounts keys create ~/terraform-key.json \
+gcloud iam service-accounts keys create ~/terraform-key.json \
   --iam-account terraform@${PROJECT_ID}.iam.gserviceaccount.com 
 
 # store location of private key in environment that terraform can use

@@ -21,7 +21,9 @@ See `app.json` and the `.gcloud/` folder for implementation details.
 
 ### Terraform 
 
-* [Deploy with Terraform](docs/80-automation.md)
+* Install [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) and setup [authentication](docs/80-automation.md#install-terraform-and-setup-authentication)
+* Use Terraform to [provision infrastructure](docs/80-automation.md#provision-infrastructure)
+* Use Cloud Build to perform the initial [database migration](docs/80-automation.md#migrate-database)
 
 See `terraform/` for configuration details.
 
