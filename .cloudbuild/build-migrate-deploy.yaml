@@ -28,7 +28,8 @@ steps:
              '--', 'sh', '.cloudbuild/django_migrate.sh']
 
     - id: 'deploy '
-      name: 'gcr.io/cloud-builders/gcloud'
+      name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+      entrypoint: 'gcloud'
       args: ["run", "deploy", "${_SERVICE}", 
             "--platform", "managed", 
             "--region", "${_REGION}",
