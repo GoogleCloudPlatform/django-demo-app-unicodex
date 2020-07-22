@@ -39,6 +39,9 @@ steps:
 #   _REGION: (the region)
 #   _INSTANCE_NAME: (just the name, PROJECT_ID:REGION:INSTANCE_NAME)
 #   _SERVICE: (the cloud run service)
+
+images: 
+ - "gcr.io/$PROJECT_ID/${_SERVICE}"
 #
 # Automatically provided:
 #   PROJECT_ID: (the project)
