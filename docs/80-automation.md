@@ -21,6 +21,10 @@ To start with, you'll need to [install Terraform](https://learn.hashicorp.com/te
 Once that's setup, you'll need to create a [new service account](https://www.terraform.io/docs/providers/google/getting_started.html#adding-credentials) that has Owner rights to your project, and [export an authentication key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) to that service account that Terraform can use. 
 
 ```shell,exclude
+# Setup gcloud for your project
+export PROJECT_ID=YourProjectID
+gcloud config set project $PROJECT_ID
+
 # Create the service account
 gcloud iam service-accounts create terraform \
     --display-name "Terraform Service Account"
@@ -88,7 +92,7 @@ cd django-demo-app-unicodex/terraform
 💡 If you chose to run this section in a new project, you will need to re-create the base image: 
 
 ```shell,exclude
-gcloud builds submit --tag gcr.io/MyNewProject/unicodex .
+gcloud builds submit --tag gcr.io/${PROJECT_ID}/unicodex .
 ```
 
 Once you have this configured, you need to initialise Terrafrom:
@@ -112,7 +116,7 @@ You can specify your variables using [command-line flags](https://learn.hashicor
 terraform apply \
   -var 'region=us-central1' \
   -var 'service=unicodex' \
-  -var 'project=MyProject' \
+  -var 'project=${PROJECT_ID}' \
   -var 'instance_name=psql'
 ```
 
