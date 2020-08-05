@@ -1,9 +1,11 @@
 Django==3.1
-django-environ
 gunicorn
-pyyaml
-bs4
-requests
+django-environ
 psycopg2-binary
 django-storages[google]
 google-cloud-secret-manager==1.0.0
+
+# required for internal functionality, not deployement related
+requests
+pyyaml
+bs4
