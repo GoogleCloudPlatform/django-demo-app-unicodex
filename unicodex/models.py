@@ -40,6 +40,10 @@ class Codepoint(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def display(self):
+        return f"&#x{self.codepoint};&#xFE0F;"
+
 
 class Vendor(models.Model):
     name = models.CharField(max_length=100)

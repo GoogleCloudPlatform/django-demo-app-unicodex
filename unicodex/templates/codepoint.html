@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %} &#x{{codepoint.codepoint}}; {{codepoint.name}} &#x{{codepoint.codepoint}}; {% endblock %}
+{% block title %} {{codepoint.display|safe}} {{codepoint.name}} {{codepoint.display|safe}} {% endblock %}
 {% block content %}
 
 <div class="row">
