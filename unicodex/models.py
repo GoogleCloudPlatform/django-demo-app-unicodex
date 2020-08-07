@@ -31,6 +31,7 @@ class Codepoint(models.Model):
         help_text="If the name of this codepoint is strange on Emojipedia, add it here. Otherwise, I'll work it out myself.",
         blank=True,
     )
+    order = models.IntegerField(default=1)
 
     @property
     def render(self):

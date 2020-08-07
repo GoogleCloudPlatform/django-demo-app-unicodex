@@ -20,8 +20,7 @@ from unicodex.models import Codepoint, Design, Vendor, VendorVersion
 
 
 def index(request):
-
-    codepoints = Codepoint.objects.all()
+    codepoints = Codepoint.objects.all().order_by('order')
     designs = Design.objects.all()
     vendors = Vendor.objects.all()
     return render(request, "index.html", {"codepoints": codepoints, "designs": designs})

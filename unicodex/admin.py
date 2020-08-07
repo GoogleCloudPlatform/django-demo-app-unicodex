@@ -31,7 +31,7 @@ generate_designs.short_description = "Generate designs for available vendor vers
 
 @admin.register(Codepoint)
 class CodepointAdmin(admin.ModelAdmin):
-    list_display = ("codepoint", "name", "description", "render")
+    list_display = ("codepoint", "name", "description", "order")
     actions = [generate_designs]
 
 
