@@ -11,7 +11,7 @@
 </style>
 <p class="emoji"> 
 {% for x in codepoints %}
-    <a href="u/{{ x.codepoint }}">&#x{{x.codepoint}};&#xFE0F;</a>
+    <a href="u/{{ x.codepoint }}">{{x.display|safe}}</a>
 {% endfor %}
 <p>
 {% endblock %}
