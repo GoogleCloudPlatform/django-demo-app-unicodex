@@ -114,10 +114,10 @@ You can specify your variables using [command-line flags](https://learn.hashicor
 
 ```shell,exclude
 terraform apply \
-  -var 'region=us-central1' \
-  -var 'service=unicodex' \
-  -var 'project=${PROJECT_ID}' \
-  -var 'instance_name=psql'
+  -var region=us-central1 \
+  -var service=unicodex \
+  -var project=${PROJECT_ID} \
+  -var instance_name=psql
 ```
 
 ⚠️ Since we are dynamically creating our secret strings, our [terraform state is considered sensitive data](https://www.terraform.io/docs/state/sensitive-data.html).
