@@ -27,7 +27,7 @@ gcloud run services update unicodex --update-env-vars DEBUG=False
 
 Is the instance you are connecting to correct?
 
-For a number of configurations, the database instance needs to be in the form PROJECT_ID:REGION:INSTANCE_NAME. 
+For a number of configurations, the database instance needs to be in the form `PROJECT_ID:REGION:INSTANCE_NAME`. 
 
 Check the instance name is correct by going to the [SQL Instances](https://console.cloud.google.com/sql/instances) listing and confirming your configuration matches the "instance connection name" listing for your instance. 
 
@@ -82,12 +82,15 @@ Finally, we ran a tiny bit of Python that used the used the PostgreSQL adapter a
 
 ---
 
-## Still more database issues
+## Still more database issues?
 
-TODO(glasnt); doc how to check IAM permissions for cloud build <-> cloud sql access
+Check you have configured the correct IAM settings. 
 
+Locate the [IAM permissions page](https://console.cloud.google.com/iam-admin/iam) in the Cloud Console, and confirm that the `unicodex service account` has Cloud SQL Client and Cloud Run admin roles. 
+
+Locate the [Cloud Build settings page](https://console.cloud.google.com/cloud-build/settings/service-account) in the Cloud Console, and confirm that the `Cloud Run` GCP service is set to `ENABLED`.
 ---
 
-Did you encounter a different problem? [Log an issue](https://github.com/GoogleCloudPlatform/django-demo-app-unicodex/issues)
+Did you encounter a different problem? [Log an issue](https://github.com/GoogleCloudPlatform/django-demo-app-unicodex/issues).
 
 ---
