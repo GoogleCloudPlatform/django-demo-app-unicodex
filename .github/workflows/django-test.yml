@@ -1,0 +1,33 @@
+name: django-test
+
+on: [push]
+
+jobs:
+  run_tests:
+    if: github.ref == 'refs/heads/develop'
+    name: Run Django Tests
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:alpine
+        environment:
+          POSTGRES_PASSWORD: mysecretpassword
+          POSTGRES_DB: unicodex
+        ports:
+          - 5432:5432
+        options: --mount type=tmpfs,destination=/var/lib/postgresql/data --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          ref: 'refs/heads/develop'
+      - name: Set up Python 3.8.5
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8.5
+      - name: Copy local settings
+        run: cp .env-local .env
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: python manage.py test

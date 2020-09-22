@@ -36,6 +36,18 @@ Before we can use our image, we have to build it. The database image will be pul
 docker-compose build
 ``` 
 
+## Configure the local environment
+
+Because you'll be running the image locally, you won't want to access Google Cloud services. The Django settings pull configurations
+from a service called Secret Manager if a `.env` file doesn't exist locally. 
+
+To bypass this, you will need to create a `.env` file populated with some default values. Use the `.env-local` as a base: 
+
+```
+cp .env-local .env
+```
+
+This file uses configurations that match the expected values in `docker-compose.yml` for the database connection string, which is the most essential part of this setup.
 
 ## Initialise the database
 
