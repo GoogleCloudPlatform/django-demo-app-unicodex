@@ -3,4 +3,4 @@ python-dotenv
 httpx
 click
 google-api-python-client
-google-cloud-secret-manager==0.1.1
+google-cloud-secret-manager==2.0.0
