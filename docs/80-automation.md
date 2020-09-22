@@ -27,7 +27,7 @@ gcloud config set project $PROJECT_ID
 
 # Create the service account
 gcloud iam service-accounts create terraform \
-    --display-name "Terraform Service Account"
+  --display-name "Terraform Service Account"
 
 # Grant editor permissions (lower than roles/owner)
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
