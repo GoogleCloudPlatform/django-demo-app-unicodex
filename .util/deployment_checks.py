@@ -131,7 +131,7 @@ def check_deploy(project, service_name, region, secret_name):
         success=(secret_dbinstance == database_name),
     )
 
-    dbapi = build("sql", "v1beta4")
+    dbapi = build("sqladmin", "v1beta4")
     instance = dbapi.instances().get(project=project, instance=dbinstance).execute()
     result(
         f"Instance exists: {instance['name']}, running {instance['databaseVersion']}"
