@@ -22,7 +22,7 @@ env_file = os.path.join(BASE_DIR,  ".env")
 
 if not os.path.isfile('.env'):
     import google.auth
-    from google.cloud import secretmanager_v1beta1 as sm
+    from google.cloud import secretmanager_v1 as sm
 
     _, project = google.auth.default()
 
