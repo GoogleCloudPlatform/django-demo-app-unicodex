@@ -40,6 +40,11 @@ gcloud iam service-accounts keys create ~/terraform-key.json \
 
 # store location of private key in environment that terraform can use
 export GOOGLE_APPLICATION_CREDENTIALS=~/terraform-key.json
+
+# enable the resource API and IAM APIs
+gcloud services enable \
+  cloudresourcemanager.googleapis.com \
+  iam.googleapis.com
 ```
 
 ---
