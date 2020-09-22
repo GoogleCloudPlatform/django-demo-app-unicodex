@@ -3,7 +3,7 @@ gunicorn
 django-environ
 psycopg2-binary
 django-storages[google]
-google-cloud-secret-manager==1.0.0
+google-cloud-secret-manager==2.0.0
 
 # required for internal functionality, not deployement related
 requests

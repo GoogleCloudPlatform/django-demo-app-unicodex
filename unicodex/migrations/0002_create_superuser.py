@@ -14,8 +14,8 @@ def access_secrets(secret_keys):
         client = sm.SecretManagerServiceClient()
 
         for s in secret_keys:
-            path = client.secret_version_path(project, s, "latest")
-            payload = client.access_secret_version(path).payload.data.decode("UTF-8")
+            name = f"projects/{project}/secrets/{s}/versions/latest"
+            payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
             secrets[s] = payload
 
     return secrets
