@@ -2,6 +2,8 @@
 
 terraform/
 
+.env
+
 .git
 
 docs/

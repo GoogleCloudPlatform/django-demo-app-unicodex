@@ -39,7 +39,7 @@ docker-compose build
 
 ## Initialise the database
 
-At the moment the database is empty. We can use standard django commands to run our database migrations, and add some default data; these instructions need to be run the context of our web image: 
+At the moment the database is empty. We can use standard Django commands to run our database migrations, and add some default data; these instructions need to be run the context of our web image: 
 
 ```
 docker-compose run --rm web python manage.py migrate
@@ -47,12 +47,6 @@ docker-compose run --rm web python manage.py loaddata sampledata
 ```
 
 **Tip**: `docker-compose run --rm` is quite long. You could create an alias for this command in your `.bashrc`. For example: `alias drc=docker-compose run --rm`. Adjust for your choice of terminal.
-
-<small>Notes: 
-
-* If you received an error about `UserWarning: Error reading .env`, don't worry about this for now.
-</small>
-
 
 ## Start the services
 

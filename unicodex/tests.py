@@ -14,6 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.test import TestCase
+from django.test import TestCase, Client
+from django.urls import reverse
 
-# Create your tests here.
+client = Client()
+
+class UnicodexIndexViewTest(TestCase):
+    def test_landing_page(self):
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Unicodex")
