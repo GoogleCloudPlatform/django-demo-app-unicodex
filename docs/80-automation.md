@@ -27,7 +27,7 @@ gcloud config set project $PROJECT_ID
 
 # Create the service account
 gcloud iam service-accounts create terraform \
-    --display-name "Terraform Service Account"
+  --display-name "Terraform Service Account"
 
 # Grant editor permissions (lower than roles/owner)
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
@@ -40,6 +40,11 @@ gcloud iam service-accounts keys create ~/terraform-key.json \
 
 # store location of private key in environment that terraform can use
 export GOOGLE_APPLICATION_CREDENTIALS=~/terraform-key.json
+
+# enable the resource API and IAM APIs
+gcloud services enable \
+  cloudresourcemanager.googleapis.com \
+  iam.googleapis.com
 ```
 
 ---
