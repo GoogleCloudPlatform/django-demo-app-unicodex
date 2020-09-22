@@ -4,13 +4,12 @@ on: [push]
 
 jobs:
   run_tests:
-    if: github.ref == 'refs/heads/develop'
     name: Run Django Tests
     runs-on: ubuntu-latest
     services:
       db:
         image: postgres:alpine
-        environment:
+        env:
           POSTGRES_PASSWORD: mysecretpassword
           POSTGRES_DB: unicodex
         ports:
@@ -19,15 +18,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-        with:
-          ref: 'refs/heads/develop'
+ 
       - name: Set up Python 3.8.5
         uses: actions/setup-python@v1
         with:
           python-version: 3.8.5
+        
       - name: Copy local settings
         run: cp .env-local .env
+        
       - name: Install dependencies
         run: pip install -r requirements.txt
+          
       - name: Run tests
         run: python manage.py test
