@@ -14,27 +14,26 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: unicodex
         ports:
-          - 5432:5432
-        options: --mount type=tmpfs,destination=/var/lib/postgresql/data --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        - 5432:5432
+        options: --mount type=tmpfs,destination=/var/lib/postgresql/data --health-cmd
+          pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
- 
-      - name: Set up Python 3.8.5
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.8.5
-        
-      - name: Create local settings
-        run: |
-            # Ensure database port is dynamic
-            echo "DATABASE_URL='postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/unicodex'" > .env
-            # Enter some useful defaults for other environment variables
-            echo -en "SECRET_KEY=asdfasdfasdf\nSUPERUSER=admin\nSUPERPASS=admin\nDBEUG=True" >> .env
-        
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-          
-      - name: Run tests
-        run: python manage.py test --exclude external
-        
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Set up Python 3.8.5
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8.5
+
+    - name: Create local settings
+      run: |
+        # Ensure database port is dynamic
+        echo "DATABASE_URL='postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/unicodex'" > .env
+        # Enter some useful defaults for other environment variables
+        echo -en "SECRET_KEY=asdfasdfasdf\nSUPERUSER=admin\nSUPERPASS=admin\nDBEUG=True" >> .env
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run tests
+      run: python manage.py test --exclude external
