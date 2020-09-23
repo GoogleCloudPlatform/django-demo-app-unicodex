@@ -27,9 +27,10 @@ jobs:
         
       - name: Create local settings
         run: |
+            # Ensure database port is dynamic
             echo "DATABASE_URL='postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/unicodex'" > .env
+            # Enter some useful defaults for other environment variables
             echo -en "SECRET_KEY=asdfasdfasdf\nSUPERUSER=admin\nSUPERPASS=admin\nDBEUG=True" >> .env
-        
         
       - name: Install dependencies
         run: pip install -r requirements.txt
