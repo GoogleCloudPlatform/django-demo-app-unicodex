@@ -10,7 +10,8 @@ jobs:
       db:
         image: postgres:alpine
         env:
-          POSTGRES_PASSWORD: mysecretpassword
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
           POSTGRES_DB: unicodex
         ports:
           - 5432:5432
@@ -26,7 +27,7 @@ jobs:
         
       - name: Create local settings
         run: |
-            echo "DATABASE_URL='postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres'" > .env
+            echo "DATABASE_URL='postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/unicodex'" > .env
             echo "SECRET_KEY=asdfasdfasdf" >> .env
         
         
@@ -34,4 +35,8 @@ jobs:
         run: pip install -r requirements.txt
           
       - name: Run tests
-        run: python manage.py test
+        run: | 
+            ls
+            cat .env 
+            python manage.py test
+        
