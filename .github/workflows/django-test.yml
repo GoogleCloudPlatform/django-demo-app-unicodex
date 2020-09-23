@@ -24,8 +24,11 @@ jobs:
         with:
           python-version: 3.8.5
         
-      - name: Copy local settings
-        run: cp .env-local .env
+      - name: Create local settings
+        run: |
+            echo "DATABASE_URL='postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/postgres'" > .env
+            echo "SECRET_KEY=asdfasdfasdf" >> .env
+        
         
       - name: Install dependencies
         run: pip install -r requirements.txt
