@@ -36,10 +36,22 @@ Before we can use our image, we have to build it. The database image will be pul
 docker-compose build
 ``` 
 
+## Configure the local environment
+
+Because you'll be running the image locally, you won't want to access Google Cloud services. The Django settings pull configurations
+from a service called Secret Manager if a `.env` file doesn't exist locally. 
+
+To bypass this, you will need to create a `.env` file populated with some default values. Use the `.env-local` as a base: 
+
+```
+cp .env-local .env
+```
+
+This file uses configurations that match the expected values in `docker-compose.yml` for the database connection string, which is the most essential part of this setup.
 
 ## Initialise the database
 
-At the moment the database is empty. We can use standard django commands to run our database migrations, and add some default data; these instructions need to be run the context of our web image: 
+At the moment the database is empty. We can use standard Django commands to run our database migrations, and add some default data; these instructions need to be run the context of our web image: 
 
 ```
 docker-compose run --rm web python manage.py migrate
@@ -47,12 +59,6 @@ docker-compose run --rm web python manage.py loaddata sampledata
 ```
 
 **Tip**: `docker-compose run --rm` is quite long. You could create an alias for this command in your `.bashrc`. For example: `alias drc=docker-compose run --rm`. Adjust for your choice of terminal.
-
-<small>Notes: 
-
-* If you received an error about `UserWarning: Error reading .env`, don't worry about this for now.
-</small>
-
 
 ## Start the services
 

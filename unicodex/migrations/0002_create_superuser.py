@@ -3,7 +3,7 @@ import os
 from django.db import migrations
 
 import google.auth
-from google.cloud import secretmanager_v1beta1 as sm
+from google.cloud import secretmanager_v1 as sm
 
 
 def access_secrets(secret_keys):

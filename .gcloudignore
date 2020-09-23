@@ -2,10 +2,16 @@
 
 terraform/
 
+.env
+
 .git
 
 docs/
-docker-compose.yml
 .util
 
 .DS_Store
+media/
+
+venv/
+htmlcov/
+.coverage/

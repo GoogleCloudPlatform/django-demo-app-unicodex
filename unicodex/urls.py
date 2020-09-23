@@ -22,6 +22,7 @@ from django.views.static import serve
 
 from unicodex.views import *
 
+
 urlpatterns = [
     re_path(r"^u/(?P<codepoint>[\w-]+)$", codepoint, name="codepoint"),
     re_path(r"^vendors$", vendor_list, name="vendor_list"),

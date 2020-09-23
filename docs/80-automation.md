@@ -51,7 +51,7 @@ gcloud services enable \
 
 🤔 Didn't we already do this authentication step?
 
-We did, back in [the GCP setup section](10-setup-gcp.md); we authenicated to let `gcloud` act as "us". Us, in this case, is your login to the Google Cloud Console. There you get the Project Owner role, which is universal admin rights. We don't want Terraform to have that level of control. Instead the Editor role gives access to do most things, but not the ability to grant roles to others.
+We did, back in [the GCP setup section](10-setup-gcp.md); we authenticated to let `gcloud` act as "us". Us, in this case, is your login to the Google Cloud Console. There you get the Project Owner role, which is universal admin rights. We don't want Terraform to have that level of control. Instead the Editor role gives access to do most things, but not the ability to grant roles to others.
 
 ---
 
@@ -144,7 +144,7 @@ Once this processes finishes, everything will be setup ready for our build-migra
 ```shell,exclude
 cd ..
 gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
-      --substitutions="[generated from terraform inputs]"
+  --substitutions="[generated from terraform inputs]"
 ```
 
 It will also show how to log into the Django admin, including how to retrieve the login secrets: 

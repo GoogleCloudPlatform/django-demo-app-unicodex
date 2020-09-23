@@ -20,9 +20,10 @@ import environ
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env_file = os.path.join(BASE_DIR,  ".env")
 
-if not os.path.isfile('.env'):
+# If a local .env doesn't exist, create one by loading it from Secret Manager.
+if not os.path.isfile(env_file):
     import google.auth
-    from google.cloud import secretmanager_v1beta1 as sm
+    from google.cloud import secretmanager_v1 as sm
 
     _, project = google.auth.default()
 
