@@ -28,15 +28,13 @@ jobs:
       - name: Create local settings
         run: |
             echo "DATABASE_URL='postgres://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/unicodex'" > .env
-            echo "SECRET_KEY=asdfasdfasdf" >> .env
+            echo -en "SECRET_KEY=asdfasdfasdf\nSUPERUSER=admin\nSUPERPASS=admin\nDBEUG=True" >> .env
         
         
       - name: Install dependencies
         run: pip install -r requirements.txt
           
       - name: Run tests
-        run: | 
-            ls
-            cat .env 
-            python manage.py test
+        run: |
+        python manage.py test
         
