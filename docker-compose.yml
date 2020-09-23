@@ -10,13 +10,6 @@ services:
       - dev_data:/var/lib/postgresql/data
   web:
     build: .
-    env_file: .env
-#    environment:
-#        DEBUG: "true"
-#        DATABASE_URL: postgres://postgres:mysecretpassword@db:5432/unicodex
-#        SECRET_KEY: FP0hA3L14P1OeJg-youshouldChangeThis-Pr2gCEuNhH9dfjHJSY8cRlfen5jApzMan6E
-#        SUPERUSER: admin
-#        SUPERPASS: localUserPasswordHere
     command: python manage.py runserver 0.0.0.0:8080 
     volumes:
       - .:/app
