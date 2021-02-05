@@ -1,12 +1,21 @@
+terraform { 
+  required_version = "~> 0.14.4"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "3.53.0"
+    }
+  }
+} 
+
 provider google {
   project = var.project
-  version = "~> 3.40"
 }
 
 # Enable all services
 module services {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "~> 9.0"
+  version = "~> 10.0"
 
   project_id = var.project
 
