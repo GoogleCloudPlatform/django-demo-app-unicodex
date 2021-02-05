@@ -51,7 +51,7 @@ gcloud services enable \
 
 🤔 Didn't we already do this authentication step?
 
-We did, back in [the GCP setup section](10-setup-gcp.md); we authenticated to let `gcloud` act as "us". Us, in this case, is your login to the Google Cloud Console. There you get the Project Owner role, which is universal admin rights. We don't want Terraform to have that level of control. Instead the Editor role gives access to do most things, but not the ability to grant roles to others.
+We did, back in [the GCP setup section](10-setup-gcp.md); we authenticated to let `gcloud` act as "us". Us, in this case, is your login to the Google Cloud Console. There you get the Project Owner role, which is universal admin rights. There are some parts of this setup that require the same level of access as "us". 
 
 ---
 
@@ -163,7 +163,7 @@ gcloud secrets versions access latest --secret SUPERPASS
 
 This tutorial has two methods of provisioning: the shell scripts you saw earlier, and the Terraform scripts. Both setups are designed to produce the same project setup in the end, which means that although we could automate more in Terraform (such as creating the Cloud Run service), that would require a different set of permissions for the unicodex service accounts. 
 
-We granted Editor rights for the Terraform service account, as we are running it only locally on our own laptops. If you want to use Terraform within Cloud Build, you should absolutely use a lower level of access. 
+We granted Owner rights for the Terraform service account, as we are running it only locally on our own laptops. If you want to use Terraform within Cloud Build, you should absolutely use a lower level of access. 
 
 ---
 
