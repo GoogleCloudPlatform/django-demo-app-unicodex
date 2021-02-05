@@ -29,7 +29,7 @@ gcloud config set project $PROJECT_ID
 gcloud iam service-accounts create terraform \
   --display-name "Terraform Service Account"
 
-# Grant editor permissions (lower than roles/owner)
+# Grant owner permissions
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member serviceAccount:terraform@${PROJECT_ID}.iam.gserviceaccount.com \
   --role roles/owner
@@ -90,8 +90,7 @@ There is a reason for this separation. All the manual configurations required to
 We've provided the Terraform files in `terraform/`, so navigate there and initialise:
 
 ```shell,exclude
-git clone git@github.com/GoogleCloudPlatform/django-demo-app-unicodex
-cd django-demo-app-unicodex/terraform
+git clone https://github.com/GoogleCloudPlatform/django-demo-app-unicodex
 ```
 
 💡 If you chose to run this section in a new project, you will need to re-create the base image: 
