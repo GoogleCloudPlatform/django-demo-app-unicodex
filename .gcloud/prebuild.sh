@@ -1,22 +1,7 @@
 #!/bin/bash
 shopt -s expand_aliases
 
-function quiet {
-    $* > /dev/null
-}
-
-stepdo() { 
-    echo "→ ${1}..."
-}
-
-# this will only capture the most recent return code, sadly.
-stepdone(){
-    statuscode=$?
-    msg="... done"
-    if [ $statuscode -ne 0 ]; then msg="❌  done, but non-zero return code ($statuscode)"; fi
-    echo $msg
-    echo " "
-}
+source .util/bash_helpers.sh
 
 echo "🚀 Deploying $K_SERVICE to $GOOGLE_CLOUD_PROJECT in $GOOGLE_CLOUD_REGION"
 export PROJECT_ID=$GOOGLE_CLOUD_PROJECT

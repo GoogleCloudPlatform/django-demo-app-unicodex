@@ -6,9 +6,6 @@ terraform {
       version = "3.53.0"
     }
   }
-  backend "gcs" {
-    bucket = "unicodex-ci-024295-tfstate"
-  }
 }
 
 provider "google" {

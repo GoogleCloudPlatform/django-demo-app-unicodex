@@ -10,7 +10,7 @@ output "result" {
     If you haven't deployed this service before, you will need to perform the initial database migrations: 
 
     cd ..
-    gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
+    gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml --project ${var.project} \
       --substitutions="_REGION=${google_cloud_run_service.unicodex.location},_INSTANCE_NAME=${google_sql_database_instance.postgres.name},_SERVICE=${google_cloud_run_service.unicodex.name}"
 
     You can then log into the Django admin: ${local.service_url}/admin
