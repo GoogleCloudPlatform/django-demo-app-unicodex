@@ -3,9 +3,14 @@
 # borrows heavily from fourkeys
 # https://github.com/GoogleCloudPlatform/fourkeys/blob/main/experimental/terraform/setup.sh
 
-# Setup once per main project.
+# Sets up a parent project for CI work, and creates a new CI project for testing.
 
 RANDOM_IDENTIFIER=$((RANDOM % 999999))
+
+gcloud services enable \
+    sqladmin.googleapis.com \
+    cloudresourcemanager.googleapis.com \
+    containerregistry.googleapis.com
 
 export CI_REGION=us-central1
 export PARENT_PROJECT=$(gcloud config get-value project)
@@ -53,11 +58,4 @@ TF_STATE_BUCKET=gs://${CI_PROJECT}-tfstate
 gsutil mb -p ${CI_PROJECT} $TF_STATE_BUCKET
 
 echo "CI_PROJECT ${CI_PROJECT} is now ready to use."
-
-#gsutil iam ch \
-#  serviceAccount:${SA_EMAIL}:roles/storage.objectAdmin \
-#  $LOGS_BUCKET
-
-#gcloud projects add-iam-policy-binding $PARENT_PROJECT \
-#  --member serviceAccount:${SA_EMAIL} \
-#  --role roles/storage.objectAdmin
+echo "TF_STATE_BUCKET is $TF_STATE_BUCKET"

@@ -1,0 +1,32 @@
+steps:
+  - id: generate
+    name: $_PYTHON_VERSION
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        python -m pip install -r .util/requirements.txt --user
+        .util/helper gen --project $_CI_PROJECT > /workspace/deploy.sh
+        wc -l /workspace/deploy.sh
+
+  - id: "deploy"
+    name: "google/cloud-sdk"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        time bash -ex /workspace/deploy.sh
+
+  - id: "system test"
+    name: $_PYTHON_VERSION
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        .util/helper check-deploy $_CI_PROJECT
+
+substitutions:
+  _PYTHON_VERSION: python:3.9-slim
+
+logsBucket: ${PROJECT_ID}-ci-logs # default
+serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-service-account@glasnt-auto-1300.iam.gserviceaccount.com

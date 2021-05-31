@@ -11,6 +11,7 @@ resource "random_password" "database_user_password" {
 resource "google_sql_database_instance" "postgres" {
   name             = var.instance_name
   database_version = "POSTGRES_13"
+  project          = var.project
   region           = var.region
 
   settings {
