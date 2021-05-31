@@ -1,7 +1,5 @@
 #!include:.gitignore
 
-terraform/
-
 .env
 
 .git

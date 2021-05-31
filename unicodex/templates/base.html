@@ -1,21 +1,21 @@
 {% load static %}
 <html lang="en">
-<head>
-  <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
-  <link rel="stylesheet" href="{% static 'css/skeleton.css' %}">
-  <link rel="stylesheet" href="{% static 'css/unicodex.css' %}">
-  <link href="https://fonts.googleapis.com/css?family=Oswald|Montserrat" rel="stylesheet">
-</head>
-<title>{% block title%}{%endblock%}</title>
-<body>
-  <div class="container">
-    <div class="row">
-      <div class="twelve columns">
-        <p align="center"><h2 class="water"><a href="/">Unicodex</a><h2></p>
-      </div>
-    </div>
+    <head>
+        <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+        <link rel="stylesheet" href="{% static 'css/skeleton.css' %}">
+        <link rel="stylesheet" href="{% static 'css/unicodex.css' %}">
+        <link href="https://fonts.googleapis.com/css?family=Oswald|Montserrat" rel="stylesheet">
+    </head>
+    <title>{% block title%}{%endblock%}</title>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="twelve columns">
+                    <p align="center"><h2 class="water"><a href="/">Unicodex</a><h2></p>
+                    </div>
+                    </div>
 
-    {% block content %}
-    {% endblock %}
-  </div>
-</body>
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </body>

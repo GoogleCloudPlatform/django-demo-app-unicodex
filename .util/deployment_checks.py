@@ -4,26 +4,11 @@ import click
 import httpx
 import subprocess
 from googleapiclient.discovery import build
+import googleapiclient
 from google.cloud import secretmanager_v1 as sml
 from dotenv import dotenv_values
 from io import StringIO
 from urllib.parse import urlparse
-
-"""
-SETUP:
-
-googleapiclient.discovery requires authentication, so setup a dedicated service
-account:
-
-gcloud iam service-accounts create robot-account \
-    --display-name "Robot account"
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-    --member serviceAccount:robot-account@${PROJECT_ID}.iam.gserviceaccount.com \
-    --role roles/owner
-gcloud iam service-accounts keys create ~/robot-account-key.json \
-    --iam-account robot-account@${PROJECT_ID}.iam.gserviceaccount.com
-export GOOGLE_APPLICATION_CREDENTIALS=~/robot-account-key.json
-"""
 
 # TODO(glasnt): more checks as required
 
@@ -69,30 +54,34 @@ def check_deploy(project, service_name, region, secret_name):
 
     ###
     header("Deployed service checks")
-    url = service["status"]["url"]
-    echo(f"Service deployment URL: {url}")
-
-    page = httpx.get(url)
-    if page.status_code == 200:
-        result("Index page loaded successfully")
+    if "url" not in service["status"].keys():
+        message = service["status"]["conditions"][0]["message"]
+        result(f"Service does not have a deployed URL: {message}", success=False)
     else:
-        result(f"Index page returns an error: {page.status_code}", success=False)
+        url = service["status"]["url"]
+        echo(f"Service deployment URL: {url}")
 
-    if "Unicodex" in page.text:
-        result("Index page contains 'Unicodex'")
-    else:
-        result("Index page does not contain the string 'Unicodex'", success=False)
+        page = httpx.get(url)
+        if page.status_code == 200:
+            result("Index page loaded successfully")
+        else:
+            result(f"Index page returns an error: {page.status_code}", success=False)
 
-    admin = httpx.get(url + "/admin")
-    if admin.status_code == 200:
-        result("Django admin returns status 200")
-    else:
-        result(f"Django admin returns an error: {page.status_code}", success=False)
+        if "Unicodex" in page.text:
+            result("Index page contains 'Unicodex'")
+        else:
+            result("Index page does not contain the string 'Unicodex'", success=False)
 
-    if "Log in" in admin.text and "Django administration" in admin.text:
-        result("Django admin login screen successfully loaded")
-    else:
-        result("Django admin login not found", success=False, details=admin.text)
+        admin = httpx.get(url + "/admin")
+        if admin.status_code == 200:
+            result("Django admin returns status 200")
+        else:
+            result(f"Django admin returns an error: {page.status_code}", success=False)
+
+        if "Log in" in admin.text and "Django administration" in admin.text:
+            result("Django admin login screen successfully loaded")
+        else:
+            result("Django admin login not found", success=False, details=admin.text)
 
     ###
     header("Secret checks")
@@ -114,8 +103,11 @@ def check_deploy(project, service_name, region, secret_name):
     ###
     header("Object storage checks")
     sapi = build("storage", "v1")
-    bucket = sapi.buckets().get(bucket=media_bucket).execute()
-    result(f"Storage bucket {bucket['name']} exists in {bucket['location']}")
+    try:
+        bucket = sapi.buckets().get(bucket=media_bucket).execute()
+        result(f"Storage bucket {bucket['name']} exists in {bucket['location']}")
+    except googleapiclient.errors.HttpError as e:
+        result(f"Storage bucket error {e}", success=False)
     # TODO check bucket permissions.
 
     ###

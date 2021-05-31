@@ -1,25 +1,26 @@
-terraform { 
-  required_version = "~> 0.14.4"
+terraform {
+  required_version = "~> 0.15.4"
   required_providers {
     google = {
       source  = "hashicorp/google"
       version = "3.53.0"
     }
   }
-} 
+  backend "gcs" {
+    bucket = "unicodex-ci-023834-tfstate"
+  }
+}
 
-provider google {
+provider "google" {
   project = var.project
 }
 
-# Enable all services
-module services {
-  source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "~> 10.0"
-
+data "google_project" "project" {
   project_id = var.project
+}
 
-  activate_apis = [
+resource "google_project_service" "services" {
+  for_each = toset([
     "run.googleapis.com",
     "iam.googleapis.com",
     "compute.googleapis.com",
@@ -29,55 +30,17 @@ module services {
     "cloudkms.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "secretmanager.googleapis.com"
-  ]
+  ])
+  service            = each.key
+  disable_on_destroy = false
 }
 
-module database {
-  source = "./modules/database"
-
-  project       = module.services.project_id
-  service       = var.service
-  region        = var.region
-  instance_name = var.instance_name
+resource "google_service_account" "unicodex" {
+  account_id   = var.service
+  display_name = "${var.service} service account"
 }
 
-module backing {
-  source = "./modules/backing"
-
-  project      = module.services.project_id
-  service      = var.service
-  region       = var.region
-  database_url = module.database.database_url
-}
-
-module unicodex {
-  source = "./modules/unicodex"
-
-  project               = module.services.project_id
-  service               = var.service
-  region                = var.region
-  database_instance     = module.database.database_instance
-  service_account_email = module.backing.service_account_email
-}
-
-output result {
-  value = <<EOF
-
-    The ${var.service} is now running at ${module.unicodex.service_url}
-
-    If you haven't deployed this service before, you will need to perform the initial database migrations: 
-
-    cd ..
-    gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
-      --substitutions="_REGION=${var.region},_INSTANCE_NAME=${module.database.short_instance_name},_SERVICE=${var.service}"
-
-    You can then log into the Django admin: ${module.unicodex.service_url}/admin
-
-    The username and password are stored in these secrets: 
-
-    gcloud secrets versions access latest --secret SUPERUSER
-    gcloud secrets versions access latest --secret SUPERPASS
-
-    ✨
-    EOF
+locals {
+  unicodex_sa   = "serviceAccount:${google_service_account.unicodex.email}"
+  cloudbuild_sa = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
 }
