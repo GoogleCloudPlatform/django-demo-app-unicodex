@@ -39,7 +39,10 @@ def summary():
         failcol = {}
     click.echo(
         (
-            click.style(f"\nResults: {total} check{s(total)}, ", bold=True,)
+            click.style(
+                f"\nResults: {total} check{s(total)}, ",
+                bold=True,
+            )
             + click.style(f"{fails} failure{s(fails)}", **failcol)
             + click.style(".", bold=True)
         )
@@ -48,9 +51,6 @@ def summary():
         sys.exit(0)
     else:
         sys.exit(1)
-
-
-_, columns = [int(x) for x in os.popen("stty size", "r").read().split()]
 
 
 def result(msg, success=True, details=None):

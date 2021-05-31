@@ -7,7 +7,7 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket = "unicodex-ci-023834-tfstate"
+    bucket = "unicodex-ci-024295-tfstate"
   }
 }
 

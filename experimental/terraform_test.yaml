@@ -42,11 +42,12 @@ steps:
             '--', 'sh', '.cloudbuild/django_migrate.sh']
 
   - id: 'system test'
-    name: 'google/cloud-sdk'
+    name: $_PYTHON_VERSION
     entrypoint: /bin/bash
     args:
       - '-c'
       - |
+        python -m pip install -r .util/requirements.txt
         .util/helper check-deploy $_CI_PROJECT
 
 #  - id: 'tf destroy'
@@ -61,6 +62,7 @@ steps:
 substitutions:
   _SERVICE: unicodex
   _TF_VERSION: 0.15.4
+  _PYTHON_VERSION: python:3.9-slim
   _REGION: us-central1
   _INSTANCE_NAME: postgres
 

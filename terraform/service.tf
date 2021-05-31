@@ -5,7 +5,7 @@ resource "google_cloud_run_service" "unicodex" {
   autogenerate_revision_name = true
   template {
     spec {
-      service_account_name = local.unicodex_sa
+      service_account_name = google_service_account.unicodex.email
       containers {
         image = data.external.image_digest.result.image
       }
