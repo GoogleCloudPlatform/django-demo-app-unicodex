@@ -16,22 +16,6 @@ data "google_project" "project" {
   project_id = var.project
 }
 
-resource "google_project_service" "services" {
-  for_each = toset([
-    "run.googleapis.com",
-    "iam.googleapis.com",
-    "compute.googleapis.com",
-    "sql-component.googleapis.com",
-    "sqladmin.googleapis.com",
-    "cloudbuild.googleapis.com",
-    "cloudkms.googleapis.com",
-    "cloudresourcemanager.googleapis.com",
-    "secretmanager.googleapis.com"
-  ])
-  service            = each.key
-  disable_on_destroy = false
-}
-
 resource "google_service_account" "unicodex" {
   account_id   = var.service
   display_name = "${var.service} service account"

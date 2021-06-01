@@ -7,6 +7,7 @@ resource "google_secret_manager_secret" "superuser_password" {
   replication {
     automatic = true
   }
+  depends_on = [google_project_service.secretmanager]
 }
 resource "google_secret_manager_secret_iam_binding" "superuser_password" {
   secret_id = google_secret_manager_secret.superuser_password.id
@@ -22,12 +23,12 @@ resource "random_password" "django_secret_key" {
   special = false
   length  = 50
 }
-
 resource "google_secret_manager_secret" "django_settings" {
   secret_id = "django_settings"
   replication {
     automatic = true
   }
+  depends_on = [google_project_service.secretmanager]
 }
 resource "google_secret_manager_secret_version" "django_settings" {
   secret = google_secret_manager_secret.django_settings.id
