@@ -55,7 +55,8 @@ gcloud sql instances create $INSTANCE_NAME \
   --tier db-f1-micro  \
   --region $REGION \
   --project $PROJECT_ID \
-  --root-password $ROOT_PASSWORD
+  --root-password $ROOT_PASSWORD \
+  --timeout 900
 export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
 stepdone
 
