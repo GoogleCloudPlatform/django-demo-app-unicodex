@@ -6,6 +6,15 @@ steps:
   - id: 'push'
     name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/${_CI_PROJECT}/${_SERVICE}']
+    
+
+  - id: 'debug digest'
+    name: "google/cloud-sdk"
+    entrypoint: /bin/bash
+    args: 
+      - "-c"
+      - |
+        source ./terraform/etc/get_image_digest.sh $_CI_PROJECT $_SERVICE
 
   - id: 'tf init'
     name: 'hashicorp/terraform:${_TF_VERSION}'
@@ -15,6 +24,14 @@ steps:
     - | 
       cd terraform
       terraform init
+
+  - id: 'debug digest again'
+    name: "google/cloud-sdk"
+    entrypoint: /bin/bash
+    args: 
+      - "-c"
+      - |
+        source ./terraform/etc/get_image_digest.sh $_CI_PROJECT $_SERVICE
 
   - id: 'tf plan'
     name: 'hashicorp/terraform:${_TF_VERSION}'
