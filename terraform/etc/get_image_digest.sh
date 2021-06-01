@@ -14,5 +14,11 @@ PROJECT=$1
 IMAGE=$2
 
 # deep JSON is invalid for terraform, so serve flat value
-LATEST=$(gcloud container images describe gcr.io/${PROJECT}/${IMAGE}:latest  --format="value(image_summary.fully_qualified_digest)" | tr -d '\n')
-echo "{\"image\": \"${LATEST}\"}"
+LATEST=$(gcloud container images describe gcr.io/${PROJECT}/${IMAGE}:latest --project $PROJECT --format="value(image_summary.fully_qualified_digest)" | tr -d '\n')
+
+# Attempt to throw an error if the image doesn't exist.
+if [ -z "$LATEST" ]; then
+    echo {}
+else
+    echo "{\"image\": \"${LATEST}\"}"
+fi

@@ -63,7 +63,7 @@ def result(msg, success=True, details=None):
         fg = "red"
         RESULTS["failure"] += 1
 
-    # overflow math. 7 is the result length ("[FASL] ")
+    # overflow math. 7 is the result length ("[FAIL] ")
     amsg = msg.ljust(ceil((len(msg) + 7) / columns) * columns - 7)
 
     click.echo(amsg + click.style(f"[{success_message}]", fg=fg, bold=True))
