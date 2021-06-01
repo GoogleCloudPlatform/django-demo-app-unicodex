@@ -61,28 +61,32 @@ def check_deploy(project, service_name, region, secret_name):
         url = service["status"]["url"]
         echo(f"Service deployment URL: {url}")
 
-        page = httpx.get(url)
-        if page.status_code == 200:
-            result("Index page loaded successfully")
-        else:
-            result(f"Index page returns an error: {page.status_code}", success=False)
+        try:
+            page = httpx.get(url)
 
-        if "Unicodex" in page.text:
-            result("Index page contains 'Unicodex'")
-        else:
-            result("Index page does not contain the string 'Unicodex'", success=False)
+            if page.status_code == 200:
+                result("Index page loaded successfully")
+            else:
+                result(f"Index page returns an error: {page.status_code}", success=False)
 
-        admin = httpx.get(url + "/admin")
-        if admin.status_code == 200:
-            result("Django admin returns status 200")
-        else:
-            result(f"Django admin returns an error: {page.status_code}", success=False)
+            if "Unicodex" in page.text:
+                result("Index page contains 'Unicodex'")
+            else:
+                result("Index page does not contain the string 'Unicodex'", success=False)
 
-        if "Log in" in admin.text and "Django administration" in admin.text:
-            result("Django admin login screen successfully loaded")
-        else:
-            result("Django admin login not found", success=False, details=admin.text)
+            admin = httpx.get(url + "/admin")
+            if admin.status_code == 200:
+                result("Django admin returns status 200")
+            else:
+                result(f"Django admin returns an error: {page.status_code}", success=False)
 
+            if "Log in" in admin.text and "Django administration" in admin.text:
+                result("Django admin login screen successfully loaded")
+            else:
+                result("Django admin login not found", success=False, details=admin.text)
+
+        except httpx.ReadTimeout as e:
+            result(e, success=False)
     ###
     header("Secret checks")
     sm = sml.SecretManagerServiceClient()  # using static library
