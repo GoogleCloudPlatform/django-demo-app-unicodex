@@ -4,7 +4,7 @@ import click
 from math import ceil
 import shutil
 
-rows, columns = shutil.get_terminal_size()
+columns, _ = shutil.get_terminal_size()
 RESULTS = {"success": 0, "failure": 0}
 
 
