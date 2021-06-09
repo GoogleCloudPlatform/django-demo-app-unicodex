@@ -28,5 +28,5 @@ steps:
 substitutions:
   _PYTHON_VERSION: python:3.9-slim
 
-logsBucket: ${PROJECT_ID}-ci-logs # default
-serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-service-account@glasnt-auto-1300.iam.gserviceaccount.com
+logsBucket: ${PROJECT_ID}-buildlogs
+serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
