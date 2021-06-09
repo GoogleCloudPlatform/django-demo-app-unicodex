@@ -1,0 +1,14 @@
+
+steps:
+  - id: Cleanup any projects
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: /bin/bash
+    args:
+      - '-c'
+      - |
+        for project in $(gcloud projects list --filter ${_CI_PROJECT_PREFIX}-ci-0 --format "value(project_id)")
+          do gcloud projects delete $project --quiet
+        done
+
+substutitions: 
+  _CI_PROJECT_PREFIX: unicodex-ci
