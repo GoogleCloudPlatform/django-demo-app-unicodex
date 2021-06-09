@@ -8,23 +8,21 @@ This repo has multiple deployment methods:
 
 This folder attempts to test those. 
 
-## quickstart.sh
+## project_setup.sh
 
-A hands off way to do full testing. WIP. 
-
-```
-source experimental/quickstart.sh [terraform|button|gen]
-```
-
-It will run the setup.sh (below), then kick off one of multiple deployment methods and test the results. 
-
-
-## setup.sh
-
-With an existing project with billing enabled, running this script will setup the parent project, and create a CI project that will actually get the deployment
+With an existing project with billing enabled, running this script will setup the current project in a state that it will be ready to be used as a parent project.
 
 ```
 source experimental/setup.sh
 ```
 
-It will output a CI_PROJECT. 
+## cloudbuild.yaml / run_test.sh
+
+A hands off way to do full testing. WIP. 
+
+With the parent project setup, it will run the test, as if it were running: 
+
+```
+source experimental/quickstart.sh [terraform|button|gen]
+```
+

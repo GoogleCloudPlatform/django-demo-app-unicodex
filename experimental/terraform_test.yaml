@@ -67,14 +67,14 @@ steps:
         python -m pip install -r .util/requirements.txt
         .util/helper check-deploy $_CI_PROJECT
 
-#  - id: 'tf destroy'
-#    name: 'hashicorp/terraform:${_TF_VERSION}'
-#    entrypoint: 'sh'
-#    args: 
-#    - '-c'
-#    - | 
-#      cd terraform
-#      terraform destroy -auto-approve -var project=${_CI_PROJECT}
+  - id: 'tf destroy'
+    name: 'hashicorp/terraform:${_TF_VERSION}'
+    entrypoint: 'sh'
+    args: 
+    - '-c'
+    - | 
+      cd terraform
+      terraform destroy -auto-approve -var project=${_CI_PROJECT}
 
 substitutions:
   _SERVICE: unicodex
@@ -83,5 +83,5 @@ substitutions:
   _REGION: us-central1
   _INSTANCE_NAME: postgres
 
-logsBucket: ${PROJECT_ID}-ci-logs # default
-serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-service-account@glasnt-auto-1300.iam.gserviceaccount.com
+logsBucket: ${PROJECT_ID}-buildlogs
+serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
