@@ -1,4 +1,4 @@
-Django==3.1.9
+Django==3.1.10
 gunicorn
 django-environ
 psycopg2-binary
