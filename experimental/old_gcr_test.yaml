@@ -40,7 +40,7 @@ steps:
 
 
 substitutions:
-  _SERVICE: unicodex7
+  _SERVICE: unicodex
 
-logsBucket: ${PROJECT_ID}-ci-logs # default
-serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-service-account@unicodex-ci-base.iam.gserviceaccount.com
+logsBucket: ${PROJECT_ID}-buildlogs
+serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
