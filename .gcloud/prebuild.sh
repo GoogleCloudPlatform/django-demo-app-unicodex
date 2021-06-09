@@ -106,6 +106,7 @@ quiet gcloud secrets add-iam-policy-binding django_settings \
 quiet gcloud secrets add-iam-policy-binding django_settings \
   --member serviceAccount:$CLOUDBUILD_SA \
   --role roles/secretmanager.secretAccessor
+rm .env
 stepdone
 
 stepdo "Creating Django admin user secrets, and allowing limited access"
