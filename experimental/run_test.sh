@@ -1,7 +1,10 @@
 #!/bin/bash
+source .util/bash_helpers.sh
 
 TEST_TYPE=$1
+PARENT_FOLDER=$2
 
+PARENT_PROJECT=$(gcloud config get-value project)
 CI_PROJECT_PREFIX=unicodex-ci
 CLOUDBUILD_CONFIG=experimental/${TEST_TYPE}_test.yaml
 
@@ -16,7 +19,10 @@ stepdo "🔨 create CI project"
 RANDOM_IDENTIFIER=$((RANDOM % 999999))
 export CI_PROJECT=$(printf "%s-%06d" $CI_PROJECT_PREFIX $RANDOM_IDENTIFIER)-${TEST_TYPE:=manual}
 
-export PARENT_FOLDER=$(gcloud projects describe ${PARENT_PROJECT} --format="value(parent.id)")
+if [[ -z $PARENT_FOLDER ]]
+then PARENT_FOLDER=$(gcloud projects describe ${PARENT_PROJECT} --format="value(parent.id)")
+fi
+
 export BILLING_ACCOUNT=$(gcloud beta billing projects describe ${PARENT_PROJECT} --format="value(billingAccountName)" || sed -e 's/.*\///g')
 
 gcloud projects create ${CI_PROJECT} --folder ${PARENT_FOLDER}
@@ -67,11 +73,8 @@ statuscode=$?
 
 if [ $statuscode -ne 0 ]; then 
     echo "Cloud Build Failed. It may not be recoverable."
-    echo "If you wish to delete it and try again:"
 else
     echo "✅ Success"
-    echo "It is now safe to turn off your CI project:"
+    echo "It is now safe to turn off your CI project"
 fi
-echo ""
-echo "gcloud projects delete $CI_PROJECT"
-echo "" 
+gcloud projects delete $CI_PROJECT
