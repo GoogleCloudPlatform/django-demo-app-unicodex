@@ -1,11 +1,14 @@
 steps:
   - id: Setup Script
-    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     entrypoint: /bin/bash
     args:
       - '-c'
       - |
-        source ./experimental/run_test.sh terraform
+        source ./experimental/run_test.sh terraform ${_PARENT_FOLDER}
     
 logsBucket: unicodex-ci-base-buildlogs
 serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+
+substitutions:
+  _PARENT_FOLDER: "440127642793"
