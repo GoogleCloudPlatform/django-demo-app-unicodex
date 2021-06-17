@@ -13,3 +13,5 @@ serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unic
 
 substitutions:
   _PARENT_FOLDER: "440127642793"
+
+timeout: "1500s"

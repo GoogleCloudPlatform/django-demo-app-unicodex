@@ -1,91 +1,71 @@
+# Designed to be run in the CI project, which in this case will be *the* project.
 steps:
-  - id: 'build'
-    name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/${_CI_PROJECT}/${_SERVICE}', '.']
+  - id: "build"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/${PROJECT_ID}/${_SERVICE}", "."]
 
-  - id: 'push'
-    name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/${_CI_PROJECT}/${_SERVICE}']
-    
+  - id: "push"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/${PROJECT_ID}/${_SERVICE}"]
 
-  - id: 'debug digest'
-    name: "google/cloud-sdk"
-    entrypoint: /bin/bash
-    args: 
+  - id: "tf"
+    name: "hashicorp/terraform:${_TF_VERSION}"
+    entrypoint: "sh"
+    args:
       - "-c"
       - |
-        source ./terraform/etc/get_image_digest.sh $_CI_PROJECT $_SERVICE
+        cd terraform
+        terraform init
+        terraform apply -auto-approve \
+          -var project=${PROJECT_ID} \
+          -var instance_name=${_INSTANCE_NAME} \
+          -var region=${_REGION} \
+          -var service=${_SERVICE}
 
-  - id: 'tf init'
-    name: 'hashicorp/terraform:${_TF_VERSION}'
-    entrypoint: 'sh'
-    args: 
-    - '-c'
-    - | 
-      cd terraform
-      terraform init
+  - id: "migrate"
+    name: "gcr.io/google-appengine/exec-wrapper"
+    args:
+      [
+        "-i",
+        "gcr.io/${PROJECT_ID}/${_SERVICE}",
+        "-s",
+        "${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}",
+        "-e",
+        "PROJECT_ID=${PROJECT_ID}",
+        "--",
+        "sh",
+        ".cloudbuild/django_migrate.sh",
+      ]
 
-  - id: 'debug digest again'
-    name: "google/cloud-sdk"
-    entrypoint: /bin/bash
-    args: 
-      - "-c"
-      - |
-        source ./terraform/etc/get_image_digest.sh $_CI_PROJECT $_SERVICE
-
-  - id: 'tf plan'
-    name: 'hashicorp/terraform:${_TF_VERSION}'
-    entrypoint: 'sh'
-    args: 
-    - '-c'
-    - | 
-      cd terraform
-      terraform plan -var project=${_CI_PROJECT}
-
-  - id: 'tf apply'
-    name: 'hashicorp/terraform:${_TF_VERSION}'
-    entrypoint: 'sh'
-    args: 
-    - '-c'
-    - | 
-      cd terraform
-      terraform apply -auto-approve -var project=${_CI_PROJECT}
-  
-  - id: 'migrate'
-    name: 'gcr.io/google-appengine/exec-wrapper'
-    args: ['-i', 'gcr.io/${_CI_PROJECT}/${_SERVICE}',
-            '-s', '${_CI_PROJECT}:${_REGION}:${_INSTANCE_NAME}',
-            '-e', 'PROJECT_ID=${_CI_PROJECT}',
-            '--', 'sh', '.cloudbuild/django_migrate.sh']
-
-  - id: 'system test'
+  - id: "system test"
     name: $_PYTHON_VERSION
     entrypoint: /bin/bash
     args:
-      - '-c'
+      - "-c"
       - |
         python -m pip install -r .util/requirements.txt
-        .util/helper check-deploy $_CI_PROJECT
+        .util/helper check-deploy $PROJECT_ID
 
-  - id: 'tf destroy'
-    name: 'hashicorp/terraform:${_TF_VERSION}'
-    entrypoint: 'sh'
-    args: 
-    - '-c'
-    - | 
-      cd terraform
-      terraform destroy -auto-approve -var project=${_CI_PROJECT}
-
+  - id: "tf destroy"
+    name: "hashicorp/terraform:${_TF_VERSION}"
+    entrypoint: "sh"
+    args:
+      - "-c"
+      - |
+        cd terraform
+        terraform destroy -auto-approve -var project=${PROJECT_ID} 
+        
 substitutions:
   _SERVICE: unicodex
   _TF_VERSION: 0.15.4
   _PYTHON_VERSION: python:3.9-slim
   _REGION: us-central1
-  _INSTANCE_NAME: postgres
+  _INSTANCE_NAME: psql
 
-logsBucket: ${PROJECT_ID}-buildlogs
-serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+logsBucket: unicodex-ci-base-buildlogs
+serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
 
+options:
+  dynamic_substitutions: true
 
- options:
-     dynamic_substitutions: true
+timeout: "1500s"

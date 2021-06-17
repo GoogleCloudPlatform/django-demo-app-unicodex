@@ -17,9 +17,9 @@ export DEFAULT_GCB=$PARENT_PROJECTNUM@cloudbuild.gserviceaccount.com
 
 stepdo "Enable services on parent"
 gcloud services enable --project $PARENT_PROJECT  \
-    sqladmin.googleapis.com \
-    cloudresourcemanager.googleapis.com \
-    containerregistry.googleapis.com
+    #sqladmin.googleapis.com \
+    cloudresourcemanager.googleapis.com
+    #containerregistry.googleapis.com
 stepdone
 
 stepdo "Create service account"
@@ -52,8 +52,11 @@ DEFAULT_BUCKET=${PARENT_PROJECT}_cloudbuild
 gsutil iam ch \
         serviceAccount:${SA_EMAIL}:roles/storage.admin \
         gs://$DEFAULT_BUCKET
+stepdone
 
-quiet gcloud projects add-iam-policy-binding $PARENT_PROJECT \
-    --member serviceAccount:${SA_EMAIL} \
-    --role roles/iam.serviceAccountUser
+stepdo "Grant additional roles"
+echo TODO ONCE CONFIRMED.
+#quiet gcloud projects add-iam-policy-binding $PARENT_PROJECT \
+#    --member serviceAccount:${SA_EMAIL} \
+#   --role roles/iam.serviceAccountUser
         
