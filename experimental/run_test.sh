@@ -43,8 +43,7 @@ stepdone
 
 stepdo "setup billing"
 gcloud beta billing projects link ${CI_PROJECT} \
-    --billing-account=${BILLING_ACCOUNT} \
-    --log-http
+    --billing-account=${BILLING_ACCOUNT}
 stepdone
 
 stepdo "enable services on ci project"
