@@ -3,6 +3,9 @@
 # borrows heavily from fourkeys
 # https://github.com/GoogleCloudPlatform/fourkeys/blob/main/experimental/terraform/setup.sh
 
+# NOT COMPLETE>
+
+
 # Sets up a parent project for CI work
 source .util/bash_helpers.sh
 
@@ -49,3 +52,8 @@ DEFAULT_BUCKET=${PARENT_PROJECT}_cloudbuild
 gsutil iam ch \
         serviceAccount:${SA_EMAIL}:roles/storage.admin \
         gs://$DEFAULT_BUCKET
+
+quiet gcloud projects add-iam-policy-binding $PARENT_PROJECT \
+    --member serviceAccount:${SA_EMAIL} \
+    --role roles/iam.serviceAccountUser
+        

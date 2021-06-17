@@ -5,6 +5,7 @@ steps:
     args:
       - '-c'
       - |
+        echo $BUILD_ID
         source ./experimental/run_test.sh terraform ${_PARENT_FOLDER}
     
 logsBucket: unicodex-ci-base-buildlogs

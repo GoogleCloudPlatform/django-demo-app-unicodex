@@ -7,7 +7,7 @@ resource "google_cloud_run_service" "unicodex" {
     spec {
       service_account_name = google_service_account.unicodex.email
       containers {
-        image = data.external.image_digest.result.image
+        image = "gcr.io/${var.project}/unicodex" #data.external.image_digest.result.image
       }
     }
     metadata {
@@ -40,7 +40,7 @@ resource "google_cloud_run_service_iam_policy" "noauth" {
 
 # WORKAROUND this script ensures the most recent image is assigned to the Cloud Run service
 # as Terraform doesn't process "latest" with any context. 
-data "external" "image_digest" {
-  program = ["sh", "etc/get_image_digest.sh", var.project, var.service]
-}
+#data "external" "image_digest" {
+#  program = ["sh", "etc/get_image_digest.sh", var.project, var.service]
+#}
 # END WORKAROUND
