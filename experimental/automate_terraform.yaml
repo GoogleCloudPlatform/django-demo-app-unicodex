@@ -23,8 +23,11 @@ steps:
       - |
         cd terraform
         terraform init
-        terraform plan -var project=${_CI_PROJECT}
-        terraform apply -auto-approve -var project=${_CI_PROJECT}
+        terraform apply -auto-approve \
+          -var project=${_CI_PROJECT} \
+          -var instance_name=${_INSTANCE_NAME} \
+          -var region=${_REGION} \
+          -var service=${_SERVICE}
 
   - id: "migrate"
     name: "gcr.io/google-appengine/exec-wrapper"
@@ -57,7 +60,7 @@ steps:
       - "-c"
       - |
         cd terraform
-        terraform destroy -auto-approve -var project=${_CI_PROJECT}
+        terraform destroy -auto-approve -var project=${_CI_PROJECT} 
 
   - id: "project destroy"
     name: "google/cloud-sdk"
@@ -72,7 +75,7 @@ substitutions:
   _TF_VERSION: 0.15.4
   _PYTHON_VERSION: python:3.9-slim
   _REGION: us-central1
-  _INSTANCE_NAME: postgres
+  _INSTANCE_NAME: psql
   _PARENT_FOLDER: "440127642793"
   _CI_PROJECT: "unicodex-ci-${BUILD_ID:0:8}-terraform"
 
@@ -81,3 +84,5 @@ serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unic
 
 options:
   dynamic_substitutions: true
+
+timeout: "1500s"
