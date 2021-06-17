@@ -43,3 +43,9 @@ else
     echo "Bucket $LOGS_BUCKET already exists. Skipping"
 fi
 stepdone
+
+stepdo "Grant access to default logs bucket"
+DEFAULT_BUCKET=${PARENT_PROJECT}_cloudbuild
+gsutil iam ch \
+        serviceAccount:${SA_EMAIL}:roles/storage.admin \
+        gs://$DEFAULT_BUCKET
