@@ -85,3 +85,7 @@ substitutions:
 
 logsBucket: ${PROJECT_ID}-buildlogs
 serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+
+
+ options:
+     dynamic_substitutions: true
