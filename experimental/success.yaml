@@ -1,0 +1,8 @@
+steps:
+  - name: busybox
+    args: 
+      -  "true"
+
+
+serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+logsBucket: unicodex-ci-base-buildlogs
