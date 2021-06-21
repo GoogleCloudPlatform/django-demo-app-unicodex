@@ -1,0 +1,12 @@
+steps: 
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+    - 'builds'
+    - 'submit'
+    - '--config'
+    - './experimental/success.yaml'
+    - '--project=${_TARGET_PROJECT}'
+
+serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+logsBucket: unicodex-ci-base-buildlogs
