@@ -20,6 +20,7 @@ echo "⏩ Quick start a $TEST_TYPE"
 SA_NAME=ci-serviceaccount
 SA_EMAIL=$(gcloud iam service-accounts list --filter $SA_NAME --format 'value(email)')
 
+
 RANDOM_IDENTIFIER=$((RANDOM % 999999))
 export CI_PROJECT=$(printf "%s-%06d" $CI_PROJECT_PREFIX $RANDOM_IDENTIFIER)-${TEST_TYPE:=manual}
 
@@ -36,14 +37,14 @@ stepdo "🔨 create CI project $CI_PROJECT in folder $PARENT_FOLDER"
 gcloud projects create ${CI_PROJECT} --folder ${PARENT_FOLDER}
 stepdone
 
-stepdo "check IAM policies"
-gcloud projects get-iam-policy ${CI_PROJECT}
-stepdone
-
-stepdo "assign IAM policies"
+stepdo "assign IAM policies to service account"
 quiet gcloud projects add-iam-policy-binding $CI_PROJECT \
     --member serviceAccount:${SA_EMAIL} \
     --role roles/iam.serviceAccountTokenCreator
+
+quiet gcloud projects add-iam-policy-binding $CI_PROJECT \
+    --member serviceAccount:${SA_EMAIL} \
+    --role roles/iam.serviceAccountUser
 stepdone
 
 stepdo "setup billing"
@@ -57,7 +58,6 @@ gcloud services enable --project $CI_PROJECT \
     containerregistry.googleapis.com \
     cloudbuild.googleapis.com
 stepdone
-
 
 if [[ "$TEST_TYPE" == "terraform" ]]; then
     stepdo "setting up Terraform state bucket"
@@ -77,6 +77,15 @@ _EOF
     stepdone
 fi
 
+
+stepdo "assign IAM owner role to Cloud Build service account"
+CI_PROJECTNUMBER=$(gcloud projects describe ${CI_PROJECT} --format='value(projectNumber)')
+CLOUDBUILD_SA=$CI_PROJECTNUMBER@cloudbuild.gserviceaccount.com
+quiet gcloud projects add-iam-policy-binding $CI_PROJECT \
+    --member serviceAccount:${CLOUDBUILD_SA} \
+    --role roles/owner
+stepdone
+
 echo ""
 echo "✅ Project '${CI_PROJECT}' is now ready to use."
 echo ""
@@ -92,9 +101,9 @@ if [ $statuscode -ne 0 ]; then
     echo "Cloud Build Failed. It may not be recoverable."
 else
     echo "✅ Success"
-    echo "It is now safe to turn off your CI project"
+#   echo "It is now safe to turn off your CI project"
 fi
 
-gcloud projects delete $CI_PROJECT --quiet
+#gcloud projects delete $CI_PROJECT --quiet
 
-echo "Project deleted."
+#echo "Project deleted."
