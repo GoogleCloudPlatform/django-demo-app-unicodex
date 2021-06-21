@@ -62,8 +62,8 @@ substitutions:
   _REGION: us-central1
   _INSTANCE_NAME: psql
 
-logsBucket: unicodex-ci-base-buildlogs
-serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+#logsBucket: unicodex-ci-base-buildlogs
+#serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
 
 options:
   dynamic_substitutions: true
