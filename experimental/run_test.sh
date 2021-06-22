@@ -20,7 +20,6 @@ echo "⏩ Quick start a $TEST_TYPE"
 SA_NAME=ci-serviceaccount
 SA_EMAIL=$(gcloud iam service-accounts list --filter $SA_NAME --format 'value(email)')
 
-
 RANDOM_IDENTIFIER=$((RANDOM % 999999))
 export CI_PROJECT=$(printf "%s-%06d" $CI_PROJECT_PREFIX $RANDOM_IDENTIFIER)-${TEST_TYPE:=manual}
 
@@ -77,13 +76,20 @@ _EOF
     stepdone
 fi
 
-
 stepdo "assign IAM owner role to Cloud Build service account"
 CI_PROJECTNUMBER=$(gcloud projects describe ${CI_PROJECT} --format='value(projectNumber)')
 CLOUDBUILD_SA=$CI_PROJECTNUMBER@cloudbuild.gserviceaccount.com
 quiet gcloud projects add-iam-policy-binding $CI_PROJECT \
     --member serviceAccount:${CLOUDBUILD_SA} \
     --role roles/owner
+stepdone
+
+stepdo "assign Log Bucket writer to Cloud Build service account"
+
+LOGS_BUCKET=gs://${PARENT_PROJECT}-buildlogs
+gsutil iam ch \
+    serviceAccount:${CLOUDBUILD_SA}:roles/storage.admin \
+    $LOGS_BUCKET
 stepdone
 
 echo ""
@@ -103,6 +109,8 @@ else
     echo "✅ Success"
 #   echo "It is now safe to turn off your CI project"
 fi
+
+# TODO cleanup parent project rights (e.g. bucket owner from child)
 
 #gcloud projects delete $CI_PROJECT --quiet
 

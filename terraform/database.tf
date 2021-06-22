@@ -18,6 +18,8 @@ resource "google_sql_database_instance" "postgres" {
     tier = "db-f1-micro"
   }
 
+  depends_on = [google_project_service.sqladmin]
+
 }
 
 resource "google_sql_database" "database" {

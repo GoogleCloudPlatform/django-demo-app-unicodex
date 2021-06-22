@@ -16,6 +16,7 @@ steps:
       - |
         cd terraform
         terraform init
+        terraform refresh
         terraform apply -auto-approve \
           -var project=${PROJECT_ID} \
           -var instance_name=${_INSTANCE_NAME} \
@@ -62,7 +63,7 @@ substitutions:
   _REGION: us-central1
   _INSTANCE_NAME: psql
 
-#logsBucket: unicodex-ci-base-buildlogs
+logsBucket: unicodex-ci-base-buildlogs
 #serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
 
 options:

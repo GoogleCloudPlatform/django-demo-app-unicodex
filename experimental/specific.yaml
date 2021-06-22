@@ -1,0 +1,14 @@
+steps:
+  - id: Setup Script
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: /bin/bash
+    args:
+      - '-c'
+      - |
+       source ./experimental/run-specific.sh terraform $_CI_PROJECT
+
+logsBucket: unicodex-ci-base-buildlogs
+serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+
+
+timeout: "1500s"

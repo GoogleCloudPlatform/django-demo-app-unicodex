@@ -8,6 +8,10 @@ resource "google_cloud_run_service" "unicodex" {
       service_account_name = google_service_account.unicodex.email
       containers {
         image = "gcr.io/${var.project}/unicodex" #data.external.image_digest.result.image
+        env {
+          name = "CURRENT_HOST"
+          value = "*" # Terraform workaround: can't know the service URL without the service existing.
+        }
       }
     }
     metadata {
