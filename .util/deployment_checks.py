@@ -6,6 +6,7 @@ import subprocess
 from googleapiclient.discovery import build
 import googleapiclient
 from google.cloud import secretmanager_v1 as sml
+from google.api_core import exceptions
 from dotenv import dotenv_values
 from io import StringIO
 from urllib.parse import urlparse
@@ -36,30 +37,48 @@ def check_sa(service):
     echo(f"Associated service account: {sa}")
 
     result(
-        f"Associated service account is not default",
+        f"Associated service account is not the default service account",
         details="Ensure a custom service account is associated to the service",
         success=("compute-" not in sa),
     )
 
 
 def check_bindings(service, project):
-
     sa = get_sa(service)
+    echo(f"Associated service account (SA): {sa}")
+
     success = True
     crm = build("cloudresourcemanager", "v1")
     iam = crm.projects().getIamPolicy(resource=f"{project}").execute()
     for binding in iam["bindings"]:
         if binding["role"] == "roles/owner":
-            echo("Checking roles/owner bindings")
             for member in binding["members"]:
-                echo(member, indent="> ")
                 if member == sa:
-                    success = True
+                    success = False
     result(
-        "Associated service account permissions aren't owner",
-        details="Ensure the service account isn't using owner permissions",
+        "SA doesn't have Owner role",
+        details="Remove service account from having Owner role",
         success=success,
     )
+
+
+def check_roles(service, project):
+    sa = get_sa(service)
+    crm = build("cloudresourcemanager", "v1")
+    iam = crm.projects().getIamPolicy(resource=f"{project}").execute()
+
+    required_roles = {"roles/run.admin": False, "roles/cloudsql.user": False}
+    for binding in iam["bindings"]:
+        for member in binding["members"]:
+            if member == sa:
+                required_roles[binding["role"]] = True
+
+    for role, success in required_roles.items():
+        result(
+            f"SA has {role}",
+            details=f"Ensure SA has {role} (or similar)",
+            success=success,
+        )
 
 
 def check_unicodex(service):
@@ -102,20 +121,24 @@ def check_unicodex(service):
 
 
 def get_secret(project, secret_name):
-
+    header("Secret value checks")
     sm = sml.SecretManagerServiceClient()  # using static library
     secret_path = f"projects/{project}/secrets/{secret_name}/versions/latest"
-    payload = sm.access_secret_version(name=secret_path).payload.data.decode("UTF-8")
+    try:
+        payload = sm.access_secret_version(name=secret_path).payload.data.decode("UTF-8")
+        result(f"Secret {secret_path} exist")
+        
+        # https://github.com/theskumar/python-dotenv#in-memory-filelikes
+        values = dotenv_values(stream=StringIO(payload))
+        return values
+    except exceptions.PermissionDenied as e:
+        result(f"Secret error: {e}", success=False)
+        return {}
 
-    result(f"Secret {secret_path} exist")
 
-    # https://github.com/theskumar/python-dotenv#in-memory-filelikes
-    values = dotenv_values(stream=StringIO(payload))
-    return values
 
 
 def parse_secrets(values):
-
     secrets = {}
     secrets["dburl"] = urlparse(values["DATABASE_URL"])
     secrets["dbuser"] = secrets["dburl"].netloc.split(":")[0]
@@ -125,7 +148,6 @@ def parse_secrets(values):
 
 
 def check_secrets(values):
-    header("Secret value checks")
     for key in ["DATABASE_URL", "GS_BUCKET_NAME", "SECRET_KEY"]:
         result(f"{key} is defined", success=(key in values.keys()))
 
@@ -183,15 +205,19 @@ def check_deploy(project, service_name, region, secret_name):
 
     check_run(service)
     check_bindings(service, project)
+
+    check_roles(service, project)
     check_unicodex(service)
 
     values = get_secret(project, secret_name)
-    check_secrets(values)
-    secrets = parse_secrets(values)
 
-    check_bucket(secrets["media_bucket"])
+    if values: 
+        check_secrets(values)
+        secrets = parse_secrets(values)
 
-    check_database(project, service, secrets)
+        check_bucket(secrets["media_bucket"])
+
+        check_database(project, service, secrets)
 
     summary()
 

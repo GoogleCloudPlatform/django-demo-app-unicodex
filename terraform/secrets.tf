@@ -1,9 +1,30 @@
+# Super User Name
+
+resource "google_secret_manager_secret" "superuser_name" {
+  secret_id = "SUPERUSER"
+  replication {
+    automatic = true
+  }
+  depends_on = [google_project_service.secretmanager]
+}
+resource "google_secret_manager_secret_iam_binding" "superuser_name" {
+  secret_id = google_secret_manager_secret.superuser_name.id
+  role      = "roles/secretmanager.secretAccessor"
+  members   = [local.cloudbuild_sa]
+}
+resource "google_secret_manager_secret_version" "superuser_name" {
+  secret      = google_secret_manager_secret.superuser_name.id
+  secret_data = "admin"
+}
+
+# Super User Password
+
 resource "random_password" "superuser_password" {
   length  = 32
   special = false
 }
 resource "google_secret_manager_secret" "superuser_password" {
-  secret_id = "superuser_password"
+  secret_id = "SUPERPASS"
   replication {
     automatic = true
   }
@@ -18,6 +39,8 @@ resource "google_secret_manager_secret_version" "superuser_password" {
   secret      = google_secret_manager_secret.superuser_password.id
   secret_data = random_password.superuser_password.result
 }
+
+# Django Settings
 
 resource "random_password" "django_secret_key" {
   special = false
