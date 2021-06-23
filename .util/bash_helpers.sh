@@ -3,7 +3,7 @@
 # A collection of helper functions for bash scripts
 
 function quiet {
-    $* > /dev/null
+    $* > /dev/null 2>&1 
 }
 
 stepdo() { 

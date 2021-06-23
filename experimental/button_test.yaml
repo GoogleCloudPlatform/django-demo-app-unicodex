@@ -14,26 +14,14 @@ steps:
     env:
       - "TRUSTED_ENVIRONMENT=true"
       - "SKIP_CLONE_REPORTING=true"
-      - "GOOGLE_CLOUD_PROJECT=$_CI_PROJECT"
+      - "GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
       - "GOOGLE_CLOUD_REGION=$_REGION"
-
     args:
       - "-c"
       - |
         ./bin/cloudshell_open --repo_url=https://github.com/GoogleCloudPlatform/django-demo-app-unicodex.git
 
-  - id: "system test"
-    name: $_PYTHON_VERSION
-    entrypoint: /bin/bash
-    args:
-      - "-c"
-      - |
-        python -m pip install -r .util/requirements.txt
-        .util/helper check-deploy $_CI_PROJECT
+options:
+  dynamic_substitutions: true
 
-substitutions:
-  _REGION: us-central1
-  _PYTHON_VERSION: python:3.9-slim
-
-logsBucket: ${PROJECT_ID}-buildlogs
-serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+logsBucket: "${_PARENT_PROJECT}-buildlogs"

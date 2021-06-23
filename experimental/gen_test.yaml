@@ -1,12 +1,12 @@
 steps:
   - id: generate
-    name: $_PYTHON_VERSION
+    name: python:3.9-slim
     entrypoint: /bin/bash
     args:
       - "-c"
       - |
         python -m pip install -r .util/requirements.txt --user
-        .util/helper gen --project $_CI_PROJECT > /workspace/deploy.sh
+        .util/helper gen --project $PROJECT_ID --region $_REGION > /workspace/deploy.sh
         wc -l /workspace/deploy.sh
 
   - id: "deploy"
@@ -15,18 +15,9 @@ steps:
     args:
       - "-c"
       - |
-        time bash -ex /workspace/deploy.sh
+        time bash -e /workspace/deploy.sh
 
-  - id: "system test"
-    name: $_PYTHON_VERSION
-    entrypoint: /bin/bash
-    args:
-      - "-c"
-      - |
-        .util/helper check-deploy $_CI_PROJECT
+options:
+  dynamic_substitutions: true
 
-substitutions:
-  _PYTHON_VERSION: python:3.9-slim
-
-logsBucket: ${PROJECT_ID}-buildlogs
-serviceAccount: projects/$PROJECT_ID/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+logsBucket: "${_PARENT_PROJECT}-buildlogs"

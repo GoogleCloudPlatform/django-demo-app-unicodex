@@ -1,16 +1,44 @@
 steps:
-  - id: Setup Script
-    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+  - id: setup
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
     entrypoint: /bin/bash
     args:
-      - '-c'
+      - "-c"
       - |
-       source ./experimental/run_test.sh terraform ${_PARENT_FOLDER}
+        source ./experimental/setup.sh \
+          -t ${_TEST_TYPE} \
+          -f ${_PARENT_FOLDER} \
+          -p ${_CI_PROJECT} \
+          -r ${_REGION} \
+          -s ${_SA_NAME}
+
+  - id: "check"
+    name: python:3.9-slim
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        python -m pip install -r .util/requirements.txt
+        .util/helper check-deploy ${_CI_PROJECT}
+
+  - id: "destroy"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        gcloud project delete ${_CI_PROJECT} --quiet
+
+options:
+  dynamic_substitutions: true
 
 logsBucket: unicodex-ci-base-buildlogs
 serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
 
 substitutions:
-  _PARENT_FOLDER: "440127642793"
+  _REGION: us-central1
+  _TEST_TYPE: terraform
+  _SA_NAME: ci-serviceaccount
+  _CI_PROJECT: "unicodex-test-${BUILD_ID:0:8}-${_TEST_TYPE:0:1}"
 
 timeout: "1500s"
