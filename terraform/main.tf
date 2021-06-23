@@ -35,11 +35,11 @@ resource google_project_iam_binding service_permissions {
 
   role       = "roles/${each.key}"
   members    = [local.cloudbuild_sa, local.unicodex_sa]
-  depends_on = [google_service_account.cloudrun]
+  depends_on = [google_service_account.unicodex]
 }
 
 resource google_service_account_iam_binding cloudbuild_sa {
-  service_account_id = google_service_account.cloudrun.name
+  service_account_id = google_service_account.unicodex.name
   role               = "roles/iam.serviceAccountUser"
 
   members = [local.cloudbuild_sa]
