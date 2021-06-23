@@ -25,7 +25,7 @@ if [[ -z $PARENT_FOLDER ]]; then
     export PARENT_FOLDER=$(gcloud projects describe ${PARENT_PROJECT} --format="value(parent.id)")
     echo "🔍 Found folder ${PARENT_FOLDER} from ${PARENT_PROJECT}"
 else
-    echo "📦 Using provided $PARENT_FOLDER"
+    echo "📦 Using provided folder $PARENT_FOLDER"
 fi
 
 if [[ -z $CI_PROJECT ]]; then
@@ -97,11 +97,11 @@ fi
 if [[ "$TEST_TYPE" == "terraform" ]]; then
     TF_STATE_BUCKET=${CI_PROJECT}-tfstate
 
-    if gsutil ls gs://$TF_STATE_BUCKET | grep -q BucketNotFoundException; then
+    if gsutil ls gs://$TF_STATE_BUCKET | grep -q $TF_STATE_BUCKET; then
+        echo "Bucket $TF_STATE_BUCKET already exists. Skipping"
+    else
         gsutil mb -p ${CI_PROJECT} gs://$TF_STATE_BUCKET
         echo "Created $TF_STATE_BUCKET bucket"
-    else
-        echo "Bucket $TF_STATE_BUCKET already exists. Skipping"
     fi
 
     cat >terraform/backend.tf <<_EOF
