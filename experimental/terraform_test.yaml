@@ -9,7 +9,7 @@ steps:
     args: ["push", "gcr.io/${PROJECT_ID}/${_SERVICE}"]
 
   - id: "tf"
-    name: "hashicorp/terraform:${_TF_VERSION}"
+    name: "hashicorp/terraform:0.15.4"
     entrypoint: "sh"
     args:
       - "-c"
@@ -24,48 +24,23 @@ steps:
 
   - id: "migrate"
     name: "gcr.io/google-appengine/exec-wrapper"
-    args:
-      [
-        "-i",
-        "gcr.io/${PROJECT_ID}/${_SERVICE}",
-        "-s",
-        "${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}",
-        "-e",
-        "PROJECT_ID=${PROJECT_ID}",
+    args: [
+        "-i=gcr.io/${PROJECT_ID}/${_SERVICE}",
+        "-s=${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}",
+        #"-e=PROJECT_ID=${PROJECT_ID}",
         "--",
         "sh",
         ".cloudbuild/django_migrate.sh",
       ]
 
-  - id: "system test"
-    name: $_PYTHON_VERSION
-    entrypoint: /bin/bash
-    args:
-      - "-c"
-      - |
-        python -m pip install -r .util/requirements.txt
-        .util/helper check-deploy $PROJECT_ID
-
-  - id: "tf destroy"
-    name: "hashicorp/terraform:${_TF_VERSION}"
-    entrypoint: "sh"
-    args:
-      - "-c"
-      - |
-        cd terraform
-        terraform destroy -auto-approve -var project=${PROJECT_ID} 
-        
-substitutions:
-  _SERVICE: unicodex
-  _TF_VERSION: 0.15.4
-  _PYTHON_VERSION: python:3.9-slim
-  _REGION: us-central1
-  _INSTANCE_NAME: psql
-
-logsBucket: unicodex-ci-base-buildlogs
-#serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
-
 options:
   dynamic_substitutions: true
+
+logsBucket: "${_PARENT_PROJECT}-buildlogs"
+
+substitutions:
+  _SERVICE: unicodex
+  _INSTANCE_NAME: psql
+  _PARENT_PROJECT: unicodex-ci-base
 
 timeout: "1500s"

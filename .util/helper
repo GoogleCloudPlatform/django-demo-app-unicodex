@@ -39,7 +39,7 @@ def gen(path, project, instance, region):
         gitinfo = "# no local install of git found"
 
     r = [
-        "#!/bin/bash -e",
+        "#!/bin/bash",
         "shopt -s expand_aliases",
         "",
         f"# Generated from {path} on {str(datetime.datetime.now())}",

@@ -6,9 +6,7 @@ steps:
     args:
       - '-c'
       - |
-        for project in $(gcloud projects list --filter ${_CI_PROJECT_PREFIX}-ci-0 --format "value(project_id)")
+        for project in $(gcloud projects list --filter parent=${_PARENT_FOLDER} --format "value(project_id)")
           do gcloud projects delete $project --quiet
         done
 
-substutitions: 
-  _CI_PROJECT_PREFIX: unicodex-ci

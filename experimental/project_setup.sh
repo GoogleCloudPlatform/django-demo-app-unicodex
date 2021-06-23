@@ -1,9 +1,11 @@
 #!/bin/bash
 
+# Sets up the requirements for the parent project which will be used to start tests.
+
 # borrows heavily from fourkeys
 # https://github.com/GoogleCloudPlatform/fourkeys/blob/main/experimental/terraform/setup.sh
 
-# NOT COMPLETE>
+# NOT COMPLETE
 
 
 # Sets up a parent project for CI work
@@ -17,9 +19,7 @@ export DEFAULT_GCB=$PARENT_PROJECTNUM@cloudbuild.gserviceaccount.com
 
 stepdo "Enable services on parent"
 gcloud services enable --project $PARENT_PROJECT  \
-    #sqladmin.googleapis.com \
     cloudresourcemanager.googleapis.com
-    #containerregistry.googleapis.com
 stepdone
 
 stepdo "Create service account"
