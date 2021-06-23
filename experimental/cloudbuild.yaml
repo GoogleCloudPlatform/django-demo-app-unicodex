@@ -27,7 +27,7 @@ steps:
     args:
       - "-c"
       - |
-        gcloud project delete ${_CI_PROJECT} --quiet
+        gcloud projects delete ${_CI_PROJECT} --quiet
 
 options:
   dynamic_substitutions: true

@@ -24,10 +24,14 @@ steps:
 
   - id: "migrate"
     name: "gcr.io/google-appengine/exec-wrapper"
-    args: [
-        "-i=gcr.io/${PROJECT_ID}/${_SERVICE}",
-        "-s=${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}",
-        #"-e=PROJECT_ID=${PROJECT_ID}",
+    args:
+      [
+        "-i",
+        "gcr.io/${PROJECT_ID}/${_SERVICE}",
+        "-s",
+        "${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}",
+        "-e",
+        "PROJECT_ID=${PROJECT_ID}",
         "--",
         "sh",
         ".cloudbuild/django_migrate.sh",
@@ -40,6 +44,7 @@ logsBucket: "${_PARENT_PROJECT}-buildlogs"
 
 substitutions:
   _SERVICE: unicodex
+  _REGION: us-central1
   _INSTANCE_NAME: psql
   _PARENT_PROJECT: unicodex-ci-base
 
