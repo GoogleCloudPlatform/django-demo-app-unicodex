@@ -63,21 +63,19 @@ def check_bindings(service, project):
 
 
 def check_roles(service, project):
-    sa = get_sa(service)
+    sa = f"serviceAccount:{get_sa(service)}"
     crm = build("cloudresourcemanager", "v1")
     iam = crm.projects().getIamPolicy(resource=f"{project}").execute()
 
-    required_roles = {"roles/run.admin": False, "roles/cloudsql.user": False}
-    for binding in iam["bindings"]:
-        for member in binding["members"]:
-            if member == sa:
-                required_roles[binding["role"]] = True
+    required_roles = ["roles/run.admin", "roles/cloudsql.client"]
 
-    for role, success in required_roles.items():
+    member_roles = [b["role"] for b in iam["bindings"] if sa in b["members"]]
+    
+    for role in required_roles:
         result(
             f"SA has {role}",
-            details=f"Ensure SA has {role} (or similar)",
-            success=success,
+            details=f"Ensure SA has {role}",
+            success=(role in member_roles),
         )
 
 
@@ -125,17 +123,17 @@ def get_secret(project, secret_name):
     sm = sml.SecretManagerServiceClient()  # using static library
     secret_path = f"projects/{project}/secrets/{secret_name}/versions/latest"
     try:
-        payload = sm.access_secret_version(name=secret_path).payload.data.decode("UTF-8")
+        payload = sm.access_secret_version(name=secret_path).payload.data.decode(
+            "UTF-8"
+        )
         result(f"Secret {secret_path} exist")
-        
+
         # https://github.com/theskumar/python-dotenv#in-memory-filelikes
         values = dotenv_values(stream=StringIO(payload))
         return values
     except exceptions.PermissionDenied as e:
         result(f"Secret error: {e}", success=False)
         return {}
-
-
 
 
 def parse_secrets(values):
@@ -211,7 +209,7 @@ def check_deploy(project, service_name, region, secret_name):
 
     values = get_secret(project, secret_name)
 
-    if values: 
+    if values:
         check_secrets(values)
         secrets = parse_secrets(values)
 
