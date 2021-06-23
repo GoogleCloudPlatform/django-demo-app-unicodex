@@ -16,7 +16,6 @@ steps:
       - |
         cd terraform
         terraform init
-        terraform refresh
         terraform apply -auto-approve \
           -var project=${PROJECT_ID} \
           -var instance_name=${_INSTANCE_NAME} \
