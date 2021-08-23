@@ -15,7 +15,8 @@ resource "google_sql_database_instance" "postgres" {
   region           = var.region
 
   settings {
-    tier = "db-f1-micro"
+    cpu = "2"
+    memory = "4GB"
   }
 
   depends_on = [google_project_service.sqladmin]
