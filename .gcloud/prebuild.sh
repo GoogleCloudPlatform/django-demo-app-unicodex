@@ -56,7 +56,7 @@ operation_id=$(gcloud sql instances create $INSTANCE_NAME \
   --region $REGION \
   --project $PROJECT_ID \
   --root-password $ROOT_PASSWORD \
-  --async)
+  --async --format="value(name)")
 gcloud sql operations wait $operation_id --timeout=unlimited
 stepdone
 
