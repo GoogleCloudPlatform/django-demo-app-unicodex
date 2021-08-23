@@ -48,15 +48,16 @@ quiet gcloud iam service-accounts add-iam-policy-binding ${CLOUDRUN_SA} \
   --role "roles/iam.serviceAccountUser"
 stepdone
 
-stepdo "Create SQL Instance (this will take a minute)"
+stepdo "Create SQL Instance (may take some time)"
 export ROOT_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-gcloud sql instances create $INSTANCE_NAME \
-  --database-version POSTGRES_13 \
-  --tier db-f1-micro  \
+export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
+operation_id=$(gcloud sql instances create $INSTANCE_NAME \
+  --database-version POSTGRES_13 --cpu 2 --memory 4GB  \
   --region $REGION \
   --project $PROJECT_ID \
-  --root-password $ROOT_PASSWORD
-export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
+  --root-password $ROOT_PASSWORD \
+  --async)
+gcloud sql operations wait $operation_id --timeout=unlimited
 stepdone
 
 stepdo "Create SQL Database and User"
@@ -65,10 +66,10 @@ gcloud sql databases create $DATABASE_NAME \
   --instance=$INSTANCE_NAME
 export DBUSERNAME=unicodex-django
 export DBPASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 40 | head -n 1)
+export DATABASE_URL=postgres://$DBUSERNAME:${DBPASSWORD}@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
 gcloud sql users create $DBUSERNAME \
   --password $DBPASSWORD \
   --instance $INSTANCE_NAME
-export DATABASE_URL=postgres://$DBUSERNAME:${DBPASSWORD}@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
 stepdone
 
 stepdo "Create Storage bucket"
