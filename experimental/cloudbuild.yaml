@@ -32,8 +32,7 @@ steps:
 options:
   dynamic_substitutions: true
 
-logsBucket: unicodex-ci-base-buildlogs
-#serviceAccount: projects/unicodex-ci-base/serviceAccounts/ci-serviceaccount@unicodex-ci-base.iam.gserviceaccount.com
+logsBucket: ${PROJECT_ID}-buildlogs
 
 substitutions:
   _REGION: us-central1
