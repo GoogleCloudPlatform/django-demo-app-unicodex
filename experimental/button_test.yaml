@@ -15,7 +15,7 @@ steps:
       - "TRUSTED_ENVIRONMENT=true"
       - "SKIP_CLONE_REPORTING=true"
       - "GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
-      - "GOOGLE_CLOUD_REGION=$_REGION"
+      - "GOOGLE_CLOUD_REGION=${_REGION}"
     args:
       - "-c"
       - |
