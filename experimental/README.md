@@ -2,11 +2,13 @@
 
 This repo has multiple deployment methods: 
 
- * Terraform
- * Cloud Run Button
- * Generated script from the tutorial documentation
+ * Terraform (`terraform`)
+ * Cloud Run Button (`button`)
+ * Generated script from the tutorial documentation (`gen`). 
 
 This folder attempts to test those. 
+
+⚠️ This setup relies on Preview functionality, and requires a Workspace account (to automate creating projects to test). 
 
 ## project_setup.sh
 
@@ -15,6 +17,8 @@ With an existing project with billing enabled, running this script will setup th
 ```
 source experimental/project_setup.sh
 ```
+
+This will do a number of things, including setup a custom service account, mandatory for later steps. 
 
 ## cloudbuild.yaml 
 
@@ -27,3 +31,38 @@ source experimental/setup.sh [terraform|button|gen]
 ./util/helper check-deploy.sh
 ```
 
+This will create a new project. If you want to use an existing project, specify `_CI_PROJECT` (the script will check if this project exists, if not, create it.)
+
+
+## Cloud Build triggers
+
+`cloudbuild.yaml` is configured in such a way that it can be run periodically as a trigger. 
+
+1. Go to Cloud Build and [create a trigger](https://console.cloud.google.com/cloud-build/triggers/add)
+1. Use these settings: 
+   1. Event: Manual Invocation
+   1. Source: your repo (click "Connect Repository" if you haven't configured it before)
+   1. Branch: your main branch
+   1. Configuration: Repository; `experimental/cloudbuild.yaml`
+   1. Subsitutions: 
+      1. `_PARENT_FOLDER`: the ID of the folder to create builds in
+      1. `_TEST_TYPE`: one of: terraform, gen, or button. 
+   1. Service Account: ci-serviceaccount@PROJECT_ID.iam.gserviceaccount.com
+1. Test the build by clicking 'Run'
+1. Make the run periodic by clicking the three veritical dots on the Trigger record, and specifying a schedule. 
+
+Note that you have a maximum amount of projects allowed by default, and projects are only purge-deleted 30 days after you 'delete' them (this allows you a grace period to undelete, etc). Ensure you restrict your test frequency within this limit. 
+
+## Cloud Builds local machine
+
+To test the builds ad-hoc on your local machine, you will need to add the service account inline: 
+
+```
+echo "serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-serviceaccount@${PROJECT_ID}.iam.gserviceaccount.com" >> experimental/cloudbuild.yaml
+```
+
+Then call as you would the main test: 
+
+```
+gcloud builds submit --config experimental/cloudbuild.yaml --substitutions _TEST_TYPE=terraform
+```
