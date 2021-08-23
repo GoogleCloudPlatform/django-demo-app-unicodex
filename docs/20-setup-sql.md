@@ -49,6 +49,7 @@ The database instance creation process has many configuration options, as detail
 Some important notes: 
 
 * The default configurations may work for you, but be sure to check if there's anything you want to change.
+  * For instance, we've chosen a non-minimum instance size. [Learn more about Instance Settings](https://cloud.google.com/sql/docs/postgres/instance-settings).
 * Make sure you make note of the "Default User Password". We'll refer to this as `ROOT_PASSWORD`.
 * The instance creation will take **several minutes**. Do not worry. 
 
@@ -59,8 +60,7 @@ export INSTANCE_NAME=YourInstanceName
 export ROOT_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
 
 gcloud sql instances create $INSTANCE_NAME \
-  --database-version POSTGRES_13 \
-  --tier db-f1-micro  \
+  --database-version POSTGRES_13 --cpu 2 --memory 4GB \
   --region $REGION \
   --project $PROJECT_ID \
   --root-password $ROOT_PASSWORD
