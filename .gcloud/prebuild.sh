@@ -65,13 +65,14 @@ stepdone
 
 stepdo "Create SQL Instance (this will take a minute)"
 export ROOT_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-gcloud sql instances create $INSTANCE_NAME \
-  --database-version POSTGRES_11 \
-  --tier db-f1-micro  \
+export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
+operation_id=$(gcloud sql instances create $INSTANCE_NAME \
+  --database-version POSTGRES_13 --cpu 2 --memory 4GB  \
   --region $REGION \
   --project $PROJECT_ID \
-  --root-password $ROOT_PASSWORD
-export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
+  --root-password $ROOT_PASSWORD \
+  --async)
+gcloud sql operations wait $operation_id --timeout=unlimited
 stepdone
 
 stepdo "Create SQL Database and User"
