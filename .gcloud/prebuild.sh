@@ -48,7 +48,7 @@ quiet gcloud iam service-accounts add-iam-policy-binding ${CLOUDRUN_SA} \
   --role "roles/iam.serviceAccountUser"
 stepdone
 
-stepdo "Create SQL Instance (this will take a minute)"
+stepdo "Create SQL Instance (may take some time)"
 export ROOT_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
 export DATABASE_INSTANCE=$PROJECT_ID:$REGION:$INSTANCE_NAME
 operation_id=$(gcloud sql instances create $INSTANCE_NAME \
@@ -66,10 +66,10 @@ gcloud sql databases create $DATABASE_NAME \
   --instance=$INSTANCE_NAME
 export DBUSERNAME=unicodex-django
 export DBPASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 40 | head -n 1)
+export DATABASE_URL=postgres://$DBUSERNAME:${DBPASSWORD}@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
 gcloud sql users create $DBUSERNAME \
   --password $DBPASSWORD \
   --instance $INSTANCE_NAME
-export DATABASE_URL=postgres://$DBUSERNAME:${DBPASSWORD}@//cloudsql/$PROJECT_ID:$REGION:$INSTANCE_NAME/$DATABASE_NAME
 stepdone
 
 stepdo "Create Storage bucket"
