@@ -11,15 +11,29 @@
 # Sets up a parent project for CI work
 source .util/bash_helpers.sh
 
+
 export PARENT_PROJECT=$(gcloud config get-value project)
 echo "🔨 configure parent project $PARENT_PROJECT"
+
+export PARENT_FOLDER=$1
+stepdo "confirm folder exists"
+gcloud resource-manager folders describe $PARENT_FOLDER
+stepdone 
+echo "🔧 configure parent folder $PARENT_FOLDER"
+
+export ORGANIZATION=$(gcloud organizations list --format "value(name)")
+echo "🗜 configure organisation $ORGANIZATION"
+
 
 export PARENT_PROJECTNUM=$(gcloud projects describe ${PARENT_PROJECT} --format='value(projectNumber)')
 export DEFAULT_GCB=$PARENT_PROJECTNUM@cloudbuild.gserviceaccount.com
 
 stepdo "Enable services on parent"
 gcloud services enable --project $PARENT_PROJECT  \
-    cloudresourcemanager.googleapis.com
+    cloudresourcemanager.googleapis.com \
+    cloudbilling.googleapis.com \
+    cloudbuild.googleapis.com \
+    iam.googleapis.com
 stepdone
 
 stepdo "Create service account"
@@ -48,15 +62,38 @@ fi
 stepdone
 
 stepdo "Grant access to default logs bucket"
-DEFAULT_BUCKET=${PARENT_PROJECT}_cloudbuild
+DEFAULT_BUCKET=gs://${PARENT_PROJECT}_cloudbuild
+
+if gsutil ls $DEFAULT_BUCKET 2>&1 | grep -q 'BucketNotFoundException'; then
+    echo "Default Cloud Build log bucket not automatically created. Fixing."
+    gsutil mb -p $PARENT_PROJECT $DEFAULT_BUCKET
+fi
 gsutil iam ch \
-        serviceAccount:${SA_EMAIL}:roles/storage.admin \
-        gs://$DEFAULT_BUCKET
+    serviceAccount:${SA_EMAIL}:roles/storage.admin \
+    $DEFAULT_BUCKET
 stepdone
 
-stepdo "Grant additional roles"
-echo TODO ONCE CONFIRMED.
-#quiet gcloud projects add-iam-policy-binding $PARENT_PROJECT \
-#    --member serviceAccount:${SA_EMAIL} \
-#   --role roles/iam.serviceAccountUser
-        
+stepdo "Grant roles to service account on project"
+for role in  storage.admin iam.serviceAccountUser; do
+    quiet gcloud projects add-iam-policy-binding $PARENT_PROJECT \
+        --member serviceAccount:${SA_EMAIL} \
+    --role roles/${role}
+done
+stepdone
+
+stepdo "Grant roles to service account on folder"
+for role in billing.projectManager resourcemanager.projectCreator resourcemanager.projectDeleter resourcemanager.projectIamAdmin; do
+    quiet gcloud resource-manager folders add-iam-policy-binding $PARENT_FOLDER \
+        --member serviceAccount:${SA_EMAIL} \
+        --role roles/${role}
+done
+stepdone
+
+stepdo "Grant roles to service account at organisation level"
+echo "TODO THIS MAY NOT SUCCEED"
+for role in billing.user billing.viewer; do
+    gcloud organizations add-iam-policy-binding $ORGANIZATION \
+        --member serviceAccount:${SA_EMAIL}  \
+        --role roles/${role}
+done
+stepdone

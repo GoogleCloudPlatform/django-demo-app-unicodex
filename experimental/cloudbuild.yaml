@@ -38,6 +38,6 @@ substitutions:
   _REGION: us-central1
   _TEST_TYPE: terraform
   _SA_NAME: ci-serviceaccount
-  _CI_PROJECT: "unicodex-test-${BUILD_ID:0:8}-${_TEST_TYPE:0:1}"
+  _CI_PROJECT: "unicodex-bloop-${BUILD_ID:0:8}-${_TEST_TYPE:0:1}"
 
 timeout: "1500s"
