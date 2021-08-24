@@ -12,7 +12,9 @@ This folder attempts to test those.
 
 ## project_setup.sh
 
-With an existing project with billing enabled, running this script will setup the current project in a state that it will be ready to be used as a parent project.
+Your Workspace administrator will need to create a base project with billing enabled (to run the script in), and a base folder (where the ephemeral projects will live, identified by `$_PARENT_FOLDER`)
+
+Running this script will setup the current project in a state that it will be ready to be used as a parent project.
 
 ```
 source experimental/project_setup.sh

@@ -6,7 +6,13 @@ steps:
     args:
       - '-c'
       - |
+        echo "List the projects"
+        gcloud projects list --filter parent=${_PARENT_FOLDER} --format "value(project_id)"
+        echo "Delete projects"
         for project in $(gcloud projects list --filter parent=${_PARENT_FOLDER} --format "value(project_id)")
           do gcloud projects delete $project --quiet
         done
 
+
+logsBucket: ${PROJECT_ID}-buildlogs
+# serviceAccount: projects/YOURPROJECT/serviceAccounts/ci-serviceaccount@YOURPROJECT.iam.gserviceaccount.com
