@@ -14,37 +14,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import io
+from pathlib import Path
+
 import environ
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-env_file = os.path.join(BASE_DIR,  ".env")
-
-# If a local .env doesn't exist, create one by loading it from Secret Manager.
-if not os.path.isfile(env_file):
-    import google.auth
-    from google.cloud import secretmanager_v1 as sm
-
-    _, project = google.auth.default()
-
-    if project:
-        client = sm.SecretManagerServiceClient()
-        settings_name = os.environ.get("SETTINGS_NAME", "django_settings")
-        name = f"projects/{project}/secrets/{settings_name}/versions/latest"
-        payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-
-        with open(env_file, "w") as f:
-            f.write(payload)
 
 env = environ.Env()
-env.read_env(env_file)
 
-root = environ.Path(__file__) - 3
-SITE_ROOT = root()
+BASE_DIR = Path(__file__).resolve().parent.parent
+env_file = env("ENV_PATH", default=BASE_DIR / ".env")
 
-DEBUG = env("DEBUG", default=False)
+if env_file.exists():
+    env.read_env(str(env_file))
+
+try:
+    _, project_id = google.auth.default()
+
+    client = secretmanager.SecretManagerServiceClient()
+
+    settings_name = env("SETTINGS_NAME", default="django_settings")
+    name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
+    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+
+    env.read_env(io.StringIO(payload))
+except (
+    google.auth.exceptions.DefaultCredentialsError,
+    google.api_core.exceptions.NotFound,
+):
+    pass
 
 SECRET_KEY = env("SECRET_KEY")
+
+DEBUG = env("DEBUG", default=False)
 
 if "CURRENT_HOST" in os.environ:
     # handle raw host(s), or http(s):// host(s), or no host. 
