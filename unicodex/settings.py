@@ -32,21 +32,19 @@ if env_file.exists():
 
 try:
     _, project_id = google.auth.default()
-except google.auth.exceptions.DefaultCredentialsError:
-    pass
 
-if project_id:
     client = secretmanager.SecretManagerServiceClient()
     settings_name = env("SETTINGS_NAME", default="django_settings")
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-    try:
-        payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-        env.read_env(io.StringIO(payload))
-    except (
-        google.api_core.exceptions.NotFound,
-        google.api_core.exceptions.PermissionDenied,
-    ):
-        pass
+
+    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+    env.read_env(io.StringIO(payload))
+except (
+    google.auth.exceptions.DefaultCredentialsError,
+    google.api_core.exceptions.NotFound,
+    google.api_core.exceptions.PermissionDenied,
+):
+    pass
 
 
 SECRET_KEY = env("SECRET_KEY")
