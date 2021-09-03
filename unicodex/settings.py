@@ -15,10 +15,12 @@
 # limitations under the License.
 
 import io
+import os
 from pathlib import Path
 
 import environ
-
+import google.auth
+from google.cloud import secretmanager
 
 env = environ.Env()
 
@@ -30,26 +32,35 @@ if env_file.exists():
 
 try:
     _, project_id = google.auth.default()
+except google.auth.exceptions.DefaultCredentialsError:
+    pass
 
+if project_id:
     client = secretmanager.SecretManagerServiceClient()
-
     settings_name = env("SETTINGS_NAME", default="django_settings")
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+    try:
+        payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+        env.read_env(io.StringIO(payload))
+    except (
+        google.api_core.exceptions.NotFound,
+        google.api_core.exceptions.PermissionDenied,
+    ):
+        pass
 
-    env.read_env(io.StringIO(payload))
-except (
-    google.auth.exceptions.DefaultCredentialsError,
-    google.api_core.exceptions.NotFound,
-):
-    pass
+
+SECRET_KEY = env("SECRET_KEY")
+
+DEBUG = env("DEBUG", default=False)
+
+# etc
 
 SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = env("DEBUG", default=False)
 
 if "CURRENT_HOST" in os.environ:
-    # handle raw host(s), or http(s):// host(s), or no host. 
+    # handle raw host(s), or http(s):// host(s), or no host.
     HOSTS = []
     for h in env.list("CURRENT_HOST"):
         if "://" in h:
@@ -100,12 +111,10 @@ MIDDLEWARE = [
 STATIC_ROOT = "/static/"
 GS_BUCKET_NAME = env("GS_BUCKET_NAME", default=None)
 
-if GS_BUCKET_NAME: 
+if GS_BUCKET_NAME:
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     GS_DEFAULT_ACL = "publicRead"
-
-    INSTALLED_APPS += ["storages"]
 
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
@@ -137,8 +146,16 @@ WSGI_APPLICATION = "unicodex.wsgi.application"
 
 DATABASES = {"default": env.db()}
 
+# If using Cloud SQL Auth Proxy, change the database values accordingly. (see README)
+if env("USE_CLOUD_SQL_AUTH_PROXY", default=False):
+    DATABASES["default"]["HOST"] = "127.0.0.1"
+    DATABASES["default"]["PORT"] = 5432
+
+
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
