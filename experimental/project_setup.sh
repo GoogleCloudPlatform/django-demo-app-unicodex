@@ -15,13 +15,15 @@ echo "🔨 configure parent project $PARENT_PROJECT"
 
 export PARENT_FOLDER=$1
 stepdo "confirm folder exists"
-gcloud resource-manager folders describe $PARENT_FOLDER
+gcloud resource-manager folders describe $PARENT_FOLDER --format "value(lifecycleState)"
 stepdone 
 echo "🔧 configure parent folder $PARENT_FOLDER"
 
 export ORGANIZATION=$(gcloud organizations list --format "value(name)")
 echo "🗜 configure organisation $ORGANIZATION"
 
+export BILLING_ACCOUNT=$(gcloud beta billing projects describe ${PARENT_PROJECT} --format="value(billingAccountName)" || sed -e 's/.*\///g')
+echo "💳 configure billing account $BILLING_ACCOUNT"
 
 export PARENT_PROJECTNUM=$(gcloud projects describe ${PARENT_PROJECT} --format='value(projectNumber)')
 export DEFAULT_GCB=$PARENT_PROJECTNUM@cloudbuild.gserviceaccount.com
@@ -73,10 +75,10 @@ gsutil iam ch \
 stepdone
 
 stepdo "Grant roles to service account on project"
-for role in  storage.admin iam.serviceAccountUser; do
+for role in storage.admin iam.serviceAccountUser; do
     quiet gcloud projects add-iam-policy-binding $PARENT_PROJECT \
         --member serviceAccount:${SA_EMAIL} \
-    --role roles/${role}
+        --role roles/${role}
 done
 stepdone
 
@@ -88,10 +90,10 @@ for role in billing.projectManager resourcemanager.projectCreator resourcemanage
 done
 stepdone
 
-stepdo "Grant roles to service account at organisation level"
+stepdo "Grant roles to service account on billing account"
 for role in billing.user billing.viewer; do
-    quiet gcloud organizations add-iam-policy-binding $ORGANIZATION \
-        --member serviceAccount:${SA_EMAIL}  \
+    quiet gcloud beta billing accounts add-iam-policy-binding $BILLING_ACCOUNT \
+        --member serviceAccount:${SA_EMAIL} \
         --role roles/${role}
 done
 stepdone
