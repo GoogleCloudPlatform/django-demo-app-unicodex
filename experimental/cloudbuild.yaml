@@ -33,11 +33,12 @@ options:
   dynamic_substitutions: true
 
 logsBucket: ${PROJECT_ID}-buildlogs
+#serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-serviceaccount@${PROJECT_ID}.iam.gserviceaccount.com
 
 substitutions:
   _REGION: us-central1
   _TEST_TYPE: terraform
   _SA_NAME: ci-serviceaccount
-  _CI_PROJECT: "unicodex-bloop-${BUILD_ID:0:8}-${_TEST_TYPE:0:1}"
+  _CI_PROJECT: "gephemeral-${BUILD_ID:0:8}-${_TEST_TYPE:0:1}"
 
 timeout: "1500s"

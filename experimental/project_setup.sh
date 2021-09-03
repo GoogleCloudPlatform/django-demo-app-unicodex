@@ -5,8 +5,6 @@
 # borrows heavily from fourkeys
 # https://github.com/GoogleCloudPlatform/fourkeys/blob/main/experimental/terraform/setup.sh
 
-# NOT COMPLETE
-
 
 # Sets up a parent project for CI work
 source .util/bash_helpers.sh
@@ -33,7 +31,8 @@ gcloud services enable --project $PARENT_PROJECT  \
     cloudresourcemanager.googleapis.com \
     cloudbilling.googleapis.com \
     cloudbuild.googleapis.com \
-    iam.googleapis.com
+    iam.googleapis.com \
+    sqladmin.googleapis.com
 stepdone
 
 stepdo "Create service account"
@@ -90,9 +89,8 @@ done
 stepdone
 
 stepdo "Grant roles to service account at organisation level"
-echo "TODO THIS MAY NOT SUCCEED"
 for role in billing.user billing.viewer; do
-    gcloud organizations add-iam-policy-binding $ORGANIZATION \
+    quiet gcloud organizations add-iam-policy-binding $ORGANIZATION \
         --member serviceAccount:${SA_EMAIL}  \
         --role roles/${role}
 done

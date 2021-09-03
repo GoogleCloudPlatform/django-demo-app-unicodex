@@ -50,13 +50,11 @@ else
     stepdone
 
     stepdo "assign IAM policies to service account"
+    for role in iam.serviceAccountTokenCreator iam.serviceAccountUser billing.projectManager; do
     quiet gcloud projects add-iam-policy-binding $CI_PROJECT \
         --member serviceAccount:${SA_EMAIL} \
-        --role roles/iam.serviceAccountTokenCreator
-
-    quiet gcloud projects add-iam-policy-binding $CI_PROJECT \
-        --member serviceAccount:${SA_EMAIL} \
-        --role roles/iam.serviceAccountUser
+        --role roles/${role}
+    done
     stepdone
 
     stepdo "setup billing"
