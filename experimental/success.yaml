@@ -3,4 +3,5 @@ steps:
     args: 
       -  "true"
 
-logsBucket: unicodex-ci-base-buildlogs
+logsBucket: ${PROJECT_ID}-buildlogs
+#serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-serviceaccount@${PROJECT_ID}.iam.gserviceaccount.com
