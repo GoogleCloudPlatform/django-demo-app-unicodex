@@ -5,14 +5,13 @@ import httpx
 import subprocess
 from googleapiclient.discovery import build
 import googleapiclient
-from google.cloud import secretmanager_v1 as sml
+from google.cloud import secretmanager as sml
 from google.api_core import exceptions
 from dotenv import dotenv_values
 from io import StringIO
 from urllib.parse import urlparse
 
 # TODO(glasnt): more checks as required
-
 
 def get_service(project, service_name, region):
     run = build("run", "v1")
@@ -116,6 +115,9 @@ def check_unicodex(service):
             result("Django admin login screen successfully loaded")
         else:
             result("Django admin login not found", success=False, details=admin.text)
+        
+        # TODO pytest migration. 
+
 
 
 def get_secret(project, secret_name):

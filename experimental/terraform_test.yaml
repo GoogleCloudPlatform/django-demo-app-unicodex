@@ -9,7 +9,7 @@ steps:
     args: ["push", "gcr.io/${PROJECT_ID}/${_SERVICE}"]
 
   - id: "tf"
-    name: "hashicorp/terraform:0.15.4"
+    name: "hashicorp/terraform:${_TERRAFORM_VERSION}"
     entrypoint: "sh"
     args:
       - "-c"
@@ -47,5 +47,6 @@ substitutions:
   _REGION: us-central1
   _INSTANCE_NAME: psql
   _PARENT_PROJECT: unicodex-ci-base
+  _TERRAFORM_VERSION: latest
 
 timeout: "1500s"
