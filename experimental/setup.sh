@@ -38,9 +38,9 @@ if [[ -z $REGION ]]; then
     REGION=us-central1
 fi
 
-SA_EMAIL=$(gcloud iam service-accounts list --filter $SA_NAME --format 'value(email)')
+SA_EMAIL=$(gcloud iam service-accounts list  --project ${PARENT_PROJECT} --filter $SA_NAME --format 'value(email)')
 
-echo "🚀 Running setup using $TEST_TYPE on $CI_PROJECT in $REGION."
+echo "🚀 Running setup using $TEST_TYPE on $CI_PROJECT in $REGION with $SA_EMAIL"
 
 if gcloud projects list --filter $CI_PROJECT | grep -q "$CI_PROJECT"; then
     echo "🔁 Reusing ${CI_PROJECT}"
@@ -80,7 +80,6 @@ else
     stepdone
 
     stepdo "assign Log Bucket writer to Cloud Build service account"
-
     LOGS_BUCKET=gs://${PARENT_PROJECT}-buildlogs
     gsutil iam ch \
         serviceAccount:${CLOUDBUILD_SA}:roles/storage.admin \

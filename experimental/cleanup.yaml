@@ -1,4 +1,3 @@
-
 steps:
   - id: Cleanup any projects
     name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -14,4 +13,4 @@ steps:
         done
 
 logsBucket: ${PROJECT_ID}-buildlogs
-serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-serviceaccount@${PROJECT_ID}.iam.gserviceaccount.com
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-serviceaccount@unicodex-admin.iam.gserviceaccount.com

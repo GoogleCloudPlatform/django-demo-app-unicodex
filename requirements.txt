@@ -6,7 +6,6 @@ django-storages[google]
 google-cloud-secret-manager
 google-auth
 
-
 # required for internal functionality, not deployement related
 requests
 pyyaml
