@@ -74,9 +74,11 @@ else
     stepdo "assign IAM owner role to Cloud Build service account"
     CI_PROJECTNUMBER=$(gcloud projects describe ${CI_PROJECT} --format='value(projectNumber)')
     CLOUDBUILD_SA=$CI_PROJECTNUMBER@cloudbuild.gserviceaccount.com
+    for role in owner storage.admin; do
     quiet gcloud projects add-iam-policy-binding $CI_PROJECT \
         --member serviceAccount:${CLOUDBUILD_SA} \
-        --role roles/owner
+        --role roles/${role}
+    done
     stepdone
 
     stepdo "assign Log Bucket writer to Cloud Build service account"
