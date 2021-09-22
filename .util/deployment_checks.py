@@ -10,6 +10,7 @@ from google.api_core import exceptions
 from dotenv import dotenv_values
 from io import StringIO
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup as bs4
 
 # TODO(glasnt): more checks as required
 
@@ -77,10 +78,23 @@ def check_roles(service, project):
             success=(role in member_roles),
         )
 
+def cleanhtml(raw_html):
+    soup = bs4(raw_html, 'html.parser')
+    for tag in soup():
+        for attribute in ["class", "id", "name", "style"]:
+            del tag[attribute]
+        
+    return "Page preview: " + " ".join(soup.find_all(text=True)).replace(" ", "").replace("\n", " ")
+   
 
-def check_unicodex(service):
-
+def check_unicodex(project, service):
     header("Deployed service checks")
+
+    fixture_code = "1F44B"
+    fixture_slug = f"/u/{fixture_code}"
+    login_slug = "/admin/login/?next=/admin/"
+    model_admin_slug = "/admin/unicodex/codepoint/"
+
     if "url" not in service["status"].keys():
         message = service["status"]["conditions"][0]["message"]
         result(f"Service does not have a deployed URL: {message}", success=False)
@@ -89,53 +103,93 @@ def check_unicodex(service):
         echo(f"Service deployment URL: {url}")
 
         try:
-            page = httpx.get(url, timeout=30)
+            response = httpx.get(url, timeout=30)
 
         except httpx.ReadTimeout as e:
             result(e, success=False)
             return
 
-        if page.status_code == 200:
+        print(cleanhtml(response.text))
+        if response.status_code == 200:
             result("Index page loaded successfully")
         else:
-            result(f"Index page returns an error: {page.status_code}", success=False)
+            result(f"Index page returns an error: {response.status_code}", success=False)
 
-        if "Unicodex" in page.text:
+        if "Unicodex" in response.text:
             result("Index page contains 'Unicodex'")
         else:
             result("Index page does not contain the string 'Unicodex'", success=False)
+
+        fixture = httpx.get(url + fixture_slug)
+        print(cleanhtml(fixture.text))
 
         admin = httpx.get(url + "/admin")
         if admin.status_code == 200:
             result("Django admin returns status 200")
         else:
-            result(f"Django admin returns an error: {page.status_code}", success=False)
+            result(f"Django admin returns an error: {admin.status_code}", success=False)
 
         if "Log in" in admin.text and "Django administration" in admin.text:
             result("Django admin login screen successfully loaded")
         else:
             result("Django admin login not found", success=False, details=admin.text)
         
-        # TODO pytest migration. 
+    
+        headers = {"Referer": url}
+        with httpx.Client(headers=headers) as client: 
 
+            # Login
+            admin_username = get_secret(project, "SUPERUSER")
+            admin_password = get_secret(project, "SUPERPASS")
+
+            header("Test Django Admin")
+            client.get(url + login_slug, headers=headers)
+            response = client.post(
+                url + login_slug,
+                data={
+                    "username": admin_username,
+                    "password": admin_password,
+                    "csrfmiddlewaretoken": client.cookies["csrftoken"],
+                }
+            )
+            assert response.status_code == 200
+            assert "Site administration" in response.text
+            assert "Codepoints" in response.text
+            result(f"Django Admin logged in")
+
+            # Try admin action
+            response = client.post(
+                url + model_admin_slug,
+                data={
+                    "action": "generate_designs",
+                    "_selected_action": 1,
+                    "csrfmiddlewaretoken": client.cookies["csrftoken"],
+                }
+            )
+            assert response.status_code == 200
+            assert "Imported vendor versions" in response.text
+            result(f"Django Admin action completed")
+
+            # check updated feature
+            response = client.get(url + f"/u/{fixture_code}")
+            assert fixture_code in response.text
+            assert "Android" in response.text
+            result(f"Django Admin action verified")
+
+            print(cleanhtml(response.text))
 
 
 def get_secret(project, secret_name):
-    header("Secret value checks")
     sm = sml.SecretManagerServiceClient()  # using static library
     secret_path = f"projects/{project}/secrets/{secret_name}/versions/latest"
     try:
         payload = sm.access_secret_version(name=secret_path).payload.data.decode(
             "UTF-8"
         )
-        result(f"Secret {secret_path} exist")
-
-        # https://github.com/theskumar/python-dotenv#in-memory-filelikes
-        values = dotenv_values(stream=StringIO(payload))
-        return values
+        return payload
     except exceptions.PermissionDenied as e:
         result(f"Secret error: {e}", success=False)
-        return {}
+        return ""
 
 
 def parse_secrets(values):
@@ -148,6 +202,7 @@ def parse_secrets(values):
 
 
 def check_secrets(values):
+    header("Secret value checks")
     for key in ["DATABASE_URL", "GS_BUCKET_NAME", "SECRET_KEY"]:
         result(f"{key} is defined", success=(key in values.keys()))
 
@@ -197,7 +252,6 @@ def check_database(project, service, secrets):
         success=(secrets["dbuser"] in [user["name"] for user in users["items"]]),
     )
 
-
 def check_deploy(project, service_name, region, secret_name):
     click.secho(f"🛠  Checking {service_name} in {region} in {project}", bold=True)
 
@@ -207,11 +261,13 @@ def check_deploy(project, service_name, region, secret_name):
     check_bindings(service, project)
 
     check_roles(service, project)
-    check_unicodex(service)
+    check_unicodex(project, service)
+    
+    secret_env = get_secret(project, secret_name)
 
-    values = get_secret(project, secret_name)
-
-    if values:
+    if secret_env:
+        # https://github.com/theskumar/python-dotenv#in-memory-filelikes
+        values = dotenv_values(stream=StringIO(secret_env))
         check_secrets(values)
         secrets = parse_secrets(values)
 
