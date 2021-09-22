@@ -20,7 +20,6 @@ steps:
       - |
         python -m pip install -r .util/requirements.txt
         .util/helper check-deploy ${_CI_PROJECT}
-        pytest
 
   - id: "destroy"
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
