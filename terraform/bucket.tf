@@ -1,12 +1,22 @@
 resource "google_storage_bucket" "media" {
   name     = "${var.project}-media"
-  location = "US"
+  location = "us-central1"
+  storage_class = "REGIONAL"
 }
 
 data "google_iam_policy" "mediaaccess" {
   binding {
     role = "roles/storage.objectAdmin"
     members = [local.unicodex_sa]
+  }
+
+  binding {
+    role = "roles/storage.legacyBucketOwner"
+    members = ["projectOwner:${var.project}", "projectEditor:${var.project}"]
+  }
+  binding {
+    role = "roles/storage.legacyBucketReader"
+    members = ["projectViewer:${var.project}"]
   }
 }
 
