@@ -57,7 +57,7 @@ SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = env("DEBUG", default=False)
 
-if "CURRENT_HOST" in os.environ:
+if "CURRENT_HOST" in env:
     # handle raw host(s), or http(s):// host(s), or no host.
     HOSTS = []
     for h in env.list("CURRENT_HOST"):
@@ -106,7 +106,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-STATIC_ROOT = "/static/"
+
+# URL prepends
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+
 GS_BUCKET_NAME = env("GS_BUCKET_NAME", default=None)
 
 if GS_BUCKET_NAME:
@@ -116,10 +120,10 @@ if GS_BUCKET_NAME:
 
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-    STATIC_URL = STATIC_ROOT
 
-    MEDIA_ROOT = "media/"  # where files are stored on the local filesystem
-    MEDIA_URL = "/media/"  # what is prepended to the image URL
+    # literal file locations
+    STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
+    MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
 
 
 ROOT_URLCONF = "unicodex.urls"

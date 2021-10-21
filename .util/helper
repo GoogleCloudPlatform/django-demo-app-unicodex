@@ -5,14 +5,15 @@ import os
 
 import click
 
-try: 
+try:
     import git
+
     has_git = True
 except ImportError:
     has_git = False
 
 import deployment_checks
-from markdown import extract, get_all_codeblocks
+from markdown import get_all_codeblocks
 
 
 @click.group()
@@ -27,13 +28,13 @@ def cli():
 @click.option("--region", default="us-central1", help="Replacement Google Cloud region")
 def gen(path, project, instance, region):
     """Generate a script to deploy unicodex"""
-    if has_git: 
+    if has_git:
         try:
             repo = git.Repo(search_parent_directories=True)
             sha = repo.head.object.hexsha
             branch = repo.active_branch.name
             gitinfo = f"# git: {branch}, sha {sha}"
-        except InvalidGitRepositoryError as e:
+        except git.InvalidGitRepositoryError as e:
             gitinfo = "# static files (not in an active git directory)"
     else:
         gitinfo = "# no local install of git found"
