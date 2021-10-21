@@ -51,12 +51,6 @@ SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = env("DEBUG", default=False)
 
-# etc
-
-SECRET_KEY = env("SECRET_KEY")
-
-DEBUG = env("DEBUG", default=False)
-
 if "CURRENT_HOST" in env:
     # handle raw host(s), or http(s):// host(s), or no host.
     HOSTS = []
@@ -122,8 +116,8 @@ else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
     # literal file locations
-    STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
-    MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
+    STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL.replace("/", ""))
+    MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL.replace("/", ""))
 
 
 ROOT_URLCONF = "unicodex.urls"
@@ -169,4 +163,4 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
