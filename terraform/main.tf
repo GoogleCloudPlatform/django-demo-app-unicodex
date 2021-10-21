@@ -1,83 +1,44 @@
-terraform { 
-  required_version = "~> 0.14.4"
+terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "3.53.0"
     }
   }
-} 
+}
 
-provider google {
+provider "google" {
   project = var.project
 }
 
-# Enable all services
-module services {
-  source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "~> 10.0"
-
+data "google_project" "project" {
   project_id = var.project
-
-  activate_apis = [
-    "run.googleapis.com",
-    "iam.googleapis.com",
-    "compute.googleapis.com",
-    "sql-component.googleapis.com",
-    "sqladmin.googleapis.com",
-    "cloudbuild.googleapis.com",
-    "cloudkms.googleapis.com",
-    "cloudresourcemanager.googleapis.com",
-    "secretmanager.googleapis.com"
-  ]
 }
 
-module database {
-  source = "./modules/database"
+resource "google_service_account" "unicodex" {
+  account_id   = var.service
+  display_name = "${var.service} service account"
 
-  project       = module.services.project_id
-  service       = var.service
-  region        = var.region
-  instance_name = var.instance_name
+  depends_on = [google_project_service.iam]
 }
 
-module backing {
-  source = "./modules/backing"
-
-  project      = module.services.project_id
-  service      = var.service
-  region       = var.region
-  database_url = module.database.database_url
+locals {
+  unicodex_sa   = "serviceAccount:${google_service_account.unicodex.email}"
+  cloudbuild_sa = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
 }
 
-module unicodex {
-  source = "./modules/unicodex"
+resource google_project_iam_binding service_permissions {
+  for_each = toset([
+    "run.admin", "cloudsql.client"
+  ])
 
-  project               = module.services.project_id
-  service               = var.service
-  region                = var.region
-  database_instance     = module.database.database_instance
-  service_account_email = module.backing.service_account_email
+  role       = "roles/${each.key}"
+  members    = [local.cloudbuild_sa, local.unicodex_sa]
+  depends_on = [google_service_account.unicodex]
 }
 
-output result {
-  value = <<EOF
+resource google_service_account_iam_binding cloudbuild_sa {
+  service_account_id = google_service_account.unicodex.name
+  role               = "roles/iam.serviceAccountUser"
 
-    The ${var.service} is now running at ${module.unicodex.service_url}
-
-    If you haven't deployed this service before, you will need to perform the initial database migrations: 
-
-    cd ..
-    gcloud builds submit --config .cloudbuild/build-migrate-deploy.yaml \
-      --substitutions="_REGION=${var.region},_INSTANCE_NAME=${module.database.short_instance_name},_SERVICE=${var.service}"
-
-    You can then log into the Django admin: ${module.unicodex.service_url}/admin
-
-    The username and password are stored in these secrets: 
-
-    gcloud secrets versions access latest --secret SUPERUSER
-    gcloud secrets versions access latest --secret SUPERPASS
-
-    ✨
-    EOF
+  members = [local.cloudbuild_sa]
 }

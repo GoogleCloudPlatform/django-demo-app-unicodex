@@ -9,6 +9,20 @@ python -m pip install -r .util/requirements.txt
 .util/helper --help
 ```
 
+Additionally, `googleapiclient.discovery` requires authentication, so setup a dedicated service
+account:
+
+```
+gcloud iam service-accounts create robot-account \
+    --display-name "Robot account"
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member serviceAccount:robot-account@${PROJECT_ID}.iam.gserviceaccount.com \
+    --role roles/owner
+gcloud iam service-accounts keys create ~/robot-account-key.json \
+    --iam-account robot-account@${PROJECT_ID}.iam.gserviceaccount.com
+export GOOGLE_APPLICATION_CREDENTIALS=~/robot-account-key.json
+```
+
 ### `gen` - generate a scriptable deployment
 
 If you look closely at the `docs/`, there are a few "Here's what you could do" sections. These are for scriptability. Using the `shell` markers in `docs/`, it's possible to extract all the code to a single file to at least somewhat automate the setup.

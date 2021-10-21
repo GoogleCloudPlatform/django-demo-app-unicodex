@@ -1,0 +1,23 @@
+steps:
+  - id: generate
+    name: python:3.9-slim
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        python -m pip install -r .util/requirements.txt --user
+        .util/helper gen --project $PROJECT_ID --region $_REGION > /workspace/deploy.sh
+        wc -l /workspace/deploy.sh
+
+  - id: "deploy"
+    name: "google/cloud-sdk"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        time bash -e /workspace/deploy.sh
+
+options:
+  dynamic_substitutions: true
+
+logsBucket: "${_PARENT_PROJECT}-buildlogs"

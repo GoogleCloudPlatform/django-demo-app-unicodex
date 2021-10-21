@@ -21,3 +21,6 @@ crash.logs
 
 # ignore .env 
 .env
+
+# ignore generated file
+deploy.sh

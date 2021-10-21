@@ -1,0 +1,52 @@
+# Designed to be run in the CI project, which in this case will be *the* project.
+steps:
+  - id: "build"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/${PROJECT_ID}/${_SERVICE}", "."]
+
+  - id: "push"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/${PROJECT_ID}/${_SERVICE}"]
+
+  - id: "tf"
+    name: "hashicorp/terraform:${_TERRAFORM_VERSION}"
+    entrypoint: "sh"
+    args:
+      - "-c"
+      - |
+        cd terraform
+        terraform init
+        terraform apply -auto-approve \
+          -var project=${PROJECT_ID} \
+          -var instance_name=${_INSTANCE_NAME} \
+          -var region=${_REGION} \
+          -var service=${_SERVICE}
+
+  - id: "migrate"
+    name: "gcr.io/google-appengine/exec-wrapper"
+    args:
+      [
+        "-i",
+        "gcr.io/${PROJECT_ID}/${_SERVICE}",
+        "-s",
+        "${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}",
+        "-e",
+        "PROJECT_ID=${PROJECT_ID}",
+        "--",
+        "sh",
+        ".cloudbuild/django_migrate.sh",
+      ]
+
+options:
+  dynamic_substitutions: true
+
+logsBucket: "${_PARENT_PROJECT}-buildlogs"
+
+substitutions:
+  _SERVICE: unicodex
+  _REGION: us-central1
+  _INSTANCE_NAME: psql
+  _PARENT_PROJECT: unicodex-ci-base
+  _TERRAFORM_VERSION: latest
+
+timeout: "1500s"

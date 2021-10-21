@@ -1,0 +1,27 @@
+steps:
+  - id: build
+    name: golang
+    entrypoint: /bin/bash
+    env: GOPATH=/workspace
+    args:
+      - -c
+      - |
+        go install github.com/GoogleCloudPlatform/cloud-run-button/cmd/cloudshell_open@latest
+
+  - id: "press button"
+    name: "google/cloud-sdk"
+    entrypoint: /bin/bash
+    env:
+      - "TRUSTED_ENVIRONMENT=true"
+      - "SKIP_CLONE_REPORTING=true"
+      - "GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
+      - "GOOGLE_CLOUD_REGION=${_REGION}"
+    args:
+      - "-c"
+      - |
+        ./bin/cloudshell_open --repo_url=https://github.com/GoogleCloudPlatform/django-demo-app-unicodex.git
+
+options:
+  dynamic_substitutions: true
+
+logsBucket: "${_PARENT_PROJECT}-buildlogs"

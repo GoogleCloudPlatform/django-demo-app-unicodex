@@ -14,40 +14,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import io
 import os
+from pathlib import Path
+
 import environ
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-env_file = os.path.join(BASE_DIR,  ".env")
-
-# If a local .env doesn't exist, create one by loading it from Secret Manager.
-if not os.path.isfile(env_file):
-    import google.auth
-    from google.cloud import secretmanager_v1 as sm
-
-    _, project = google.auth.default()
-
-    if project:
-        client = sm.SecretManagerServiceClient()
-        settings_name = os.environ.get("SETTINGS_NAME", "django_settings")
-        name = f"projects/{project}/secrets/{settings_name}/versions/latest"
-        payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-
-        with open(env_file, "w") as f:
-            f.write(payload)
+import google.auth
+from google.cloud import secretmanager
 
 env = environ.Env()
-env.read_env(env_file)
 
-root = environ.Path(__file__) - 3
-SITE_ROOT = root()
+BASE_DIR = Path(__file__).resolve().parent.parent
+env_file = env("ENV_PATH", default=BASE_DIR / ".env")
 
-DEBUG = env("DEBUG", default=False)
+if env_file.exists():
+    env.read_env(str(env_file))
+
+try:
+    _, project_id = google.auth.default()
+
+    client = secretmanager.SecretManagerServiceClient()
+    settings_name = env("SETTINGS_NAME", default="django_settings")
+    name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
+
+    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+    env.read_env(io.StringIO(payload))
+except (
+    google.auth.exceptions.DefaultCredentialsError,
+    google.api_core.exceptions.NotFound,
+    google.api_core.exceptions.PermissionDenied,
+):
+    pass
+
 
 SECRET_KEY = env("SECRET_KEY")
 
-if "CURRENT_HOST" in os.environ:
-    # handle raw host(s), or http(s):// host(s), or no host. 
+DEBUG = env("DEBUG", default=False)
+
+# etc
+
+SECRET_KEY = env("SECRET_KEY")
+
+DEBUG = env("DEBUG", default=False)
+
+if "CURRENT_HOST" in env:
+    # handle raw host(s), or http(s):// host(s), or no host.
     HOSTS = []
     for h in env.list("CURRENT_HOST"):
         if "://" in h:
@@ -95,22 +106,24 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-STATIC_ROOT = "/static/"
+
+# URL prepends
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+
 GS_BUCKET_NAME = env("GS_BUCKET_NAME", default=None)
 
-if GS_BUCKET_NAME: 
+if GS_BUCKET_NAME:
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     GS_DEFAULT_ACL = "publicRead"
 
-    INSTALLED_APPS += ["storages"]
-
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-    STATIC_URL = STATIC_ROOT
 
-    MEDIA_ROOT = "media/"  # where files are stored on the local filesystem
-    MEDIA_URL = "/media/"  # what is prepended to the image URL
+    # literal file locations
+    STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
+    MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
 
 
 ROOT_URLCONF = "unicodex.urls"
@@ -135,8 +148,16 @@ WSGI_APPLICATION = "unicodex.wsgi.application"
 
 DATABASES = {"default": env.db()}
 
+# If using Cloud SQL Auth Proxy, change the database values accordingly. (see README)
+if env("USE_CLOUD_SQL_AUTH_PROXY", default=False):
+    DATABASES["default"]["HOST"] = "127.0.0.1"
+    DATABASES["default"]["PORT"] = 5432
+
+
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -147,3 +168,5 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

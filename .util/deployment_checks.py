@@ -1,124 +1,232 @@
-from cliformatting import header, result, summary, error, echo
 import json
-import click
-import httpx
 import subprocess
-from googleapiclient.discovery import build
-from google.cloud import secretmanager_v1 as sml
-from dotenv import dotenv_values
 from io import StringIO
 from urllib.parse import urlparse
 
-"""
-SETUP:
+import click
+import googleapiclient
+import httpx
+from bs4 import BeautifulSoup as bs4
+from dotenv import dotenv_values
+from google.api_core import exceptions
+from google.cloud import secretmanager as sml
+from googleapiclient.discovery import build
 
-googleapiclient.discovery requires authentication, so setup a dedicated service
-account:
-
-gcloud iam service-accounts create robot-account \
-    --display-name "Robot account"
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-    --member serviceAccount:robot-account@${PROJECT_ID}.iam.gserviceaccount.com \
-    --role roles/owner
-gcloud iam service-accounts keys create ~/robot-account-key.json \
-    --iam-account robot-account@${PROJECT_ID}.iam.gserviceaccount.com
-export GOOGLE_APPLICATION_CREDENTIALS=~/robot-account-key.json
-"""
+from cliformatting import echo, error, header, result, summary
 
 # TODO(glasnt): more checks as required
 
 
-def check_deploy(project, service_name, region, secret_name):
-    click.secho(f"🛠  Checking {service_name} in {region} in {project}", bold=True)
-
-    header(f"Service configuration checks")
-
-    api = build("run", "v1")
+def get_service(project, service_name, region):
+    run = build("run", "v1")
     fqname = f"projects/{project}/locations/{region}/services/{service_name}"
-    service = api.projects().locations().services().get(name=fqname).execute()
+    service = run.projects().locations().services().get(name=fqname).execute()
+    return service
+
+
+def get_sa(service):
+    return service["spec"]["template"]["spec"]["serviceAccountName"]
+
+
+def check_run(service):
+    header(f"Service configuration checks")
 
     sn = service["metadata"]["name"]
     result(f"Service {sn} exists")
 
-    sa = service["spec"]["template"]["spec"]["serviceAccountName"]
+
+def check_sa(service):
+    sa = get_sa(service)
     echo(f"Associated service account: {sa}")
 
-    ###
     result(
-        f"Associated service account is not default",
+        f"Associated service account is not the default service account",
         details="Ensure a custom service account is associated to the service",
         success=("compute-" not in sa),
     )
 
-    ###
+
+def check_bindings(service, project):
+    sa = get_sa(service)
+    echo(f"Associated service account (SA): {sa}")
+
     success = True
     crm = build("cloudresourcemanager", "v1")
     iam = crm.projects().getIamPolicy(resource=f"{project}").execute()
     for binding in iam["bindings"]:
         if binding["role"] == "roles/owner":
-            echo("Checking roles/owner bindings")
             for member in binding["members"]:
-                echo(member, indent="> ")
                 if member == sa:
-                    success = True
+                    success = False
     result(
-        "Associated service account permissions aren't owner",
-        details="Ensure the service account isn't using owner permissions",
+        "SA doesn't have Owner role",
+        details="Remove service account from having Owner role",
         success=success,
     )
 
-    ###
+
+def check_roles(service, project):
+    sa = f"serviceAccount:{get_sa(service)}"
+    crm = build("cloudresourcemanager", "v1")
+    iam = crm.projects().getIamPolicy(resource=f"{project}").execute()
+
+    required_roles = ["roles/run.admin", "roles/cloudsql.client"]
+
+    member_roles = [b["role"] for b in iam["bindings"] if sa in b["members"]]
+
+    for role in required_roles:
+        result(
+            f"SA has {role}",
+            details=f"Ensure SA has {role}",
+            success=(role in member_roles),
+        )
+
+
+def cleanhtml(raw_html):
+    soup = bs4(raw_html, "html.parser")
+    for tag in soup():
+        for attribute in ["class", "id", "name", "style"]:
+            del tag[attribute]
+
+    return "Page preview: " + " ".join(soup.find_all(text=True)).replace(
+        " ", ""
+    ).replace("\n", " ")
+
+
+def check_unicodex(project, service):
     header("Deployed service checks")
-    url = service["status"]["url"]
-    echo(f"Service deployment URL: {url}")
 
-    page = httpx.get(url)
-    if page.status_code == 200:
-        result("Index page loaded successfully")
+    fixture_code = "1F44B"
+    fixture_slug = f"/u/{fixture_code}"
+    login_slug = "/admin/login/?next=/admin/"
+    model_admin_slug = "/admin/unicodex/codepoint/"
+
+    if "url" not in service["status"].keys():
+        message = service["status"]["conditions"][0]["message"]
+        result(f"Service does not have a deployed URL: {message}", success=False)
     else:
-        result(f"Index page returns an error: {page.status_code}", success=False)
+        url = service["status"]["url"]
+        echo(f"Service deployment URL: {url}")
 
-    if "Unicodex" in page.text:
-        result("Index page contains 'Unicodex'")
-    else:
-        result("Index page does not contain the string 'Unicodex'", success=False)
+        try:
+            response = httpx.get(url, timeout=30)
 
-    admin = httpx.get(url + "/admin")
-    if admin.status_code == 200:
-        result("Django admin returns status 200")
-    else:
-        result(f"Django admin returns an error: {page.status_code}", success=False)
+        except httpx.ReadTimeout as e:
+            result(e, success=False)
+            return
 
-    if "Log in" in admin.text and "Django administration" in admin.text:
-        result("Django admin login screen successfully loaded")
-    else:
-        result("Django admin login not found", success=False, details=admin.text)
+        print(cleanhtml(response.text))
+        if response.status_code == 200:
+            result("Index page loaded successfully")
+        else:
+            result(
+                f"Index page returns an error: {response.status_code}", success=False
+            )
 
-    ###
-    header("Secret checks")
+        if "Unicodex" in response.text:
+            result("Index page contains 'Unicodex'")
+        else:
+            result("Index page does not contain the string 'Unicodex'", success=False)
+
+        fixture = httpx.get(url + fixture_slug)
+        print(cleanhtml(fixture.text))
+
+        admin = httpx.get(url + "/admin")
+        if admin.status_code == 200:
+            result("Django admin returns status 200")
+        else:
+            result(f"Django admin returns an error: {admin.status_code}", success=False)
+
+        if "Log in" in admin.text and "Django administration" in admin.text:
+            result("Django admin login screen successfully loaded")
+        else:
+            result("Django admin login not found", success=False, details=admin.text)
+
+        headers = {"Referer": url}
+        with httpx.Client(headers=headers) as client:
+
+            # Login
+            admin_username = get_secret(project, "SUPERUSER")
+            admin_password = get_secret(project, "SUPERPASS")
+
+            header("Test Django Admin")
+            client.get(url + login_slug, headers=headers)
+            response = client.post(
+                url + login_slug,
+                data={
+                    "username": admin_username,
+                    "password": admin_password,
+                    "csrfmiddlewaretoken": client.cookies["csrftoken"],
+                },
+            )
+            assert response.status_code == 200
+            assert "Site administration" in response.text
+            assert "Codepoints" in response.text
+            result(f"Django Admin logged in")
+
+            # Try admin action
+            response = client.post(
+                url + model_admin_slug,
+                data={
+                    "action": "generate_designs",
+                    "_selected_action": 1,
+                    "csrfmiddlewaretoken": client.cookies["csrftoken"],
+                },
+            )
+            assert response.status_code == 200
+            assert "Imported vendor versions" in response.text
+            result(f"Django Admin action completed")
+
+            # check updated feature
+            response = client.get(url + f"/u/{fixture_code}")
+            assert fixture_code in response.text
+            assert "Android" in response.text
+            result(f"Django Admin action verified")
+
+            print(cleanhtml(response.text))
+
+
+def get_secret(project, secret_name):
     sm = sml.SecretManagerServiceClient()  # using static library
     secret_path = f"projects/{project}/secrets/{secret_name}/versions/latest"
-    payload = sm.access_secret_version(name=secret_path).payload.data.decode("UTF-8")
+    try:
+        payload = sm.access_secret_version(name=secret_path).payload.data.decode(
+            "UTF-8"
+        )
+        return payload
+    except exceptions.PermissionDenied as e:
+        result(f"Secret error: {e}", success=False)
+        return ""
 
-    result(f"Secret {secret_path} exist")
-    # https://github.com/theskumar/python-dotenv#in-memory-filelikes
-    values = dotenv_values(stream=StringIO(payload))
+
+def parse_secrets(values):
+    secrets = {}
+    secrets["dburl"] = urlparse(values["DATABASE_URL"])
+    secrets["dbuser"] = secrets["dburl"].netloc.split(":")[0]
+    secrets["dbinstance"], secrets["dbname"] = secrets["dburl"].path.split("/")[3:]
+    secrets["media_bucket"] = values["GS_BUCKET_NAME"]
+    return secrets
+
+
+def check_secrets(values):
+    header("Secret value checks")
     for key in ["DATABASE_URL", "GS_BUCKET_NAME", "SECRET_KEY"]:
         result(f"{key} is defined", success=(key in values.keys()))
 
-    secret_dburl = urlparse(values["DATABASE_URL"])
-    secret_dbuser = secret_dburl.netloc.split(":")[0]
-    secret_dbinstance, secret_dbname = secret_dburl.path.split("/")[3:]
-    media_bucket = values["GS_BUCKET_NAME"]
 
-    ###
+def check_bucket(media_bucket):
     header("Object storage checks")
     sapi = build("storage", "v1")
-    bucket = sapi.buckets().get(bucket=media_bucket).execute()
-    result(f"Storage bucket {bucket['name']} exists in {bucket['location']}")
+    try:
+        bucket = sapi.buckets().get(bucket=media_bucket).execute()
+        result(f"Storage bucket {bucket['name']} exists in {bucket['location']}")
+    except googleapiclient.errors.HttpError as e:
+        result(f"Storage bucket error {e}", success=False)
     # TODO check bucket permissions.
 
-    ###
+
+def check_database(project, service, secrets):
+
     header("Database checks")
     database_name = service["spec"]["template"]["metadata"]["annotations"][
         "run.googleapis.com/cloudsql-instances"
@@ -128,7 +236,7 @@ def check_deploy(project, service_name, region, secret_name):
 
     result(
         f"Associated database instance matches secret connection URL instance",
-        success=(secret_dbinstance == database_name),
+        success=(secrets["dbinstance"] == database_name),
     )
 
     dbapi = build("sqladmin", "v1beta4")
@@ -139,33 +247,54 @@ def check_deploy(project, service_name, region, secret_name):
 
     database = (
         dbapi.databases()
-        .get(project=project, instance=dbinstance, database=secret_dbname)
+        .get(project=project, instance=dbinstance, database=secrets["dbname"])
         .execute()
     )
     result(f"Database exists: {database['name']}, collation {database['collation']}")
 
     users = dbapi.users().list(project=project, instance=dbinstance).execute()
     result(
-        f"User exists: {secret_dbuser}",
+        f"User exists: {secrets['dbuser']}",
         details=users["items"],
-        success=(secret_dbuser in [user["name"] for user in users["items"]]),
+        success=(secrets["dbuser"] in [user["name"] for user in users["items"]]),
     )
 
-    # All checks complete; show results.
+
+def check_deploy(project, service_name, region, secret_name):
+    click.secho(f"🛠  Checking {service_name} in {region} in {project}", bold=True)
+
+    service = get_service(project, service_name, region)
+
+    check_run(service)
+    check_bindings(service, project)
+
+    check_roles(service, project)
+    check_unicodex(project, service)
+
+    secret_env = get_secret(project, secret_name)
+
+    if secret_env:
+        # https://github.com/theskumar/python-dotenv#in-memory-filelikes
+        values = dotenv_values(stream=StringIO(secret_env))
+        check_secrets(values)
+        secrets = parse_secrets(values)
+
+        check_bucket(secrets["media_bucket"])
+
+        check_database(project, service, secrets)
+
     summary()
 
 
-"""
-WARNING: should only be used when no Python API exists.
-Calls out to gcloud, and returns a dict of the json result.
-
-Sample invocation:
-service = gcloud(f"run services describe {service}")
-sa = service["spec"]["template"]["spec"]["serviceAccountName"]
-"""
-
-
 def gcloud(call):
+    """
+    WARNING: should only be used when no Python API exists.
+    Calls out to gcloud, and returns a dict of the json result.
+
+    Sample invocation:
+    service = gcloud(f"run services describe {service}")
+    sa = service["spec"]["template"]["spec"]["serviceAccountName"]
+    """
     params = ["gcloud"] + call.split(" ") + ["--format", "json"]
     resp = subprocess.run(params, capture_output=True)
     if resp.returncode != 0:

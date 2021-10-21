@@ -1,14 +1,20 @@
 #!/usr/bin/env python
-import click
-import os
-import re
-import sys
 import datetime
-from pathlib import Path
-import git
-from markdown import extract, get_all_codeblocks
 import json
+import os
+
+import click
+
+try:
+    import git
+
+    has_git = True
+except ImportError:
+    has_git = False
+
 import deployment_checks
+from markdown import get_all_codeblocks
+
 
 @click.group()
 def cli():
@@ -16,27 +22,31 @@ def cli():
 
 
 @click.command()
-@click.argument('path', default="docs/")
-@click.option('--project', default="YOUR_PROJECT_ID", help='Replacement Project ID')
-@click.option('--instance', default="psql", help='Replacement SQL Instance name')
-@click.option('--region', default="us-central1", help='Replacement Google Cloud region')
+@click.argument("path", default="docs/")
+@click.option("--project", default="YOUR_PROJECT_ID", help="Replacement Project ID")
+@click.option("--instance", default="psql", help="Replacement SQL Instance name")
+@click.option("--region", default="us-central1", help="Replacement Google Cloud region")
 def gen(path, project, instance, region):
     """Generate a script to deploy unicodex"""
-    try:
-        repo = git.Repo(search_parent_directories=True)
-        sha = repo.head.object.hexsha
-        branch = repo.active_branch.name
-        gitinfo = f"# git: {branch}, sha {sha}"
-    except InvalidGitRepositoryError as e:
-        gitinfo = "# static files (not in an active git directory)"
+    if has_git:
+        try:
+            repo = git.Repo(search_parent_directories=True)
+            sha = repo.head.object.hexsha
+            branch = repo.active_branch.name
+            gitinfo = f"# git: {branch}, sha {sha}"
+        except git.InvalidGitRepositoryError as e:
+            gitinfo = "# static files (not in an active git directory)"
+    else:
+        gitinfo = "# no local install of git found"
 
-    r = ["#!/bin/bash -ex",
-         "shopt -s expand_aliases",
-         "",
-         f"# Generated from {path} on {str(datetime.datetime.now())}",
-         gitinfo,
-         "# execute with: bash -ex script.sh",
-         "", 
+    r = [
+        "#!/bin/bash",
+        "shopt -s expand_aliases",
+        "",
+        f"# Generated from {path} on {str(datetime.datetime.now())}",
+        gitinfo,
+        "# execute with: bash -ex script.sh for echo output",
+        "",
     ]
     r.extend(get_all_codeblocks(path))
 
@@ -48,7 +58,7 @@ def gen(path, project, instance, region):
 
 
 @click.command()
-@click.argument('path', default="docs/", type=click.Path(exists=True))
+@click.argument("path", default="docs/", type=click.Path(exists=True))
 def check_env(path):
     """Check the locally defined environment variables"""
     envvars = {}
@@ -61,17 +71,24 @@ def check_env(path):
 
 
 @click.command()
-@click.argument('project', envvar="PROJECT_ID")
-@click.option('--service', default="unicodex", help="The service name")
-@click.option('--region', default="us-central1", help="The region the service is deployed in")
-@click.option('--secret', default="django_settings", help="The name of the secret containing the django env")
+@click.argument("project", envvar="PROJECT_ID")
+@click.option("--service", default="unicodex", help="The service name")
+@click.option(
+    "--region", default="us-central1", help="The region the service is deployed in"
+)
+@click.option(
+    "--secret",
+    default="django_settings",
+    help="The name of the secret containing the django env",
+)
 def check_deploy(project, service, region, secret):
     """Check a unicodex deployment"""
     deployment_checks.check_deploy(project, service, region, secret)
+
 
 cli.add_command(gen)
 cli.add_command(check_env)
 cli.add_command(check_deploy)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

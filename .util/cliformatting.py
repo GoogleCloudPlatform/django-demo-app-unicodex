@@ -1,9 +1,10 @@
 import os
+import sys
 import click
 from math import ceil
 import shutil
 
-rows, columns = shutil.get_terminal_size()
+columns, _ = shutil.get_terminal_size()
 RESULTS = {"success": 0, "failure": 0}
 
 
@@ -38,14 +39,18 @@ def summary():
         failcol = {}
     click.echo(
         (
-            click.style(f"\nResults: {total} check{s(total)}, ", bold=True,)
+            click.style(
+                f"\nResults: {total} check{s(total)}, ",
+                bold=True,
+            )
             + click.style(f"{fails} failure{s(fails)}", **failcol)
             + click.style(".", bold=True)
         )
     )
-
-
-_, columns = [int(x) for x in os.popen("stty size", "r").read().split()]
+    if fails == 0:
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 
 def result(msg, success=True, details=None):
@@ -58,7 +63,7 @@ def result(msg, success=True, details=None):
         fg = "red"
         RESULTS["failure"] += 1
 
-    # overflow math. 7 is the result length ("[FASL] ")
+    # overflow math. 7 is the result length ("[FAIL] ")
     amsg = msg.ljust(ceil((len(msg) + 7) / columns) * columns - 7)
 
     click.echo(amsg + click.style(f"[{success_message}]", fg=fg, bold=True))

@@ -1,0 +1,44 @@
+steps:
+  - id: setup
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        source ./experimental/setup.sh \
+          -t ${_TEST_TYPE} \
+          -f ${_PARENT_FOLDER} \
+          -p ${_CI_PROJECT} \
+          -r ${_REGION} \
+          -s ${_SA_NAME}
+
+  - id: "check"
+    name: python:3.9-slim
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        python -m pip install -r .util/requirements.txt
+        .util/helper check-deploy ${_CI_PROJECT}
+
+  - id: "destroy"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        gcloud projects delete ${_CI_PROJECT} --quiet
+
+options:
+  dynamic_substitutions: true
+
+logsBucket: ${PROJECT_ID}-buildlogs
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-serviceaccount@unicodex-admin.iam.gserviceaccount.com
+
+substitutions:
+  _REGION: us-central1
+  _TEST_TYPE: terraform
+  _SA_NAME: ci-serviceaccount
+  _CI_PROJECT: "gephemeral-${BUILD_ID:0:8}-${_TEST_TYPE:0:1}"
+
+timeout: "1500s"
