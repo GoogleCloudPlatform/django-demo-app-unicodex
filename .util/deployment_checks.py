@@ -1,18 +1,21 @@
-from cliformatting import header, result, summary, error, echo
 import json
-import click
-import httpx
 import subprocess
-from googleapiclient.discovery import build
-import googleapiclient
-from google.cloud import secretmanager as sml
-from google.api_core import exceptions
-from dotenv import dotenv_values
 from io import StringIO
 from urllib.parse import urlparse
+
+import click
+import googleapiclient
+import httpx
 from bs4 import BeautifulSoup as bs4
+from dotenv import dotenv_values
+from google.api_core import exceptions
+from google.cloud import secretmanager as sml
+from googleapiclient.discovery import build
+
+from cliformatting import echo, error, header, result, summary
 
 # TODO(glasnt): more checks as required
+
 
 def get_service(project, service_name, region):
     run = build("run", "v1")
@@ -70,7 +73,7 @@ def check_roles(service, project):
     required_roles = ["roles/run.admin", "roles/cloudsql.client"]
 
     member_roles = [b["role"] for b in iam["bindings"] if sa in b["members"]]
-    
+
     for role in required_roles:
         result(
             f"SA has {role}",
@@ -78,14 +81,17 @@ def check_roles(service, project):
             success=(role in member_roles),
         )
 
+
 def cleanhtml(raw_html):
-    soup = bs4(raw_html, 'html.parser')
+    soup = bs4(raw_html, "html.parser")
     for tag in soup():
         for attribute in ["class", "id", "name", "style"]:
             del tag[attribute]
-        
-    return "Page preview: " + " ".join(soup.find_all(text=True)).replace(" ", "").replace("\n", " ")
-   
+
+    return "Page preview: " + " ".join(soup.find_all(text=True)).replace(
+        " ", ""
+    ).replace("\n", " ")
+
 
 def check_unicodex(project, service):
     header("Deployed service checks")
@@ -113,7 +119,9 @@ def check_unicodex(project, service):
         if response.status_code == 200:
             result("Index page loaded successfully")
         else:
-            result(f"Index page returns an error: {response.status_code}", success=False)
+            result(
+                f"Index page returns an error: {response.status_code}", success=False
+            )
 
         if "Unicodex" in response.text:
             result("Index page contains 'Unicodex'")
@@ -133,10 +141,9 @@ def check_unicodex(project, service):
             result("Django admin login screen successfully loaded")
         else:
             result("Django admin login not found", success=False, details=admin.text)
-        
-    
+
         headers = {"Referer": url}
-        with httpx.Client(headers=headers) as client: 
+        with httpx.Client(headers=headers) as client:
 
             # Login
             admin_username = get_secret(project, "SUPERUSER")
@@ -150,7 +157,7 @@ def check_unicodex(project, service):
                     "username": admin_username,
                     "password": admin_password,
                     "csrfmiddlewaretoken": client.cookies["csrftoken"],
-                }
+                },
             )
             assert response.status_code == 200
             assert "Site administration" in response.text
@@ -164,7 +171,7 @@ def check_unicodex(project, service):
                     "action": "generate_designs",
                     "_selected_action": 1,
                     "csrfmiddlewaretoken": client.cookies["csrftoken"],
-                }
+                },
             )
             assert response.status_code == 200
             assert "Imported vendor versions" in response.text
@@ -252,6 +259,7 @@ def check_database(project, service, secrets):
         success=(secrets["dbuser"] in [user["name"] for user in users["items"]]),
     )
 
+
 def check_deploy(project, service_name, region, secret_name):
     click.secho(f"🛠  Checking {service_name} in {region} in {project}", bold=True)
 
@@ -262,7 +270,7 @@ def check_deploy(project, service_name, region, secret_name):
 
     check_roles(service, project)
     check_unicodex(project, service)
-    
+
     secret_env = get_secret(project, secret_name)
 
     if secret_env:
