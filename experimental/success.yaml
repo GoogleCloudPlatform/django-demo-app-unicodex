@@ -1,7 +1,0 @@
-steps:
-  - name: busybox
-    args: 
-      -  "true"
-
-logsBucket: ${PROJECT_ID}-buildlogs
-#serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-serviceaccount@${PROJECT_ID}.iam.gserviceaccount.com
