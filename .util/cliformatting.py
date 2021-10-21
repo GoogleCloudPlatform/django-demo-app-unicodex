@@ -1,4 +1,5 @@
 import os
+import sys
 import click
 from math import ceil
 import shutil
@@ -43,6 +44,10 @@ def summary():
             + click.style(".", bold=True)
         )
     )
+    if fails == 0:
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 
 _, columns = [int(x) for x in os.popen("stty size", "r").read().split()]

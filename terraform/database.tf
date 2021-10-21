@@ -1,28 +1,31 @@
-resource random_password database_user_password {
+locals {
+  database_user = "${var.service}-django"
+  database_name = var.service
+}
+
+resource "random_password" "database_user_password" {
   length  = 30
   special = false
 }
 
-resource google_sql_database_instance postgres {
+resource "google_sql_database_instance" "postgres" {
   name             = var.instance_name
-  database_version = "POSTGRES_11"
+  database_version = "POSTGRES_13"
   region           = var.region
 
   settings {
     tier = "db-f1-micro"
   }
 
-  depends_on = [var.project]
 }
 
-resource google_sql_database database {
+resource "google_sql_database" "database" {
   name     = local.database_name
   instance = google_sql_database_instance.postgres.name
 }
 
-
-# TODO(glasnt) - Current database user has cloudsqladmin rights. Requires reducing.
-resource google_sql_user user {
+# NOTE: users created this way automatically gain cloudsqladmin rights.
+resource "google_sql_user" "django" {
   name     = local.database_user
   instance = google_sql_database_instance.postgres.name
   password = random_password.database_user_password.result

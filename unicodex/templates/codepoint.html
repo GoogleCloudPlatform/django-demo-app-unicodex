@@ -2,30 +2,30 @@
 {% block title %} {{codepoint.display|safe}} {{codepoint.name}} {{codepoint.display|safe}} {% endblock %}
 {% block content %}
 
-<div class="row">
- <div class="twelve columns">
-  <h3 style="text-align: center">{{codepoint.name}} <code>U+{{codepoint.codepoint}}</code></h2>
-  <h4 style="text-align: center"><i>{{codepoint.description}}</i></h4>
- </div>
-</div>
-
-<div class="row" style="padding: 10px">
-{% if designs|length == 0 %}
-No {{codepoint.name}} designs found
-{% else %}
-{% for x in designs %}
-    <div class="two columns">
-      <div class="img"><img class="emoji" src="{{ x.image.url }}" /></div>
-      <br>
-      {{x.vendorversion.vendor.name}}
-      {{x.vendorversion.name}}
+    <div class="row">
+        <div class="twelve columns">
+            <h3 style="text-align: center">{{codepoint.name}} <code>U+{{codepoint.codepoint}}</code></h2>
+            <h4 style="text-align: center"><i>{{codepoint.description}}</i></h4>
+        </div>
     </div>
 
-  {% if forloop.counter|divisibleby:6  %}
-  </div>
-  <div class="row" style="padding: 10px">
-  {% endif %}
-{% endfor %}
-{% endif %}
-  </div>
+    <div class="row" style="padding: 10px">
+        {% if designs|length == 0 %}
+            No {{codepoint.name}} designs found
+        {% else %}
+            {% for x in designs %}
+                <div class="two columns">
+                    <div class="img"><img class="emoji" src="{{ x.image.url }}" /></div>
+                    <br>
+                    {{x.vendorversion.vendor.name}}
+                    {{x.vendorversion.name}}
+                </div>
+
+                {% if forloop.counter|divisibleby:6  %}
+                    </div>
+                    <div class="row" style="padding: 10px">
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
 {% endblock %}

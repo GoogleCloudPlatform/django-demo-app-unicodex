@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 {% block title %}✨ Unicodex ✨{% endblock %}
 {% block content %}
-<style>
-.emoji  {
-    font-size: 48pt; 
-}
-.emoji a { 
-    text-decoration: none
-}
-</style>
-<p class="emoji"> 
-{% for x in codepoints %}
-    <a href="u/{{ x.codepoint }}">{{x.display|safe}}</a>
-{% endfor %}
-<p>
+    <style>
+        .emoji  {
+            font-size: 48pt;
+        }
+        .emoji a {
+            text-decoration: none
+        }
+    </style>
+    <p class="emoji">
+        {% for x in codepoints %}
+            <a href="u/{{ x.codepoint }}">{{x.display|safe}}</a>
+        {% endfor %}
+        <p>
 {% endblock %}
