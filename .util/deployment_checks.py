@@ -132,8 +132,8 @@ def check_unicodex(project, service):
         print(cleanhtml(fixture.text))
 
         admin = httpx.get(url + login_slug)
-        if admin.status_code == 200:
-            result("Django admin returns status 200")
+        if not admin.is_error:
+            result(f"Django admin returns status okay ({admin.status_code})")
         else:
             result(f"Django admin returns an error: {admin.status_code}", success=False)
 
@@ -143,7 +143,7 @@ def check_unicodex(project, service):
             result("Django admin login not found", success=False, details=admin.text)
 
         headers = {"Referer": url}
-        with httpx.Client(headers=headers) as client:
+        with httpx.Client(headers=headers, follow_redirects=True) as client:
 
             # Login
             admin_username = get_secret(project, "SUPERUSER")
@@ -159,7 +159,7 @@ def check_unicodex(project, service):
                     "csrfmiddlewaretoken": client.cookies["csrftoken"],
                 },
             )
-            assert response.status_code == 200
+            assert not response.is_error
             assert "Site administration" in response.text
             assert "Codepoints" in response.text
             result(f"Django Admin logged in")
@@ -173,7 +173,7 @@ def check_unicodex(project, service):
                     "csrfmiddlewaretoken": client.cookies["csrftoken"],
                 },
             )
-            assert response.status_code == 200
+            assert not response.is_error
             assert "Imported vendor versions" in response.text
             result(f"Django Admin action completed")
 
@@ -209,7 +209,7 @@ def parse_secrets(values):
 
 
 def check_secrets(values):
-    header("Secret value checks")
+    header("Settings checks")
     for key in ["DATABASE_URL", "GS_BUCKET_NAME", "SECRET_KEY"]:
         result(f"{key} is defined", success=(key in values.keys()))
 
