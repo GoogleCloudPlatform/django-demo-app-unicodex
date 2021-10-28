@@ -131,7 +131,7 @@ def check_unicodex(project, service):
         fixture = httpx.get(url + fixture_slug)
         print(cleanhtml(fixture.text))
 
-        admin = httpx.get(url + "/admin")
+        admin = httpx.get(url + login_slug)
         if admin.status_code == 200:
             result("Django admin returns status 200")
         else:
