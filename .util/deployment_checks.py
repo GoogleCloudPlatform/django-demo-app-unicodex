@@ -143,14 +143,14 @@ def check_unicodex(project, service):
             result("Django admin login not found", success=False, details=admin.text)
 
         headers = {"Referer": url}
-        with httpx.Client(headers=headers, follow_redirects=True) as client:
+        with httpx.Client(headers=headers, follow_redirects=True, timeout=30) as client:
 
             # Login
             admin_username = get_secret(project, "SUPERUSER")
             admin_password = get_secret(project, "SUPERPASS")
 
             header("Test Django Admin")
-            client.get(url + login_slug, headers=headers)
+            client.get(url + login_slug)
             response = client.post(
                 url + login_slug,
                 data={
