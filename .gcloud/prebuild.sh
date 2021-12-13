@@ -33,6 +33,7 @@ stepdone
 export CLOUDRUN_SA=${SERVICE_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
 export PROJECTNUM=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
 export CLOUDBUILD_SA=${PROJECTNUM}@cloudbuild.gserviceaccount.com
+export COMPUTE_SA=${PROJECTNUM}-compute@developer.gserviceaccount.com	
 
 stepdo "Grant IAM permissions to service accounts"
 for role in cloudsql.client run.admin; do
@@ -86,11 +87,10 @@ echo GS_BUCKET_NAME=\"${GS_BUCKET_NAME}\" >> .env
 echo SECRET_KEY=\"$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)\" >> .env
 gcloud secrets create django_settings --replication-policy automatic
 gcloud secrets versions add django_settings --data-file .env
+
+for MEMBER in $CLOUDRUN_SA $CLOUDBUILD_SA $COMPUTE_SA; do
 quiet gcloud secrets add-iam-policy-binding django_settings \
-  --member serviceAccount:$CLOUDRUN_SA \
-  --role roles/secretmanager.secretAccessor
-quiet gcloud secrets add-iam-policy-binding django_settings \
-  --member serviceAccount:$CLOUDBUILD_SA \
+  --member serviceAccount:$MEMBER \
   --role roles/secretmanager.secretAccessor
 rm .env
 stepdone

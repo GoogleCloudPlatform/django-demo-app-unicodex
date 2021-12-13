@@ -17,6 +17,13 @@ gcloud run services update $K_SERVICE --platform managed --region ${GOOGLE_CLOUD
     --add-cloudsql-instances ${GOOGLE_CLOUD_PROJECT}:${GOOGLE_CLOUD_REGION}:psql \
     --service-account ${K_SERVICE}@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com
 
+echo "→ Removing Compute Service Account secret access"
+export PROJECTNUM=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
+export COMPUTE_SA=${PROJECTNUM}-compute@developer.gserviceaccount.com
+quiet gcloud secrets remove-iam-policy-binding django_settings \
+  --member serviceAccount:$COMPUTE_SA \
+  --role roles/secretmanager.secretAccessor
+
 echo "Post-create configuration complete ✨"
 
 echo ""
