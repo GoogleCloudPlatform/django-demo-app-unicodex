@@ -31,6 +31,7 @@ resource google_project_iam_binding service_permissions {
     "run.admin", "cloudsql.client"
   ])
 
+  project    = var.project
   role       = "roles/${each.key}"
   members    = [local.cloudbuild_sa, local.unicodex_sa]
   depends_on = [google_service_account.unicodex]
