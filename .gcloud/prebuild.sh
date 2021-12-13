@@ -89,10 +89,11 @@ gcloud secrets create django_settings --data-file temp_env
 rm temp_env
 
 for MEMBER in $CLOUDRUN_SA $CLOUDBUILD_SA $COMPUTE_SA; do
+echo "... Adding $MEMBER..."
 quiet gcloud secrets add-iam-policy-binding django_settings \
   --member serviceAccount:$MEMBER \
   --role roles/secretmanager.secretAccessor
-
+done
 stepdone
 
 stepdo "Creating Django admin user secrets, and allowing limited access"
