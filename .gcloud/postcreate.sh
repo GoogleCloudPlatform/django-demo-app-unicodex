@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source .util/bash_helpers.sh
+
 echo "🚀 Final service configuration changes"
 export SERVICE_URL=$(gcloud run services describe $K_SERVICE  --format "value(status.url)" --platform managed --region ${GOOGLE_CLOUD_REGION})
 
