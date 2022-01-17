@@ -93,6 +93,11 @@ def cleanhtml(raw_html):
     ).replace("\n", " ")
 
 
+def check_envvars(project, service):
+    print(service)
+    result("TODO check envvars")
+
+
 def check_unicodex(project, service):
     header("Deployed service checks")
 
@@ -282,6 +287,9 @@ def check_deploy(project, service_name, region, secret_name):
         check_bucket(secrets["media_bucket"])
 
         check_database(project, service, secrets)
+
+    check_envvars(project, service)
+    
 
     summary()
 
