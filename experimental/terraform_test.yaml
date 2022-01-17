@@ -28,15 +28,15 @@ steps:
     script:
       #!/bin/bash
           
-      echo "before"
+      echo "before";
+
       gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST
 
       export SERVICE_URL=$(gcloud run services describe $SERVICE --format "value(status.url)" --platform managed --region ${REGION})
 
-      gcloud run services update $SERVICE --platform managed --region ${REGION} \
-          --update-env-vars "CURRENT_HOST=${SERVICE_URL}"
+      gcloud run services update $SERVICE --platform managed --region ${REGION} --update-env-vars "CURRENT_HOST=${SERVICE_URL}"
 
-      echo "after"
+      echo "after";
       gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST
 
 
