@@ -24,9 +24,21 @@ steps:
 
   - id: "workaround"
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    envs: ["REGION=${_REGION}","SERVICE=${_SERVICE}"]
     script:
       #!/bin/bash
-      source experimental/configure_current_host.sh
+          
+      echo "before"
+      gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST
+
+      export SERVICE_URL=$(gcloud run services describe $SERVICE --format "value(status.url)" --platform managed --region ${REGION})
+
+      gcloud run services update $SERVICE --platform managed --region ${REGION} \
+          --update-env-vars "CURRENT_HOST=${SERVICE_URL}"
+
+      echo "after"
+      gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST
+
 
   - id: "migrate"
     name: "gcr.io/google-appengine/exec-wrapper"
