@@ -94,9 +94,22 @@ def cleanhtml(raw_html):
 
 
 def check_envvars(project, service):
-    print(service)
-    result("TODO check envvars")
+    envvars = service["spec"]["template"]["spec"]["containers"][0]["env"]
+    current_host = [x["value"] for x in envvars if x["name"] == "CURRENT_HOST"]
 
+    if not current_host:
+        result(
+            "CURRENT_HOST envvar not found",
+            details="Check the service environment variables.",
+            success=False,
+        )
+    else:
+        host = current_host[0]
+        service_host = service["status"]["url"]
+        if host == service_host:
+            result(f"CURRENT_HOST set to service URL ({host}).")
+        else:
+            result(f"CURRENT_HOST ({host}) and service URL ({service_host}) don't match.", success=False)
 
 def check_unicodex(project, service):
     header("Deployed service checks")
@@ -274,6 +287,8 @@ def check_deploy(project, service_name, region, secret_name):
     check_bindings(service, project)
 
     check_roles(service, project)
+    check_envvars(project, service)
+
     check_unicodex(project, service)
 
     secret_env = get_secret(project, secret_name)
@@ -288,7 +303,6 @@ def check_deploy(project, service_name, region, secret_name):
 
         check_database(project, service, secrets)
 
-    check_envvars(project, service)
     
 
     summary()
