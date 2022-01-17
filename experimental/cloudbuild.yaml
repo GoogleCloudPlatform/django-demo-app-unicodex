@@ -23,11 +23,14 @@ steps:
 
   - id: "destroy"
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
-    entrypoint: /bin/bash
-    args:
-      - "-c"
-      - |
-        gcloud projects delete ${_CI_PROJECT} --quiet
+    env: ["KEEP_PROJECT=${_KEEP_PROJECT}"]
+    script:
+        #!/bin/bash
+
+        if [ $KEEP_PROJECT  = 'true' ]; then echo "Configuration says to keep project around. Not deleting."; exit 0; fi
+
+        echo "Deleting project..."
+        gcloud projects delete ${_CI_PROJECT} --quiet;
 
 options:
   dynamic_substitutions: true
@@ -37,6 +40,7 @@ logsBucket: ${PROJECT_ID}-buildlogs
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-serviceaccount@unicodex-admin.iam.gserviceaccount.com
 
 substitutions:
+  _KEEP_PROJECT: "false"
   _REGION: us-central1
   _TEST_TYPE: terraform
   _SA_NAME: ci-serviceaccount

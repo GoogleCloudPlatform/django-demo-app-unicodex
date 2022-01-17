@@ -17,6 +17,7 @@
 import io
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 import environ
 import google.auth
@@ -51,18 +52,16 @@ SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = env("DEBUG", default=False)
 
-if "CURRENT_HOST" in env:
-    # handle raw host(s), or http(s):// host(s), or no host.
-    HOSTS = []
-    for h in env.list("CURRENT_HOST"):
-        if "://" in h:
-            h = h.split("://")[1]
-        HOSTS.append(h)
-else:
-    # Assume localhost if no CURRENT_HOST
-    HOSTS = ["localhost"]
 
-ALLOWED_HOSTS = ["127.0.0.1"] + HOSTS
+# If defined, add service URL to Django security settings
+CURRENT_HOST = env("CURRENT_HOST", default=None)
+if CURRENT_HOST:
+    ALLOWED_HOSTS = [urlparse(CURRENT_HOST).netloc]
+    CSRF_TRUSTED_ORIGINS = [CURRENT_HOST]
+else:
+    ALLOWED_HOSTS = ["localhost"]
+    CSRF_TRUSTED_ORIGINS = ["http://localhost"]
+
 
 # Enable Django security precautions if *not* running locally
 if "localhost" not in ALLOWED_HOSTS:
