@@ -24,7 +24,7 @@ steps:
 
   - id: "workaround"
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
-    envs: ["REGION=${_REGION}","SERVICE=${_SERVICE}"]
+    env: ["REGION=${_REGION}","SERVICE=${_SERVICE}"]
     script:
       #!/bin/bash
           
