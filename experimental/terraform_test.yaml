@@ -35,7 +35,7 @@ steps:
 
       gcloud run services update $SERVICE --platform managed --region ${REGION} --update-env-vars "CURRENT_HOST=${SERVICE_URL}"
 
-      gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST;;
+      gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST;
 
 
   - id: "migrate"
