@@ -22,21 +22,20 @@ steps:
           -var region=${_REGION} \
           -var service=${_SERVICE}
 
+  # This is a workaround for Terraform, as it can't lift state to an resource before it exists. 
+  # TODO(glasnt): fix
   - id: "workaround"
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
     env: ["REGION=${_REGION}","SERVICE=${_SERVICE}"]
     script:
       #!/bin/bash
-          
-      before=$(gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST);
-      echo before $before;
+      gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST;
 
       export SERVICE_URL=$(gcloud run services describe $SERVICE --format "value(status.url)" --platform managed --region ${REGION})
 
       gcloud run services update $SERVICE --platform managed --region ${REGION} --update-env-vars "CURRENT_HOST=${SERVICE_URL}"
 
-      after=$(gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST);
-      echo after $after
+      gcloud run services describe unicodex --region $REGION --platform managed | grep CURRENT_HOST;;
 
 
   - id: "migrate"
