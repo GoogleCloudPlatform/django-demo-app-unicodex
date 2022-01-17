@@ -56,13 +56,11 @@ DEBUG = env("DEBUG", default=False)
 # If defined, add service URL to Django security settings
 CURRENT_HOST = env("CURRENT_HOST", default=None)
 if CURRENT_HOST:
-    if CURRENT_HOST == "*":
-        ALLOWED_HOSTS = ["localhost", "*"]
-    else:
-        ALLOWED_HOSTS = [urlparse(CURRENT_HOST).netloc]
-        CSRF_TRUSTED_ORIGINS = [CURRENT_HOST]
+    ALLOWED_HOSTS = [urlparse(CURRENT_HOST).netloc]
+    CSRF_TRUSTED_ORIGINS = [CURRENT_HOST]
 else:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.0"]
+    ALLOWED_HOSTS = ["localhost"]
+    CSRF_TRUSTED_ORIGINS = ["http://localhost"]
 
 
 # Enable Django security precautions if *not* running locally
