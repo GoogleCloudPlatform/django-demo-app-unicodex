@@ -22,6 +22,12 @@ steps:
           -var region=${_REGION} \
           -var service=${_SERVICE}
 
+  - id: "workaround"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    script:
+      #!/bin/bash
+      source experimental/configure_current_host.sh
+
   - id: "migrate"
     name: "gcr.io/google-appengine/exec-wrapper"
     args:
