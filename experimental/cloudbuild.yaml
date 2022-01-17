@@ -23,7 +23,6 @@ steps:
 
   - id: "destroy"
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
-    entrypoint: /bin/bash
     env: ["KEEP_PROJECT=${_KEEP_PROJECT}"]
     script:
         #!/bin/bash
