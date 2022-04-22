@@ -48,7 +48,7 @@ Sadly, we have a few more steps. Even though we have deployed our service, **Dja
 
 Django has a setting called `ALLOWED_HOSTS`, which recommended to be defined for [security purposes](https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts). We want our set our `ALLOWED_HOSTS` to be the service URL of the site we just deployed. 
 
-New in Django 4.0, we will also want to set the [`TRUSTED_CSRF_DOMAIN` value](https://docs.djangoproject.com/en/4.0/ref/csrf/) as well. 
+New in Django 4.0, we will also want to set the [`TRUSTED_CSRF_DOMAIN` value](https://docs.djangoproject.com/en/4.0/ref/csrf/) as well. [Read more about how not setting this can break Cloud Run deployments](https://cloud.google.com/blog/topics/developers-practitioners/follow-pink-pony-story-csrf-managed-services-and-unicorns).
 
 When we deployed our service, it told us the service URL that our site can be accessed from. We can either copy the URL from the output we got from the last step, or we can get it from `gcloud`
 
