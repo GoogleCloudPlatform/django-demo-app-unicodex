@@ -44,9 +44,11 @@ Sadly, we have a few more steps. Even though we have deployed our service, **Dja
 * We need to tell Django where to expect our service to run, and 
 * we need to initialise our database.
 
-#### Service URL, and `ALLOWED_HOSTS` 
+#### Service URL, CSRF, and `ALLOWED_HOSTS` 
 
 Django has a setting called `ALLOWED_HOSTS`, which recommended to be defined for [security purposes](https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts). We want our set our `ALLOWED_HOSTS` to be the service URL of the site we just deployed. 
+
+New in Django 4.0, we will also want to set the [`TRUSTED_CSRF_DOMAIN` value](https://docs.djangoproject.com/en/4.0/ref/csrf/) as well. [Read more about how not setting this can break Cloud Run deployments](https://cloud.google.com/blog/topics/developers-practitioners/follow-pink-pony-story-csrf-managed-services-and-unicorns).
 
 When we deployed our service, it told us the service URL that our site can be accessed from. We can either copy the URL from the output we got from the last step, or we can get it from `gcloud`
 
@@ -70,7 +72,7 @@ gcloud run services update $SERVICE_NAME \
   --update-env-vars "CURRENT_HOST=${SERVICE_URL}"
 ```
 
-In this case, `CURRENT_HOST` is setup in our [settings.py](../settings.py) to be added to the `ALLOWED_HOSTS`, if defined. 
+In this case, `CURRENT_HOST` is setup in our [settings.py](../settings.py) to be parsed into the `ALLOWED_HOSTS` and `TRUSTED_CSRF_DOMAIN` settings. 
 
 **Important**: Django's `ALLOWED_HOSTS` takes a hostname without a scheme (i.e. without the leading 'https'). Our `settings.py` handles this by removing it, if it appears. 
 

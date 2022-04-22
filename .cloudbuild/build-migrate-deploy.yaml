@@ -12,42 +12,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 steps:
-    - id: 'build  '
-      name: 'gcr.io/cloud-builders/docker'
-      args: ['build', '-t', 'gcr.io/${PROJECT_ID}/${_SERVICE}', '.']
+  - id: "build  "
+    name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "${_IMAGE_NAME}", "."]
 
-    - id: 'push   '
-      name: 'gcr.io/cloud-builders/docker'
-      args: ['push', 'gcr.io/${PROJECT_ID}/${_SERVICE}']
+  - id: "push   "
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push", "${_IMAGE_NAME}"]
+
+  - id: "layer  "
+    name: "gcr.io/cloud-builders/docker"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        echo "FROM $_IMAGE_NAME
+        COPY --from=gcr.io/cloudsql-docker/gce-proxy /cloud_sql_proxy /cloudsql/cloud_sql_proxy" > Dockerfile-proxy;
+
+        docker build -f Dockerfile-proxy -t ${_IMAGE_NAME}-proxy .
+
+  - id: "migrate"
+    name: "${_IMAGE_NAME}-proxy"
+    entrypoint: /bin/bash
+    env: 
+      - "PROJECT_ID=$PROJECT_ID"
+      - "USE_CLOUD_SQL_AUTH_PROXY=true"
+    args:
+      - '-c'
+      - |
+        /cloudsql/cloud_sql_proxy -instances=${_INSTANCE_CONNECTION_NAME}=tcp:${_DATABASE_PORT} & sleep 2;
+
+        sh .cloudbuild/django_migrate.sh
       
-    - id: 'migrate'
-      name: 'gcr.io/google-appengine/exec-wrapper'
-      args: ['-i', 'gcr.io/${PROJECT_ID}/${_SERVICE}',
-             '-s', '${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}',
-             '-e', 'PROJECT_ID=${PROJECT_ID}',
-             '--', 'sh', '.cloudbuild/django_migrate.sh']
-   
-    - id: 'deploy '
-      name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-      entrypoint: 'gcloud'
-      args: ["run", "deploy", "${_SERVICE}", 
-            "--platform", "managed", 
-            "--region", "${_REGION}",
-            "--image", "gcr.io/$PROJECT_ID/${_SERVICE}"]
+  - id: "deploy "
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      [
+        "run",
+        "deploy",
+        "${_SERVICE}",
+        "--platform",
+        "managed",
+        "--region",
+        "${_REGION}",
+        "--image",
+        "${_IMAGE_NAME}",
+      ]
 
-images: 
- - "gcr.io/$PROJECT_ID/${_SERVICE}"
+images:
+  - $_IMAGE_NAME
 
-# Substitutions #
-# Defaults:
+options:
+  dynamic_substitutions: true
 
 substitutions:
-   _SERVICE: unicodex
-   _REGION: us-central1
- 
-# User provided:
-#  _INSTANCE_NAME
-#      - (just the name, PROJECT_ID:REGION:INSTANCE_NAME, since we already have the other values)
-#
-# Automatically provided:
-#  PROJECT_ID: (the project)
+  _SERVICE: unicodex
+  _REGION: us-central1
+  _INSTANCE_NAME: psql
+  _DATABASE_PORT: '5432'
+  _IMAGE_NAME: gcr.io/${PROJECT_ID}/${_SERVICE}
+  _INSTANCE_CONNECTION_NAME: ${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}
