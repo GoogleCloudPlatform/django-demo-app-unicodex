@@ -49,7 +49,6 @@ In Unicodex, these relations are represented by a **codepoint** (Sparkles) havin
 
 In the Django admin, an admin action has been setup so that you can select a Codepoint, and run the "Generate designs" actions. This will -- for all configured vendors and vendor versions -- scrape Emojipedia for the information, including uploading images. Alternatively, you can enter this information manually from the django admin. 
 
-
 ### Service design - one deployment per Google Cloud project
 
 Unicodex runs as a Cloud Run service. Using the Python package `django-storages`, it's been configured to take a `GS_BUCKET_NAME` as a storage place for its media. Using the Python package `django-environ` it takes a complex `DATABASE_URL`, which will point to a Cloud SQL PostgreSQL database. The `settings.py` is also designed to pull a specific secret into the environment. These are all designed to live in the same Google Cloud Project.
@@ -64,6 +63,15 @@ It is possible to host multiple instances of Unicodex on the one project (where 
 
 You can host multiple versions of Unicodex using project isolation (one Google Cloud account can have multiple projects) without any code editing, but this may not work for your own project. [Read more about project organisation considerations](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#project-structure)
 
+## Demo instances
+
+This repo is configured to automatically [build, migrate, and deploy](.cloudbuild/build-migrate-deploy.yaml) unicodex via Cloud Build in different demo projects: 
+
+ * [unicodex.xyz](https://unicodex.xyz) - on tagged releases
+ * [staging.unicodex.xyz](https://staging.unicodex.xyz) - on push to latest
+ * [dev.unicodex.xyz](https://dev.unicodex.xyz) - on push to the dev branch
+
+The different deployment methods (Terraform, Cloud Run Button, and manual) are tested weekly by creating [ephemeral projects](/experimental), deploying the application, testing it, then deleting the project. If the tests or deployment fails, the deletion doesn't happen and the issue can be investigated. 
 
 ## Contributions
 
