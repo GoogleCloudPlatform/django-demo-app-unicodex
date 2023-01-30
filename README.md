@@ -65,13 +65,11 @@ You can host multiple versions of Unicodex using project isolation (one Google C
 
 ## Demo instances
 
-This repo is configured to automatically [build, migrate, and deploy](.cloudbuild/build-migrate-deploy.yaml) unicodex via Cloud Build in different demo projects: 
+This repo was configured to automatically [build, migrate, and deploy](.cloudbuild/build-migrate-deploy.yaml) unicodex via Cloud Build in different demo projects.
 
- * [unicodex.xyz](https://unicodex.xyz) - on tagged releases
- * [staging.unicodex.xyz](https://staging.unicodex.xyz) - on push to latest
- * [dev.unicodex.xyz](https://dev.unicodex.xyz) - on push to the dev branch
+The different deployment methods (Terraform, Cloud Run Button, and manual) were tested weekly by creating [ephemeral projects](/experimental), deploying the application, testing it, then deleting the project. If the tests or deployment fails, the deletion doesn't happen and the issue can be investigated. 
 
-The different deployment methods (Terraform, Cloud Run Button, and manual) are tested weekly by creating [ephemeral projects](/experimental), deploying the application, testing it, then deleting the project. If the tests or deployment fails, the deletion doesn't happen and the issue can be investigated. 
+Feel free to use these implementations as a basis for your own processes, as with all other code in this repo. 
 
 ## Contributions
 
