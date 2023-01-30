@@ -39,6 +39,10 @@ See `terraform/` for configuration details.
 
 Don't forget to [cleanup your project resources](docs/90-cleanup.md) when you're done!
 
+## Live deployments
+
+There are no current live deployments of this demo. 
+
 ## Application Design
 
 ### Unicodex itself
@@ -54,8 +58,6 @@ In the Django admin, an admin action has been setup so that you can select a Cod
 Unicodex runs as a Cloud Run service. Using the Python package `django-storages`, it's been configured to take a `GS_BUCKET_NAME` as a storage place for its media. Using the Python package `django-environ` it takes a complex `DATABASE_URL`, which will point to a Cloud SQL PostgreSQL database. The `settings.py` is also designed to pull a specific secret into the environment. These are all designed to live in the same Google Cloud Project.
 
 In this way, Unicodex runs 1:1:1 -- one Cloud Run Service, one Cloud SQL Database, one Google Storage bucket. It also assumes that there is *only* one service/database/bucket. 
-
-This implementation is live at [https://unicodex.gl.asnt.app/](https://unicodex.gl.asnt.app/)
 
 ### Other service designs
 
